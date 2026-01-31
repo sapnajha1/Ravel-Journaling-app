@@ -42,13 +42,13 @@ class _RantSecondScreenState extends State<rantSecondScreen> {
   void initState() {
     super.initState();
 
-    // ✅ Use singleton instance
+    // ✅ singleton instance
     _speech = SpeechService(context).speechInstance;
 
     _initializeSpeech();
   }
 
-  /// Initialize listeners only, no startStt here
+  /// Initialize listeners
   void _initializeSpeech() {
     _speech.listen(
       onListeningStateChanged: (state) {
@@ -204,25 +204,6 @@ class _RantSecondScreenState extends State<rantSecondScreen> {
                           ),
                         ),
                       ),
-
-                    // Default "Tap mic" text
-                    // if (!_isRecording)
-                    //   Positioned.fill(
-                    //     child: Center(
-                    //       child: Padding(
-                    //         padding: const EdgeInsets.symmetric(horizontal: 28),
-                    //         child: Text(
-                    //           'Tap mic and let it all out',
-                    //           textAlign: TextAlign.center,
-                    //           style: const TextStyle(
-                    //             fontSize: 16,
-                    //             height: 1.4,
-                    //             fontWeight: FontWeight.w500,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ),
                   ],
                 ),
               ),
@@ -246,8 +227,8 @@ class _RantSecondScreenState extends State<rantSecondScreen> {
             GestureDetector(
               onTap: _onStopPressed,
               child: SvgPicture.asset(
-                'assets/Frame 22.svg', // your end ranting SVG
-                width: 150,              // adjust width as needed
+                'assets/Frame 22.svg',
+                width: 150,
               ),
             ),
           ],

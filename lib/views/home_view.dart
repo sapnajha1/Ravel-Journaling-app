@@ -11,7 +11,6 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<HomeViewModel>();
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -54,12 +53,6 @@ class HomeView extends StatelessWidget {
                 clipBehavior: Clip.none,
                 children: [
 
-                  /// RANT – back left (orange)
-
-
-
-
-                  /// REFLECT – front (purple)
                   /// SCRIBBLE – back right (green)
                   Positioned(
                     bottom: -50,
@@ -74,6 +67,7 @@ class HomeView extends StatelessWidget {
                     ),
                   ),
 
+                  /// RANT – back left (orange)
                   Positioned(
                     bottom: -50,
                     left: -5,
@@ -97,8 +91,8 @@ class HomeView extends StatelessWidget {
                     ),
                   ),
 
+                  /// REFLECT – front (purple)
                   Positioned(
-
                     bottom: -140,
                     left: 50,
                     child: Transform.rotate(

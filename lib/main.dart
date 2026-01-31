@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:journal_app/viewmodels/home_viewmodel.dart';
-// import 'package:journal_app/views/home_view.dart';
+import 'package:journal_app/views/home_view.dart';
+import 'package:journal_app/viewmodels/home_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -8,7 +8,7 @@ void main() {
   runApp(
       MultiProvider(
         providers: [
-          // ChangeNotifierProvider(create: (_) => HomeViewModel()),
+          ChangeNotifierProvider(create: (_) => HomeViewModel()),
         ],
         child: const MyApp(),
       )
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
           textTheme: GoogleFonts.outfitTextTheme(),
           primaryColor: Colors.orangeAccent,
         ),
-        // home: const HomeView()
+        home: const HomeView()
     );
   }
 }
