@@ -51,11 +51,11 @@ class _AnimatedCardState extends State<AnimatedCard>
     final vm = context.read<HomeViewModel>();
     vm.onCardTap(widget.mode);
 
-
+    // Navigate Rant flow only for now
     if (widget.mode == JournalMode.rant) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const rantSecondScreen()),
+        MaterialPageRoute(builder: (_) => const RantRecordingScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
