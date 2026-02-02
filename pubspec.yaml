@@ -44,6 +44,9 @@ dependencies:
   # Optional: check connectivity for better error messages
   connectivity_plus: ^6.1.1
 
+  # SVG card backgrounds from Figma
+  flutter_svg: ^2.0.16
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -65,6 +68,11 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/cards/
+    - assets/backgrounds/
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

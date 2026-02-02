@@ -1,13 +1,17 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../auth/auth_controller.dart';
 import 'paint_screen.dart';
 import 'profile_screen.dart';
+import 'rant_screen.dart';
+import 'reflect_screen.dart';
+import 'scribble_screen.dart';
+import 'reflect_screen.dart';
+import 'scribble_screen.dart';
 
-/// Main shell after login: bottom nav with Home, Calendar (Paint), Profile.
-///
-/// Shows logged-in user email on Home tab and handles session expiration
-/// via [AuthController].
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.authController});
 
@@ -20,191 +24,703 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      HomeTab(userEmail: widget.authController.userEmail ?? ''),
-      const PaintScreen(),
-      ProfileScreen(authController: widget.authController),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     return Scaffold(
-      body: SafeArea(child: _pages[_selectedIndex]),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        backgroundColor: Colors.white,
-        elevation: 12,
-        selectedItemColor: Colors.deepOrangeAccent,
-        unselectedItemColor: Colors.black54,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today), label: 'Calendar'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.sentiment_satisfied), label: 'Profile'),
-        ],
+      body: SafeArea(
+        child: _selectedIndex == 0
+            ? HomeTab(
+                userEmail: widget.authController.userEmail ?? '',
+                onOpenCard: _openCard,
+              )
+            : _selectedIndex == 1
+                ? const PaintScreen()
+                : ProfileScreen(authController: widget.authController),
       ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(16, 4, 16, math.max(12, bottomInset + 8)),
+        child: _CustomBottomBar(
+          selectedIndex: _selectedIndex,
+          onTap: (index) => setState(() => _selectedIndex = index),
+        ),
+      ),
+    );
+  }
+
+  void _openCard(_JournalCardType type) {
+    Widget screen;
+    switch (type) {
+      case _JournalCardType.rant:
+        screen = const RantScreen();
+        break;
+      case _JournalCardType.scribble:
+        screen = const ScribbleScreen();
+        break;
+      case _JournalCardType.reflect:
+        screen = const ReflectScreen();
+        break;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => screen),
     );
   }
 }
 
-/// Home tab content: greeting with user email and journal cards.
-class HomeTab extends StatelessWidget {
-  const HomeTab({super.key, required this.userEmail});
+enum _JournalCardType { rant, scribble, reflect }
+
+class _JournalCardData {
+  const _JournalCardData({
+    required this.type,
+    required this.title,
+    required this.description,
+    required this.buttonText,
+  });
+
+  final _JournalCardType type;
+  final String title;
+  final String description;
+  final String buttonText;
+}
+
+class HomeTab extends StatefulWidget {
+  const HomeTab({
+    super.key,
+    required this.userEmail,
+    required this.onOpenCard,
+  });
 
   final String userEmail;
+  final void Function(_JournalCardType) onOpenCard;
+
+  @override
+  State<HomeTab> createState() => _HomeTabState();
+}
+
+class _HomeTabState extends State<HomeTab> {
+  final List<_JournalCardData> _cards = const [
+    _JournalCardData(
+      type: _JournalCardType.rant,
+      title: 'Rant',
+      description:
+          'Get it off your chest, feel lighter in 2 minutes - no filter, no judgment',
+      buttonText: 'Let It Out Now',
+    ),
+    _JournalCardData(
+      type: _JournalCardType.scribble,
+      title: 'Scribble',
+      description: "Express feelings you don't have names for",
+      buttonText: 'Start Creating',
+    ),
+    _JournalCardData(
+      type: _JournalCardType.reflect,
+      title: 'Reflect',
+      description: 'Turn messy thoughts into clear next steps',
+      buttonText: 'Start Reflecting',
+    ),
+  ];
+
+  int _frontIndex = 2;
+  int _swipeDirection = 0; // -1 left, 1 right
+  bool _isSwiping = false;
 
   String _formattedDate() {
     final now = DateTime.now();
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
-    return '${now.day}. ${months[now.month - 1]}';
+    return '${now.day} ${months[now.month - 1]}';
   }
 
   String _displayName() {
-    if (userEmail.isEmpty) return 'there';
-    final local = userEmail.split('@').first;
+    final email = widget.userEmail;
+    if (email.isEmpty) return 'Roshan';
+    final local = email.split('@').first;
     if (local.isEmpty) return 'there';
-    return local;
+    return local[0].toUpperCase() + local.substring(1);
   }
 
-  Widget _buildTiltedCard({
-    required Color color,
-    required String title,
-    double angle = 0,
-    double top = 0,
-    double left = 0,
-  }) {
-    return Transform.rotate(
-      angle: angle,
-      child: Container(
-        width: double.infinity,
-        height: 260,
-        margin: EdgeInsets.only(left: left, top: top, right: 24, bottom: 16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black26, blurRadius: 8, offset: Offset(4, 6)),
-          ],
+  void _onSwipeEnd(DragEndDetails details) {
+    final v = details.primaryVelocity ?? 0;
+    if (v.abs() < 200) return;
+
+    setState(() {
+      _swipeDirection = v < 0 ? -1 : 1;
+      _isSwiping = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 340), () {
+      if (!mounted) return;
+      setState(() {
+        _frontIndex = (_frontIndex + 1) % _cards.length;
+        _swipeDirection = 0;
+        _isSwiping = false;
+      });
+    });
+  }
+
+  void _bringCardToFront(int index) {
+    if (index == _frontIndex) return;
+    setState(() {
+      _frontIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Full-screen SVG background
+        Positioned.fill(
+          child: SvgPicture.asset(
+            'assets/backgrounds/home_bg.svg',
+            fit: BoxFit.cover,
+          ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w700)),
-              const Spacer(),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      elevation: 4),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Text('Start Reflecting'),
-                  ),
-                ),
-              ),
-            ],
+        // Header
+        Positioned(
+          left: 20,
+          right: 20,
+          top: 16,
+          child: _Header(
+            dateText: 'Today · ${_formattedDate()}',
+            greeting: 'Good Morning, ${_displayName()}!',
+          ),
+        ),
+        // Card deck
+        Positioned.fill(
+          top: 150,
+          bottom: 120,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final w = constraints.maxWidth;
+              final h = constraints.maxHeight;
+              final cardW = (w * 0.82).clamp(260.0, 380.0);
+              final cardH = (h * 0.72).clamp(220.0, 320.0);
+              final centerX = (w - cardW) / 2;
+              final centerY = (h - cardH) / 2;
+
+              final backLeft = (_frontIndex + 1) % 3;
+              final backRight = (_frontIndex + 2) % 3;
+
+              return _CardDeckStack(
+                width: w,
+                height: h,
+                centerX: centerX,
+                centerY: centerY,
+                cardW: cardW,
+                cardH: cardH,
+                cards: _cards,
+                frontIndex: _frontIndex,
+                isSwiping: _isSwiping,
+                swipeDirection: _swipeDirection,
+                onSwipeEnd: _onSwipeEnd,
+                onCardTap: _bringCardToFront,
+                onButtonPressed: (type) => widget.onOpenCard(type),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CardDeckStack extends StatelessWidget {
+  const _CardDeckStack({
+    required this.width,
+    required this.height,
+    required this.centerX,
+    required this.centerY,
+    required this.cardW,
+    required this.cardH,
+    required this.cards,
+    required this.frontIndex,
+    required this.isSwiping,
+    required this.swipeDirection,
+    required this.onSwipeEnd,
+    required this.onCardTap,
+    required this.onButtonPressed,
+  });
+
+  final double width;
+  final double height;
+  final double centerX;
+  final double centerY;
+  final double cardW;
+  final double cardH;
+  final List<_JournalCardData> cards;
+  final int frontIndex;
+  final bool isSwiping;
+  final int swipeDirection;
+  final void Function(DragEndDetails) onSwipeEnd;
+  final void Function(int) onCardTap;
+  final void Function(_JournalCardType) onButtonPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    // Back cards peek out from sides
+    final backLeft = (frontIndex + 1) % cards.length;
+    final backRight = (frontIndex + 2) % cards.length;
+
+    // Positions for back and front
+    final backTop = centerY - 52;
+    final frontTop = centerY + (cardH * 0.18);
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _AnimatedDeckCard(
+          key: ValueKey('backLeft-${cards[backLeft].type}'),
+          left: centerX - 80,
+          top: backTop,
+          width: cardW,
+          height: cardH,
+          rotation: -0.12,
+          scale: isSwiping ? 1.0 : 0.98,
+          data: cards[backLeft],
+          onTap: () => onCardTap(backLeft),
+        ),
+        _AnimatedDeckCard(
+          key: ValueKey('backRight-${cards[backRight].type}'),
+          left: centerX + 80,
+          top: backTop,
+          width: cardW,
+          height: cardH,
+          rotation: 0.12,
+          scale: isSwiping ? 1.0 : 0.98,
+          data: cards[backRight],
+          onTap: () => onCardTap(backRight),
+        ),
+        _TopSwipeCard(
+          key: ValueKey('front-${cards[frontIndex].type}'),
+          left: centerX,
+          top: frontTop,
+          width: cardW,
+          height: cardH,
+          data: cards[frontIndex],
+          swipeDirection: swipeDirection,
+          onDragEnd: onSwipeEnd,
+          onTap: () => onCardTap(frontIndex),
+          onButtonPressed: () => onButtonPressed(cards[frontIndex].type),
+        ),
+      ],
+    );
+  }
+}
+
+class _TopSwipeCard extends StatelessWidget {
+  const _TopSwipeCard({
+    super.key,
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
+    required this.data,
+    required this.swipeDirection,
+    required this.onDragEnd,
+    required this.onTap,
+    required this.onButtonPressed,
+  });
+
+  final double left;
+  final double top;
+  final double width;
+  final double height;
+  final _JournalCardData data;
+  final int swipeDirection;
+  final void Function(DragEndDetails) onDragEnd;
+  final VoidCallback onTap;
+  final VoidCallback onButtonPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final offX = swipeDirection == 0 ? 0.0 : (swipeDirection * 420.0);
+    final rot = swipeDirection == 0 ? 0.0 : (swipeDirection * 0.25);
+
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 340),
+      curve: Curves.easeOutCubic,
+      left: left + offX,
+      top: top,
+      width: width,
+      height: height,
+      child: GestureDetector(
+        onHorizontalDragEnd: onDragEnd,
+        onTap: onTap,
+        child: AnimatedRotation(
+          turns: rot / (2 * math.pi),
+          duration: const Duration(milliseconds: 340),
+          curve: Curves.easeOutCubic,
+          child: _CardVisual(
+            data: data,
+            isFront: true,
+            onButtonPressed: onButtonPressed,
           ),
         ),
       ),
     );
   }
+}
+
+class _AnimatedDeckCard extends StatelessWidget {
+  const _AnimatedDeckCard({
+    super.key,
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
+    required this.rotation,
+    required this.scale,
+    required this.data,
+    required this.onTap,
+  });
+
+  final double left;
+  final double top;
+  final double width;
+  final double height;
+  final double rotation;
+  final double scale;
+  final _JournalCardData data;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 340),
+      curve: Curves.easeOutCubic,
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedRotation(
+          turns: rotation / (2 * math.pi),
+          duration: const Duration(milliseconds: 340),
+          curve: Curves.easeOutCubic,
+          child: Transform.scale(
+            scale: scale,
+            child: _CardVisual(
+              data: data,
+              isFront: false,
+              onButtonPressed: null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CardVisual extends StatelessWidget {
+  const _CardVisual({
+    required this.data,
+    required this.isFront,
+    required this.onButtonPressed,
+  });
+
+  final _JournalCardData data;
+  final bool isFront;
+  final VoidCallback? onButtonPressed;
+
+  String _cardSvg() {
+    switch (data.type) {
+      case _JournalCardType.rant:
+        return 'assets/cards/card_rant.svg';
+      case _JournalCardType.scribble:
+        return 'assets/cards/card_reflect.svg';
+      case _JournalCardType.reflect:
+        return 'assets/cards/card_scribble.svg';
+    }
+  }
+
+  String _iconSvg() {
+    switch (data.type) {
+      case _JournalCardType.rant:
+        return 'assets/cards/cloud-storm-svgrepo-com 1.svg';
+      case _JournalCardType.scribble:
+        return 'assets/cards/scribble-svgrepo-com 1.svg';
+      case _JournalCardType.reflect:
+        return 'assets/cards/mirror-3.svg';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: const [
+              // soft floating shadow
+              BoxShadow(
+                color: Color(0x26000000),
+                blurRadius: 10,
+                offset: Offset(0, 6),
+              ),
+            ],
+          ),
+          child: SvgPicture.asset(_cardSvg(), fit: BoxFit.fill),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Text(
+                  data.title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Center(
+                child: SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: SvgPicture.asset(_iconSvg()),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Center(
+                child: SizedBox(
+                  width: 240,
+                  child: Text(
+                    data.description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.4,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Center(
+                child: ElevatedButton(
+                  onPressed: onButtonPressed ?? () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: const BorderSide(color: Colors.black, width: 1.5),
+                    ),
+                  ),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                    child: Text(data.buttonText),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.dateText, required this.greeting});
+
+  final String dateText;
+  final String greeting;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFF6E5A),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.black, width: 2),
+            boxShadow: const [
+              // right-bottom border effect
+              BoxShadow(
+                color: Color(0xFF2A2A2A),
+                blurRadius: 0,
+                offset: Offset(3, 3),
+              ),
+              // soft shadow
+              BoxShadow(
+                color: Color(0x26000000),
+                blurRadius: 6,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Text(
+            dateText,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          greeting,
+          style: const TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.w900,
+            color: Colors.black,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CustomBottomBar extends StatelessWidget {
+  const _CustomBottomBar({
+    required this.selectedIndex,
+    required this.onTap,
+  });
+
+  final int selectedIndex;
+  final void Function(int) onTap;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFFFF7F0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black, width: 2),
+        boxShadow: const [
+          // right-bottom border effect
+          BoxShadow(
+            color: Color(0xFF2A2A2A),
+            blurRadius: 0,
+            offset: Offset(4, 4),
+          ),
+          // soft floating shadow
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 18),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.deepOrangeAccent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Today . ${_formattedDate()}',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Good Morning, ${_displayName()}!',
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ],
-            ),
+          _NavItem(
+            icon: Icons.home_rounded,
+            label: 'Home',
+            selected: selectedIndex == 0,
+            onTap: () => onTap(0),
           ),
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned(
-                  left: 28,
-                  top: 40,
-                  right: 28,
-                  child: _buildTiltedCard(
-                      color: Colors.greenAccent.shade200,
-                      title: 'Scribble',
-                      angle: -0.05,
-                      top: 10,
-                      left: 8),
-                ),
-                Positioned(
-                  left: 20,
-                  top: 80,
-                  right: 20,
-                  child: _buildTiltedCard(
-                      color: Colors.orange.shade300,
-                      title: 'Rant',
-                      angle: -0.15,
-                      top: 20,
-                      left: 4),
-                ),
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  top: 140,
-                  child: _buildTiltedCard(
-                      color: Colors.deepPurple.shade300,
-                      title: 'Reflect',
-                      angle: 0.02,
-                      top: 0,
-                      left: 0),
-                ),
-              ],
-            ),
+          _NavItem(
+            icon: Icons.calendar_today_rounded,
+            label: '',
+            selected: selectedIndex == 1,
+            onTap: () => onTap(1),
           ),
-          const SizedBox(height: 12),
+          _NavItem(
+            icon: Icons.sentiment_satisfied_alt_rounded,
+            label: '',
+            selected: selectedIndex == 2,
+            onTap: () => onTap(2),
+          ),
         ],
       ),
     );
   }
 }
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const active = Color(0xFFFF6E5A);
+    const inactive = Colors.black87;
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Center(
+          child: selected
+              ? Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: active,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x33000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, size: 20, color: Colors.white),
+                      if (label.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          label,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                )
+              : Icon(icon, size: 22, color: inactive),
+        ),
+      ),
+    );
+  }
+}
+
