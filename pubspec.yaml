@@ -47,6 +47,10 @@ dependencies:
   # SVG card backgrounds from Figma
   flutter_svg: ^2.0.16
 
+  # Local save for reflect prompt/entry
+  shared_preferences: ^2.5.4
+  google_fonts: ^8.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

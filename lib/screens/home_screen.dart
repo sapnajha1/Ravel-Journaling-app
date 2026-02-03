@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../auth/auth_controller.dart';
 import 'paint_screen.dart';
@@ -154,16 +155,19 @@ class _HomeTabState extends State<HomeTab> {
   void _onSwipeEnd(DragEndDetails details) {
     final v = details.primaryVelocity ?? 0;
     if (v.abs() < 200) return;
+    final direction = v < 0 ? -1 : 1;
 
     setState(() {
-      _swipeDirection = v < 0 ? -1 : 1;
+      _swipeDirection = direction;
       _isSwiping = true;
     });
 
     Future.delayed(const Duration(milliseconds: 340), () {
       if (!mounted) return;
       setState(() {
-        _frontIndex = (_frontIndex + 1) % _cards.length;
+        _frontIndex = direction == 1
+            ? (_frontIndex + 1) % _cards.length
+            : (_frontIndex + 2) % _cards.length;
         _swipeDirection = 0;
         _isSwiping = false;
       });
@@ -276,30 +280,34 @@ class _CardDeckStack extends StatelessWidget {
 
     // Positions for back and front
     final backTop = centerY - 52;
-    final frontTop = centerY + (cardH * 0.18);
+    final frontTop = centerY + (cardH * 0.28);
+    final sideOffset = 120.0;
+
+    final leftIsAdvancing = isSwiping && swipeDirection == 1;
+    final rightIsAdvancing = isSwiping && swipeDirection == -1;
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
         _AnimatedDeckCard(
           key: ValueKey('backLeft-${cards[backLeft].type}'),
-          left: centerX - 80,
-          top: backTop,
+          left: leftIsAdvancing ? centerX : centerX - sideOffset,
+          top: leftIsAdvancing ? frontTop : backTop,
           width: cardW,
           height: cardH,
-          rotation: -0.12,
-          scale: isSwiping ? 1.0 : 0.98,
+          rotation: leftIsAdvancing ? 0.02 : -0.12,
+          scale: leftIsAdvancing ? 1.0 : 0.98,
           data: cards[backLeft],
           onTap: () => onCardTap(backLeft),
         ),
         _AnimatedDeckCard(
           key: ValueKey('backRight-${cards[backRight].type}'),
-          left: centerX + 80,
-          top: backTop,
+          left: rightIsAdvancing ? centerX : centerX + sideOffset,
+          top: rightIsAdvancing ? frontTop : backTop,
           width: cardW,
           height: cardH,
-          rotation: 0.12,
-          scale: isSwiping ? 1.0 : 0.98,
+          rotation: rightIsAdvancing ? -0.02 : 0.12,
+          scale: rightIsAdvancing ? 1.0 : 0.98,
           data: cards[backRight],
           onTap: () => onCardTap(backRight),
         ),
@@ -347,7 +355,7 @@ class _TopSwipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final offX = swipeDirection == 0 ? 0.0 : (swipeDirection * 420.0);
-    final rot = swipeDirection == 0 ? 0.0 : (swipeDirection * 0.25);
+    final yTilt = swipeDirection == 0 ? 0.0 : (swipeDirection * 0.35);
 
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 340),
@@ -359,10 +367,22 @@ class _TopSwipeCard extends StatelessWidget {
       child: GestureDetector(
         onHorizontalDragEnd: onDragEnd,
         onTap: onTap,
-        child: AnimatedRotation(
-          turns: rot / (2 * math.pi),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: yTilt),
           duration: const Duration(milliseconds: 340),
           curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            final zRot = value * 0.25;
+            final transform = Matrix4.identity()
+              ..setEntry(3, 2, 0.0015)
+              ..rotateY(value)
+              ..rotateZ(zRot);
+            return Transform(
+              alignment: Alignment.center,
+              transform: transform,
+              child: child,
+            );
+          },
           child: _CardVisual(
             data: data,
             isFront: true,
@@ -407,10 +427,22 @@ class _AnimatedDeckCard extends StatelessWidget {
       height: height,
       child: GestureDetector(
         onTap: onTap,
-        child: AnimatedRotation(
-          turns: rotation / (2 * math.pi),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: rotation),
           duration: const Duration(milliseconds: 340),
           curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            final yTilt = value * 0.35;
+            final transform = Matrix4.identity()
+              ..setEntry(3, 2, 0.0015)
+              ..rotateY(yTilt)
+              ..rotateZ(value);
+            return Transform(
+              alignment: Alignment.center,
+              transform: transform,
+              child: child,
+            );
+          },
           child: Transform.scale(
             scale: scale,
             child: _CardVisual(
@@ -590,8 +622,8 @@ class _Header extends StatelessWidget {
         Text(
           greeting,
           style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w900,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
         ),
