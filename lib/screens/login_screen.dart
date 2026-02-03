@@ -29,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isLoading = false;
+  bool _isSendingLink = false;
   String? _successMessage;
   String? _errorMessage;
 
@@ -39,20 +40,28 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _sendMagicLink() async {
+    if (_isSendingLink) return;
     setState(() {
+      _isSendingLink = true;
       _errorMessage = null;
       _successMessage = null;
     });
 
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      setState(() => _errorMessage = 'Please enter your email.');
+      setState(() {
+        _isSendingLink = false;
+        _errorMessage = 'Please enter your email.';
+      });
       return;
     }
 
     // Basic email format check
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      setState(() => _errorMessage = 'Please enter a valid email address.');
+      setState(() {
+        _isSendingLink = false;
+        _errorMessage = 'Please enter a valid email address.';
+      });
       return;
     }
 
@@ -66,6 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (hasNoConnectivity) {
         setState(() {
           _isLoading = false;
+          _isSendingLink = false;
           _errorMessage =
               'No internet connection. Please check your network and try again.';
         });
@@ -76,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
+      debugPrint('Auth: sending magic link to $email');
       await Supabase.instance.client.auth.signInWithOtp(
         email: email,
         emailRedirectTo: widget.redirectUrl,
@@ -83,7 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
       setState(() {
-        _isLoading = false;
         _successMessage =
             'Check your inbox! We sent a magic link to $email. Tap the link to sign in.';
         _errorMessage = null;
@@ -91,20 +101,30 @@ class _LoginScreenState extends State<LoginScreen> {
     } on AuthException catch (e) {
       if (!mounted) return;
       final message = _authErrorMessage(e);
-      setState(() {
-        _isLoading = false;
-        _errorMessage = message;
-      });
+      setState(() => _errorMessage = message);
     } catch (e, st) {
       if (!mounted) return;
       setState(() {
-        _isLoading = false;
         _errorMessage = e.toString().contains('SocketException') ||
                 e.toString().contains('Connection')
             ? 'No internet connection. Please check your network and try again.'
             : 'Something went wrong. Please try again.';
       });
       debugPrint('Login error: $e\n$st');
+    } finally {
+      if (!mounted) return;
+  setState(() {
+    _isLoading = false;
+  });
+
+  // 🔐 cooldown before allowing another attempt
+  Future.delayed(const Duration(minutes: 1), () {
+    if (mounted) {
+      setState(() {
+        _isSendingLink = false;
+      });
+    }
+  });
     }
   }
 
