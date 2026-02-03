@@ -106,10 +106,28 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
     );
 
 
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (textScrollController.hasClients) {
+    //     textScrollController.jumpTo(
+    //       textScrollController.position.maxScrollExtent,
+    //     );
+    //   }
+    // }
+    // );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (textScrollController.hasClients) {
-        textScrollController.jumpTo(
-          textScrollController.position.maxScrollExtent,
+      if (!textScrollController.hasClients) return;
+
+      final position = textScrollController.position;
+
+      final isUserAtBottom =
+          position.pixels >= position.maxScrollExtent - 20;
+
+      if (isUserAtBottom) {
+        textScrollController.animateTo(
+          position.maxScrollExtent,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
         );
       }
     });
