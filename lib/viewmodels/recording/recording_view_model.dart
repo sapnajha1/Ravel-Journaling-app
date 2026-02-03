@@ -5,7 +5,7 @@ import 'package:manual_speech_to_text/manual_speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 
-class RecordingViewModel extends ChangeNotifier {
+class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   late ManualSttController _speech;
   List<double> waveHeights = List.filled(20, 6);
   bool isSpeaking = false;
@@ -18,19 +18,39 @@ class RecordingViewModel extends ChangeNotifier {
   String finalText = '';
 
   RecordingViewModel(BuildContext context) {
+    WidgetsBinding.instance.addObserver(this);
     _speech = ManualSttController(context);
 
     _speech.listen(
-      onListeningTextChanged: (text) {
-        updateFromSpeech(text);
-        // notifyListeners();
-      },
-      onListeningStateChanged: (state) {}
+        onListeningTextChanged: (text) {
+          updateFromSpeech(text);
+          // notifyListeners();
+        },
+        onListeningStateChanged: (state) {}
     );
 
     _speech.localId = 'en-US';
     _speech.pauseIfMuteFor = const Duration(seconds: 60);
   }
+
+    /// 🔥 APP LIFE CYCLE HANDLE
+    @override
+    void didChangeAppLifecycleState(AppLifecycleState state) {
+      if (state == AppLifecycleState.paused ||
+          state == AppLifecycleState.inactive ||
+          state == AppLifecycleState.detached) {
+        _forceStopRecording();
+      }
+    }
+
+    void _forceStopRecording() {
+      if (isRecording || isPaused) {
+        _speech.stopStt();
+        isRecording = false;
+        isPaused = false;
+        notifyListeners();
+      }
+    }
 
   Future<void> startRecording() async {
     final status = await Permission.microphone.request();
@@ -113,7 +133,14 @@ class RecordingViewModel extends ChangeNotifier {
     );
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _speech.stopStt();
+    _speech.dispose();
+    super.dispose();
+  }
 
-  void disposeController() { _speech.dispose(); }
+  // void disposeController() { _speech.dispose(); }
 }
 
