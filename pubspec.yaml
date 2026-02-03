@@ -50,6 +50,9 @@ dependencies:
   # Local save for reflect prompt/entry
   shared_preferences: ^2.5.4
   google_fonts: ^8.0.0
+  flutter_riverpod: ^2.6.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:

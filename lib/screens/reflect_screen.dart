@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class ReflectScreen extends StatefulWidget {
+import '../features/reflect/reflect_controller.dart';
+
+class ReflectScreen extends ConsumerStatefulWidget {
   const ReflectScreen({super.key});
 
   @override
-  State<ReflectScreen> createState() => _ReflectScreenState();
+  ConsumerState<ReflectScreen> createState() => _ReflectScreenState();
 }
 
-enum _ReflectView { edit, saved }
-
-class _ReflectScreenState extends State<ReflectScreen> {
-  static const _promptKey = 'reflect_prompt';
-  static const _entryKey = 'reflect_entry';
-
+class _ReflectScreenState extends ConsumerState<ReflectScreen> {
   final _entryController = TextEditingController();
   final _entryScrollController = ScrollController();
 
-  _ReflectView _view = _ReflectView.edit;
-  String _prompt = "What's something that brought\nsmile to your face today?";
   bool _showTopFade = false;
 
   @override
   void initState() {
     super.initState();
-    _loadLocal();
     _entryScrollController.addListener(_onScroll);
   }
 
@@ -42,59 +37,47 @@ class _ReflectScreenState extends State<ReflectScreen> {
     }
   }
 
-  Future<void> _loadLocal() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedPrompt = prefs.getString(_promptKey);
-    final savedEntry = prefs.getString(_entryKey);
-    if (savedPrompt != null) _prompt = savedPrompt;
-    if (savedEntry != null) _entryController.text = savedEntry;
-    if (mounted) setState(() {});
-  }
-
-  Future<void> _saveLocal() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_promptKey, _prompt);
-    await prefs.setString(_entryKey, _entryController.text.trim());
-  }
-
   Future<void> _changePrompt() async {
-    final controller = TextEditingController(text: _prompt.replaceAll('\n', ' '));
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Change Prompt'),
-        content: TextField(
-          controller: controller,
-          maxLines: 2,
-          decoration: const InputDecoration(
-            hintText: 'Enter a new prompt',
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-
-    if (result != null && result.isNotEmpty) {
-      setState(() => _prompt = result);
-      await _saveLocal();
-    }
+    await ref.read(reflectControllerProvider.notifier).changePrompt();
   }
 
   Future<void> _endSession() async {
-    await _saveLocal();
-    if (mounted) setState(() => _view = _ReflectView.saved);
+    final content = _entryController.text.trim();
+    if (content.isEmpty) {
+      _showSnack('Reflection content can\'t be empty.');
+      return;
+    }
+    final saved = await ref.read(reflectControllerProvider.notifier).saveEntry(
+          content: content,
+        );
+    if (saved) {
+      _entryController.clear();
+    }
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(reflectControllerProvider);
+    ref.listen<ReflectState>(
+      reflectControllerProvider,
+      (previous, next) {
+        final error = next.errorMessage;
+        if (error != null && error.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _showSnack(error);
+          });
+        }
+      },
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFEE4D4),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
@@ -109,9 +92,9 @@ class _ReflectScreenState extends State<ReflectScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-              child: _view == _ReflectView.edit
-                  ? _buildEditor(context)
-                  : _buildSaved(context),
+              child: state.showSaved
+                  ? _buildSaved(context)
+                  : _buildEditor(context, state),
             ),
           ],
         ),
@@ -119,7 +102,7 @@ class _ReflectScreenState extends State<ReflectScreen> {
     );
   }
 
-  Widget _buildEditor(BuildContext context) {
+  Widget _buildEditor(BuildContext context, ReflectState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -128,23 +111,75 @@ class _ReflectScreenState extends State<ReflectScreen> {
           onBack: () => Navigator.of(context).pop(),
         ),
         const SizedBox(height: 12),
-        Text(
-          _prompt,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
+        if (state.isOffline || state.pendingSyncCount > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            margin: const EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF7F0),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.black, width: 1),
+            ),
+            child: Text(
+              state.isOffline
+                  ? 'Offline mode • ${state.pendingSyncCount} unsynced'
+                  : '${state.pendingSyncCount} unsynced • syncing soon',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
           ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                state.prompt?.text ??
+                    'No prompt selected. You can write freely.',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              onPressed: state.prompt == null ? null : _clearPrompt,
+              icon: const Icon(Icons.close),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
         ),
         const SizedBox(height: 6),
         GestureDetector(
-          onTap: _changePrompt,
-          child: const Text(
-            '✍ Change Prompt',
-            style: TextStyle(
-              color: Color(0xFFFF6E5A),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+          onTap: state.isLoading ? null : _changePrompt,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(
+                'assets/cards/change_prompt.svg',
+                width: 14,
+                height: 14,
+                colorFilter: state.isLoading
+                    ? const ColorFilter.mode(
+                        Colors.black54,
+                        BlendMode.srcIn,
+                      )
+                    : const ColorFilter.mode(
+                        Color(0xFFFF6E5A),
+                        BlendMode.srcIn,
+                      ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                state.isLoading ? 'Loading prompt...' : 'Change Prompt',
+                style: TextStyle(
+                  color:
+                      state.isLoading ? Colors.black54 : const Color(0xFFFF6E5A),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 12),
@@ -164,7 +199,7 @@ class _ReflectScreenState extends State<ReflectScreen> {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [Color(0xFFFFF7F0), Color(0x00FFF7F0)],
+                          colors: [Colors.white, Color(0x00FFFFFF)],
                         ),
                       ),
                     ),
@@ -188,7 +223,7 @@ class _ReflectScreenState extends State<ReflectScreen> {
             ),
             const Spacer(),
             ElevatedButton(
-              onPressed: _endSession,
+              onPressed: state.isSaving ? null : _endSession,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF6E5A),
                 foregroundColor: Colors.black,
@@ -198,12 +233,22 @@ class _ReflectScreenState extends State<ReflectScreen> {
                   side: const BorderSide(color: Colors.black, width: 1.5),
                 ),
               ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text(
-                  'End Session',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: state.isSaving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.black),
+                        ),
+                      )
+                    : const Text(
+                        'End Session',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
               ),
             ),
           ],
@@ -263,10 +308,6 @@ class _ReflectScreenState extends State<ReflectScreen> {
   Widget _buildEntryField() {
     return Container(
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(8),
-      ),
       child: TextField(
         controller: _entryController,
         scrollController: _entryScrollController,
@@ -276,9 +317,12 @@ class _ReflectScreenState extends State<ReflectScreen> {
           border: InputBorder.none,
           hintText: 'Start typing here...',
         ),
-        onChanged: (_) => _saveLocal(),
       ),
     );
+  }
+
+  void _clearPrompt() {
+    ref.read(reflectControllerProvider.notifier).clearPrompt();
   }
 
   String _dateLabel() {
