@@ -1,18 +1,41 @@
 
 import 'package:flutter/material.dart';
-import 'package:journal_app/viewmodels/rantViewModel/rant_history_viewmodel.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../data/repositories/journal_repository.dart';
 import '../recording/recording_view_model.dart';
 
 class RantViewModel extends ChangeNotifier {
   final RecordingViewModel recordingVM;
-  // final RantHistoryViewModel historyVM;
+  final JournalRepository journalRepository;
 
-  RantViewModel({required this.recordingVM,});
+  RantViewModel({
+    required this.recordingVM,
+    required this.journalRepository,
+  });
 
   /// rant specific action
-  void endRanting(BuildContext context) async {
-    recordingVM.stopRecording(); // ✅ wait
-    // historyVM.addRant(recordingVM.displayText);
+  Future<void> endRanting(BuildContext context) async {
+    recordingVM.stopRecording();
+    final content = recordingVM.textController.text.trim();
+    if (content.isEmpty) {
+      Navigator.pop(context);
+      return;
+    }
+
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to save your rant.')),
+      );
+      Navigator.pop(context);
+      return;
+    }
+
+    await journalRepository.saveRantEntry(
+      userId: userId,
+      content: content,
+    );
     Navigator.pop(context);
   }
 

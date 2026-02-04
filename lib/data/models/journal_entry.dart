@@ -87,4 +87,20 @@ class JournalEntry {
       remoteId: json['remote_id']?.toString(),
     );
   }
+
+  factory JournalEntry.fromRemoteJson(Map<String, dynamic> json) {
+    final remoteId = json['id']?.toString();
+    return JournalEntry(
+      localId: 'remote_${remoteId ?? DateTime.now().microsecondsSinceEpoch}',
+      userId: (json['user_id'] ?? '').toString(),
+      entryType: (json['entry_type'] ?? '').toString(),
+      promptId: json['prompt_id']?.toString(),
+      title: json['title']?.toString(),
+      content: (json['content'] ?? '').toString(),
+      entryDate: DateTime.tryParse(json['entry_date']?.toString() ?? '') ??
+          DateTime.now(),
+      isSynced: true,
+      remoteId: remoteId,
+    );
+  }
 }

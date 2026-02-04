@@ -38,6 +38,31 @@ class JournalRepository {
     return entry;
   }
 
+  Future<JournalEntry> saveRantEntry({
+    required String userId,
+    required String content,
+    String? title,
+    DateTime? entryDate,
+  }) async {
+    final localId = '${userId}_${DateTime.now().microsecondsSinceEpoch}';
+    final entry = JournalEntry(
+      localId: localId,
+      userId: userId,
+      entryType: 'rant',
+      title: title?.trim().isEmpty == true ? null : title?.trim(),
+      content: content,
+      entryDate: entryDate ?? DateTime.now(),
+      isSynced: false,
+    );
+    await _box.put(localId, entry.toJson());
+
+    final isOnline = await _isOnline();
+    if (isOnline) {
+      await _syncEntry(entry);
+    }
+    return entry;
+  }
+
   Future<void> syncPending(String userId) async {
     final isOnline = await _isOnline();
     if (!isOnline) return;
@@ -53,12 +78,54 @@ class JournalRepository {
     }
   }
 
+  Future<List<JournalEntry>> fetchHistoryEntries(String userId) async {
+    final localEntries = _localEntriesForUser(userId);
+    final isOnline = await _isOnline();
+    if (!isOnline) {
+      return _sortEntries(localEntries);
+    }
+
+    try {
+      final remoteEntries = await _fetchRemoteEntries(userId);
+      final unsynced = localEntries.where((entry) => !entry.isSynced).toList();
+      final merged = [...remoteEntries, ...unsynced];
+      return _sortEntries(merged);
+    } catch (_) {
+      return _sortEntries(localEntries);
+    }
+  }
+
   int pendingCount(String userId) {
     return _box.values
         .whereType<Map>()
         .map((data) => JournalEntry.fromJson(data))
         .where((entry) => entry.userId == userId && !entry.isSynced)
         .length;
+  }
+
+  List<JournalEntry> _localEntriesForUser(String userId) {
+    return _box.values
+        .whereType<Map>()
+        .map((data) => JournalEntry.fromJson(data))
+        .where((entry) => entry.userId == userId)
+        .toList();
+  }
+
+  Future<List<JournalEntry>> _fetchRemoteEntries(String userId) async {
+    final response = await _client
+        .from('journal_entries')
+        .select('id, user_id, entry_type, prompt_id, title, content, entry_date')
+        .eq('user_id', userId)
+        .order('entry_date', ascending: false);
+    return (response as List<dynamic>)
+        .whereType<Map<String, dynamic>>()
+        .map(JournalEntry.fromRemoteJson)
+        .toList();
+  }
+
+  List<JournalEntry> _sortEntries(List<JournalEntry> entries) {
+    entries.sort((a, b) => b.entryDate.compareTo(a.entryDate));
+    return entries;
   }
 
   Future<void> _syncEntry(JournalEntry entry) async {

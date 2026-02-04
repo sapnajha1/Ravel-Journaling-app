@@ -1,20 +1,23 @@
 import 'dart:math' as math;
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth/auth_controller.dart';
+import '../data/local/local_store.dart';
+import '../data/repositories/journal_repository.dart';
+import '../viewmodels/history_view_model.dart';
 import '../viewmodels/rantViewModel/rant_view_model.dart';
 import '../viewmodels/recording/recording_view_model.dart';
 import '../views/rantView/rant_recording_screen.dart';
 import '../widgets/dotted_background.dart';
 import '../utils/date_formatters.dart';
-import 'paint_screen.dart';
+import 'history_screen.dart';
 import 'profile_screen.dart';
-import 'reflect_screen.dart';
-import 'scribble_screen.dart';
 import 'reflect_screen.dart';
 import 'scribble_screen.dart';
 
@@ -29,6 +32,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  late final Connectivity _connectivity;
+  late final JournalRepository _journalRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _connectivity = Connectivity();
+    _journalRepository = JournalRepository(
+      Supabase.instance.client,
+      LocalStore.journalBox(),
+      _connectivity,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +55,14 @@ class _HomeScreenState extends State<HomeScreen> {
             onOpenCard: _openCard,
           )
         : _selectedIndex == 1
-            ? const PaintScreen()
+            ? ChangeNotifierProvider(
+                create: (_) => HistoryViewModel(
+                  repository: _journalRepository,
+                  connectivity: _connectivity,
+                  userId: widget.authController.user?.id,
+                ),
+                child: const HistoryScreen(),
+              )
             : ProfileScreen(authController: widget.authController);
     return Scaffold(
       body: SafeArea(
@@ -69,7 +92,10 @@ class _HomeScreenState extends State<HomeScreen> {
           providers: [
             ChangeNotifierProvider.value(value: recordingVM),
             ChangeNotifierProvider(
-              create: (_) => RantViewModel(recordingVM: recordingVM),
+              create: (_) => RantViewModel(
+                recordingVM: recordingVM,
+                journalRepository: _journalRepository,
+              ),
             ),
           ],
           child: const RantRecordingScreen(),
@@ -491,7 +517,7 @@ class _CardVisual extends StatelessWidget {
       children: [
         DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(12),
             boxShadow: const [
               // soft floating shadow
               BoxShadow(
@@ -551,7 +577,7 @@ class _CardVisual extends StatelessWidget {
                     foregroundColor: Colors.black,
                     elevation: 4,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(6),
                       side: const BorderSide(color: Colors.black, width: 1.5),
                     ),
                   ),
@@ -586,7 +612,7 @@ class _Header extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
             color: const Color(0xFFFF6E5A),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(6),
             border: Border.all(color: Colors.black, width: 2),
             boxShadow: const [
               // right-bottom border effect
@@ -642,7 +668,7 @@ class _CustomBottomBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.black, width: 2),
         boxShadow: const [
           // right-bottom border effect
@@ -670,13 +696,13 @@ class _CustomBottomBar extends StatelessWidget {
           ),
           _NavItem(
             icon: Icons.calendar_today_rounded,
-            label: '',
+            label: 'History',
             selected: selectedIndex == 1,
             onTap: () => onTap(1),
           ),
           _NavItem(
             icon: Icons.sentiment_satisfied_alt_rounded,
-            label: '',
+            label: 'Profile',
             selected: selectedIndex == 2,
             onTap: () => onTap(2),
           ),
@@ -705,7 +731,7 @@ class _NavItem extends StatelessWidget {
     const inactive = Colors.black87;
     return Expanded(
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Center(
           child: selected
@@ -716,7 +742,7 @@ class _NavItem extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: active,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x33000000),
