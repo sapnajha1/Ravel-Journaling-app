@@ -133,12 +133,15 @@ class RantRecordingScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   /// END RANT BUTTON
-                  GestureDetector(
-                    onTap: () =>
-                        context.read<RantViewModel>().endRanting(context),
-                    child: SvgPicture.asset(
-                      'assets/Frame 22.svg',
-                      width: 150,
+                  SizedBox(
+                    width: 150,
+                    child: _ShadowButton(
+                      onPressed: () =>
+                          context.read<RantViewModel>().endRanting(context),
+                      child: const Text(
+                        'End Rant',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                 ],
@@ -153,58 +156,91 @@ class RantRecordingScreen extends StatelessWidget {
 
 
 Widget figmaAppBar(BuildContext context) {
-  return ClipRRect(
-    borderRadius: const BorderRadius.only(
-      bottomLeft: Radius.circular(8),
-      bottomRight: Radius.circular(8),
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // MAIN APPBAR
-        Container(
-          height: 56,
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(16),
-              bottom: Radius.circular(16),
-            ),
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new),
-                onPressed: () => Navigator.pop(context),
-              ),
-
-              const Spacer(),
-
-              Text(
-                'Today · ${formatDayMonth(DateTime.now())}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-
-              const Spacer(),
-
-              // const SizedBox(width: 8),
-            ],
-          ),
-        ),
-
-        // 👇 BLACK THICK LINE
-        Container(
-          height: 4, // 🔥 thickness
-          color: Colors.black,
-          width: double.infinity,
+  return Container(
+    height: 60,
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(6),
+      border: const Border(
+        left: BorderSide(color: Colors.black, width: 2),
+        right: BorderSide(color: Colors.black, width: 2),
+        bottom: BorderSide(color: Colors.black, width: 2),
+      ),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x33000000),
+          blurRadius: 0,
+          offset: Offset(0, 2),
         ),
       ],
     ),
+    child: Row(
+      children: [
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.pop(context),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        const Spacer(),
+        Text(
+          'Today · ${formatDayMonth(DateTime.now())}',
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const Spacer(),
+        const SizedBox(width: 24),
+      ],
+    ),
   );
+}
+
+class _ShadowButton extends StatelessWidget {
+  const _ShadowButton({required this.onPressed, required this.child});
+
+  final VoidCallback? onPressed;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: const Border(
+          right: BorderSide(color: Colors.black, width: 1.5),
+          bottom: BorderSide(color: Colors.black, width: 1.5),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF2A2A2A),
+            blurRadius: 0,
+            offset: Offset(2, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Material(
+          color: const Color(0xFFFF6E5A),
+          child: InkWell(
+            onTap: onPressed,
+            child: SizedBox(
+              height: 36,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                child: Center(child: DefaultTextStyle.merge(child: child)),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 Widget simulatedWaveform(RecordingViewModel vm) {

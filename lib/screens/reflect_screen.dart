@@ -84,7 +84,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
           children: [
             const Positioned.fill(child: DottedBackground()),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              padding: const EdgeInsets.fromLTRB(0, 12, 0, 14),
               child: state.showSaved
                   ? _buildSaved(context)
                   : _buildEditor(context, state),
@@ -100,151 +100,161 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _TopBar(
-          dateText: 'Today, ${_dateLabel()}',
+          dateText: 'Today · ${_dateLabel()}',
           onBack: () => Navigator.of(context).pop(),
         ),
         const SizedBox(height: 12),
-        if (state.isOffline || state.pendingSyncCount > 0)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF7F0),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.black, width: 1),
-            ),
-            child: Text(
-              state.isOffline
-                  ? 'Offline mode • ${state.pendingSyncCount} unsynced'
-                  : '${state.pendingSyncCount} unsynced • syncing soon',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-            ),
-          ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                state.prompt?.text ??
-                    'No prompt selected. You can write freely.',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              onPressed: state.prompt == null ? null : _clearPrompt,
-              icon: const Icon(Icons.close),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        GestureDetector(
-          onTap: state.isLoading ? null : _changePrompt,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SvgPicture.asset(
-                'assets/cards/change_prompt.svg',
-                width: 14,
-                height: 14,
-                colorFilter: state.isLoading
-                    ? const ColorFilter.mode(
-                        Colors.black54,
-                        BlendMode.srcIn,
-                      )
-                    : const ColorFilter.mode(
-                        Color(0xFFFF6E5A),
-                        BlendMode.srcIn,
-                      ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                state.isLoading ? 'Loading prompt...' : 'Change Prompt',
-                style: TextStyle(
-                  color:
-                      state.isLoading ? Colors.black54 : const Color(0xFFFF6E5A),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
         Expanded(
-          child: Stack(
-            children: [
-              _buildEntryField(),
-              if (_showTopFade)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 20,
-                  child: IgnorePointer(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.white, Color(0x00FFFFFF)],
-                        ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (state.isOffline || state.pendingSyncCount > 0)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7F0),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.black, width: 1),
+                    ),
+                    child: Text(
+                      state.isOffline
+                          ? 'Offline mode • ${state.pendingSyncCount} unsynced'
+                          : '${state.pendingSyncCount} unsynced • syncing soon',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: const Color(0xFFEDE6FF),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.black, width: 1.5),
-              ),
-              child: const Icon(Icons.mic, size: 16),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: state.isSaving ? null : _endSession,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF6E5A),
-                foregroundColor: Colors.black,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: Colors.black, width: 1.5),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: state.isSaving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.black),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        state.prompt?.text ??
+                            'No prompt selected. You can write freely.',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
                         ),
-                      )
-                    : const Text(
-                        'End Session',
-                        style: TextStyle(fontWeight: FontWeight.w700),
                       ),
-              ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: state.prompt == null ? null : _clearPrompt,
+                      icon: const Icon(Icons.close),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                GestureDetector(
+                  onTap: state.isLoading ? null : _changePrompt,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/cards/change_prompt.svg',
+                        width: 14,
+                        height: 14,
+                        colorFilter: state.isLoading
+                            ? const ColorFilter.mode(
+                                Colors.black54,
+                                BlendMode.srcIn,
+                              )
+                            : const ColorFilter.mode(
+                                Color(0xFFFF6E5A),
+                                BlendMode.srcIn,
+                              ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        state.isLoading ? 'Loading prompt...' : 'Change Prompt',
+                        style: TextStyle(
+                          color: state.isLoading
+                              ? Colors.black54
+                              : const Color(0xFFFF6E5A),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      _buildEntryField(),
+                      if (_showTopFade)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: 20,
+                          child: IgnorePointer(
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [Colors.white, Color(0x00FFFFFF)],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0xFF2A2A2A),
+                            blurRadius: 0,
+                            offset: Offset(2, 2),
+                          ),
+                        ],
+                      ),
+                      child: SizedBox(
+                        width: 42,
+                        height: 42,
+                        child: SvgPicture.asset('assets/cards/mic.svg'),
+                      ),
+                    ),
+                    const Spacer(),
+                    _ShadowButton(
+                      onPressed: state.isSaving ? null : _endSession,
+                      child: state.isSaving
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.black),
+                              ),
+                            )
+                          : const Text(
+                              'End Session',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ],
     );
@@ -257,40 +267,37 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
           dateText: 'Reflect - Save',
           onBack: () => Navigator.of(context).pop(),
         ),
-        const Spacer(),
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: const Color(0xFFEDE6FF),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: Colors.black, width: 1.5),
-          ),
-          child: const Icon(Icons.self_improvement, size: 28),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'You showed up for yourself today.\nThat takes courage',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        const Spacer(),
-        ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFF6E5A),
-            foregroundColor: Colors.black,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-              side: const BorderSide(color: Colors.black, width: 1.5),
-            ),
-          ),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'Back to Home',
-              style: TextStyle(fontWeight: FontWeight.w700),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                const Spacer(),
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDE6FF),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.black, width: 1.5),
+                  ),
+                  child: const Icon(Icons.self_improvement, size: 28),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'You showed up for yourself today.\nThat takes courage',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const Spacer(),
+                _ShadowButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    'Back to Home',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -347,17 +354,30 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      height: 60,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black, width: 1.5),
+        borderRadius: BorderRadius.circular(6),
+        border: const Border(
+          left: BorderSide(color: Colors.black, width: 2),
+          right: BorderSide(color: Colors.black, width: 2),
+          bottom: BorderSide(color: Colors.black, width: 2),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 0,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: onBack,
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back_ios_new),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -372,6 +392,50 @@ class _TopBar extends StatelessWidget {
           const Spacer(),
           const SizedBox(width: 24),
         ],
+      ),
+    );
+  }
+}
+
+class _ShadowButton extends StatelessWidget {
+  const _ShadowButton({required this.onPressed, required this.child});
+
+  final VoidCallback? onPressed;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: const Border(
+          right: BorderSide(color: Colors.black, width: 1.5),
+          bottom: BorderSide(color: Colors.black, width: 1.5),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF2A2A2A),
+            blurRadius: 0,
+            offset: Offset(2, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Material(
+          color: const Color(0xFFFF6E5A),
+          child: InkWell(
+            onTap: onPressed,
+            child: SizedBox(
+              height: 36,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                child: Center(child: DefaultTextStyle.merge(child: child)),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
