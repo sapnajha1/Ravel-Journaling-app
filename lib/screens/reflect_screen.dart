@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../features/reflect/reflect_controller.dart';
+import '../widgets/dotted_background.dart';
 
 class ReflectScreen extends ConsumerStatefulWidget {
   const ReflectScreen({super.key});
@@ -81,15 +82,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _DottedBackgroundPainter(
-                  dotColor: const Color(0x18FF6E5A),
-                  spacing: 18,
-                  radius: 1.4,
-                ),
-              ),
-            ),
+            const Positioned.fill(child: DottedBackground()),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
               child: state.showSaved
@@ -384,31 +377,3 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-class _DottedBackgroundPainter extends CustomPainter {
-  const _DottedBackgroundPainter({
-    required this.dotColor,
-    required this.spacing,
-    required this.radius,
-  });
-
-  final Color dotColor;
-  final double spacing;
-  final double radius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = dotColor;
-    for (double y = 0; y < size.height; y += spacing) {
-      for (double x = 0; x < size.width; x += spacing) {
-        canvas.drawCircle(Offset(x, y), radius, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DottedBackgroundPainter oldDelegate) {
-    return oldDelegate.dotColor != dotColor ||
-        oldDelegate.spacing != spacing ||
-        oldDelegate.radius != radius;
-  }
-}

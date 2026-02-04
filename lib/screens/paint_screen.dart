@@ -52,7 +52,7 @@ class _PaintScreenState extends State<PaintScreen> {
     // Use the extension setters provided by flutter_painter for freestyle settings
     _controller.freeStyleStrokeWidth = _brushSize;
     _controller.freeStyleColor = _selectedColor;
-    // Set a white background drawable using the provided extension getter
+    // Use a white canvas background for drawing.
     _controller.background = Colors.white.backgroundDrawable;
   }
 

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/rantViewModel/rant_view_model.dart';
 import '../../viewmodels/recording/recording_view_model.dart';
+import '../../widgets/dotted_background.dart';
+import '../../utils/date_formatters.dart';
 
 class RantRecordingScreen extends StatelessWidget {
   const RantRecordingScreen({super.key});
@@ -13,7 +14,6 @@ class RantRecordingScreen extends StatelessWidget {
     final recordingVM = context.watch<RecordingViewModel>();
     final rantVM = context.read<RantViewModel>();
     final size = MediaQuery.of(context).size;
-    final today = DateFormat('d MMM').format(DateTime.now());
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -22,20 +22,22 @@ class RantRecordingScreen extends StatelessWidget {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: const Color(0xFFFFE9CC),
+        backgroundColor: Colors.white,
         body: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              const SizedBox(height: 20),
+              const Positioned.fill(child: DottedBackground()),
+              Column(
+                children: [
+                  const SizedBox(height: 20),
 
-              /// ===== TOP BAR =====
-              figmaAppBar(context),
+                  /// ===== TOP BAR =====
+                  figmaAppBar(context),
 
-              /// ===== CENTER FRAME =====
-              Expanded(
-                child: Center(
-                  child: Stack(
-                      children: [
+                  /// ===== CENTER FRAME =====
+                  Expanded(
+                    child: Center(
+                      child: Stack(children: [
                         // Background frame
                         if (!recordingVM.isRecording && !recordingVM.isPaused)
                           Center(
@@ -51,7 +53,9 @@ class RantRecordingScreen extends StatelessWidget {
                             top: 112,
                             left: 60,
                             // right: 24,
-                            child: simulatedWaveform(recordingVM,),
+                            child: simulatedWaveform(
+                              recordingVM,
+                            ),
                           ),
 
                         // Voice input text
@@ -63,27 +67,36 @@ class RantRecordingScreen extends StatelessWidget {
                             child: Container(
                               width: 328,
                               height: 376,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.transparent, // Figma ka background
-                                borderRadius: BorderRadius.circular(16), // curved corners
+                                borderRadius:
+                                    BorderRadius.circular(16), // curved corners
                               ),
                               child: TextField(
                                 controller: recordingVM.textController,
-                                scrollController: recordingVM.textScrollController,
+                                scrollController:
+                                    recordingVM.textScrollController,
                                 maxLines: null,
                                 keyboardType: TextInputType.multiline,
                                 textAlignVertical: TextAlignVertical.top,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
                                 ),
-                                style: const TextStyle(fontSize: 20, height: 1.4),
+                                style:
+                                    const TextStyle(fontSize: 20, height: 1.4),
                                 onChanged: (_) {
                                   // Scroll automatically when text grows
-                                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                                    if (recordingVM.textScrollController.hasClients) {
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    if (recordingVM
+                                        .textScrollController.hasClients) {
                                       recordingVM.textScrollController.jumpTo(
-                                        recordingVM.textScrollController.position.minScrollExtent,
+                                        recordingVM.textScrollController.position
+                                            .minScrollExtent,
                                       );
                                     }
                                   });
@@ -91,42 +104,44 @@ class RantRecordingScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                      ]
+                      ]),
+                    ),
                   ),
-                ),
-              ),
 
-              /// ===== BOTTOM MIC / STOP =====
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: GestureDetector(
-                  onTap: () {
-                    if (recordingVM.isRecording) {
-                      // ⏸ pause
-                      recordingVM.pauseRecording();
-                    } else {
-                      // ▶️ start OR resume
-                      recordingVM.startRecording();
-                    }
-                  },
-                  child: SvgPicture.asset(
-                    recordingVM.isRecording
-                        ? 'assets/Group 13(1).svg' // STOP
-                        : 'assets/Group 13.svg', // MIC
-                    width: 72,
+                  /// ===== BOTTOM MIC / STOP =====
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (recordingVM.isRecording) {
+                          // ⏸ pause
+                          recordingVM.pauseRecording();
+                        } else {
+                          // ▶️ start OR resume
+                          recordingVM.startRecording();
+                        }
+                      },
+                      child: SvgPicture.asset(
+                        recordingVM.isRecording
+                            ? 'assets/Group 13(1).svg' // STOP
+                            : 'assets/Group 13.svg', // MIC
+                        width: 72,
+                      ),
+                    ),
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-              /// END RANT BUTTON
-              GestureDetector(
-                onTap: () => context.read<RantViewModel>().endRanting(context),
-                child: SvgPicture.asset(
-                  'assets/Frame 22.svg',
-                  width: 150,
-                ),
+                  /// END RANT BUTTON
+                  GestureDetector(
+                    onTap: () =>
+                        context.read<RantViewModel>().endRanting(context),
+                    child: SvgPicture.asset(
+                      'assets/Frame 22.svg',
+                      width: 150,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -166,9 +181,9 @@ Widget figmaAppBar(BuildContext context) {
 
               const Spacer(),
 
-              const Text(
-                'Today · 16 Jan',
-                style: TextStyle(
+              Text(
+                'Today · ${formatDayMonth(DateTime.now())}',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),

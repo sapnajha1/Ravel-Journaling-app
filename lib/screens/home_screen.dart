@@ -9,6 +9,8 @@ import '../auth/auth_controller.dart';
 import '../viewmodels/rantViewModel/rant_view_model.dart';
 import '../viewmodels/recording/recording_view_model.dart';
 import '../views/rantView/rant_recording_screen.dart';
+import '../widgets/dotted_background.dart';
+import '../utils/date_formatters.dart';
 import 'paint_screen.dart';
 import 'profile_screen.dart';
 import 'reflect_screen.dart';
@@ -31,16 +33,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
+    final content = _selectedIndex == 0
+        ? HomeTab(
+            userEmail: widget.authController.userEmail ?? '',
+            onOpenCard: _openCard,
+          )
+        : _selectedIndex == 1
+            ? const PaintScreen()
+            : ProfileScreen(authController: widget.authController);
     return Scaffold(
       body: SafeArea(
-        child: _selectedIndex == 0
-            ? HomeTab(
-                userEmail: widget.authController.userEmail ?? '',
-                onOpenCard: _openCard,
-              )
-            : _selectedIndex == 1
-                ? const PaintScreen()
-                : ProfileScreen(authController: widget.authController),
+        child: Stack(
+          children: [
+            const Positioned.fill(child: DottedBackground()),
+            Positioned.fill(child: content),
+          ],
+        ),
       ),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.fromLTRB(16, 4, 16, math.max(12, bottomInset + 8)),
@@ -137,25 +145,6 @@ class _HomeTabState extends State<HomeTab> {
   int _swipeDirection = 0; // -1 left, 1 right
   bool _isSwiping = false;
 
-  String _formattedDate() {
-    final now = DateTime.now();
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return '${now.day} ${months[now.month - 1]}';
-  }
-
   String _displayName() {
     final email = widget.userEmail;
     if (email.isEmpty) return 'Roshan';
@@ -197,20 +186,13 @@ class _HomeTabState extends State<HomeTab> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Full-screen SVG background
-        Positioned.fill(
-          child: SvgPicture.asset(
-            'assets/backgrounds/home_bg.svg',
-            fit: BoxFit.cover,
-          ),
-        ),
         // Header
         Positioned(
           left: 20,
           right: 20,
           top: 16,
           child: _Header(
-            dateText: 'Today · ${_formattedDate()}',
+            dateText: 'Today · ${formatDayMonth(DateTime.now())}',
             greeting: 'Good Morning, ${_displayName()}!',
           ),
         ),
