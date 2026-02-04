@@ -306,57 +306,103 @@ class _CardDeckStack extends StatelessWidget {
     final leftIsAdvancing = isSwiping && swipeDirection == 1;
     final rightIsAdvancing = isSwiping && swipeDirection == -1;
 
+    final frontSlot = _CardSlot(
+      left: centerX,
+      top: frontTop,
+      rotation: 0.0,
+      scale: 1.0,
+    );
+    final leftSlot = _CardSlot(
+      left: centerX - sideOffset,
+      top: backTop,
+      rotation: -0.18,
+      scale: 0.98,
+    );
+    final rightSlot = _CardSlot(
+      left: centerX + sideOffset,
+      top: backTop,
+      rotation: 0.18,
+      scale: 0.98,
+    );
+
+    final frontSlotIndex = leftIsAdvancing
+        ? backLeft
+        : rightIsAdvancing
+            ? backRight
+            : frontIndex;
+
+    _CardSlot slotForIndex(int index) {
+      if (leftIsAdvancing) {
+        if (index == backLeft) return frontSlot;
+        if (index == frontIndex) return rightSlot;
+        return leftSlot;
+      }
+      if (rightIsAdvancing) {
+        if (index == backRight) return frontSlot;
+        if (index == frontIndex) return leftSlot;
+        return rightSlot;
+      }
+      if (index == frontIndex) return frontSlot;
+      if (index == backLeft) return leftSlot;
+      return rightSlot;
+    }
+
+    Widget buildCard(int index) {
+      final slot = slotForIndex(index);
+      final isFront = index == frontSlotIndex;
+      final data = cards[index];
+      return _DeckCard(
+        key: ValueKey('card-${data.type}'),
+        left: slot.left,
+        top: slot.top,
+        width: cardW,
+        height: cardH,
+        rotation: slot.rotation,
+        scale: slot.scale,
+        data: data,
+        isFront: isFront,
+        onDragEnd: isFront ? onSwipeEnd : null,
+        onTap: () => onCardTap(index),
+        onButtonPressed: isFront ? () => onButtonPressed(data.type) : null,
+      );
+    }
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        _AnimatedDeckCard(
-          key: ValueKey('backLeft-${cards[backLeft].type}'),
-          left: leftIsAdvancing ? centerX : centerX - sideOffset,
-          top: leftIsAdvancing ? frontTop : backTop,
-          width: cardW,
-          height: cardH,
-          rotation: leftIsAdvancing ? 0.02 : -0.12,
-          scale: leftIsAdvancing ? 1.0 : 0.98,
-          data: cards[backLeft],
-          onTap: () => onCardTap(backLeft),
-        ),
-        _AnimatedDeckCard(
-          key: ValueKey('backRight-${cards[backRight].type}'),
-          left: rightIsAdvancing ? centerX : centerX + sideOffset,
-          top: rightIsAdvancing ? frontTop : backTop,
-          width: cardW,
-          height: cardH,
-          rotation: rightIsAdvancing ? -0.02 : 0.12,
-          scale: rightIsAdvancing ? 1.0 : 0.98,
-          data: cards[backRight],
-          onTap: () => onCardTap(backRight),
-        ),
-        _TopSwipeCard(
-          key: ValueKey('front-${cards[frontIndex].type}'),
-          left: centerX,
-          top: frontTop,
-          width: cardW,
-          height: cardH,
-          data: cards[frontIndex],
-          swipeDirection: swipeDirection,
-          onDragEnd: onSwipeEnd,
-          onTap: () => onCardTap(frontIndex),
-          onButtonPressed: () => onButtonPressed(cards[frontIndex].type),
-        ),
+        buildCard(backLeft),
+        buildCard(backRight),
+        buildCard(frontIndex),
       ],
     );
   }
 }
 
-class _TopSwipeCard extends StatelessWidget {
-  const _TopSwipeCard({
+class _CardSlot {
+  const _CardSlot({
+    required this.left,
+    required this.top,
+    required this.rotation,
+    required this.scale,
+  });
+
+  final double left;
+  final double top;
+  final double rotation;
+  final double scale;
+}
+
+class _DeckCard extends StatelessWidget {
+  const _DeckCard({
     super.key,
     required this.left,
     required this.top,
     required this.width,
     required this.height,
+    required this.rotation,
+    required this.scale,
     required this.data,
-    required this.swipeDirection,
+    required this.isFront,
     required this.onDragEnd,
     required this.onTap,
     required this.onButtonPressed,
@@ -366,21 +412,20 @@ class _TopSwipeCard extends StatelessWidget {
   final double top;
   final double width;
   final double height;
+  final double rotation;
+  final double scale;
   final _JournalCardData data;
-  final int swipeDirection;
-  final void Function(DragEndDetails) onDragEnd;
+  final bool isFront;
+  final void Function(DragEndDetails)? onDragEnd;
   final VoidCallback onTap;
-  final VoidCallback onButtonPressed;
+  final VoidCallback? onButtonPressed;
 
   @override
   Widget build(BuildContext context) {
-    final offX = swipeDirection == 0 ? 0.0 : (swipeDirection * 420.0);
-    final yTilt = swipeDirection == 0 ? 0.0 : (swipeDirection * 0.35);
-
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 340),
       curve: Curves.easeOutCubic,
-      left: left + offX,
+      left: left,
       top: top,
       width: width,
       height: height,
@@ -388,24 +433,27 @@ class _TopSwipeCard extends StatelessWidget {
         onHorizontalDragEnd: onDragEnd,
         onTap: onTap,
         child: TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0, end: yTilt),
+          tween: Tween<double>(begin: 0, end: rotation),
           duration: const Duration(milliseconds: 340),
           curve: Curves.easeOutCubic,
           builder: (context, value, child) {
-            final zRot = value * 0.25;
+            final yTilt = value * 0.45;
             final transform = Matrix4.identity()
               ..setEntry(3, 2, 0.0015)
-              ..rotateY(value)
-              ..rotateZ(zRot);
+              ..rotateY(yTilt)
+              ..rotateZ(value);
             return Transform(
               alignment: Alignment.center,
               transform: transform,
-              child: child,
+              child: Transform.scale(
+                scale: scale,
+                child: child,
+              ),
             );
           },
           child: _CardVisual(
             data: data,
-            isFront: true,
+            isFront: isFront,
             onButtonPressed: onButtonPressed,
           ),
         ),
