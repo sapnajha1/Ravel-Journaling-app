@@ -84,7 +84,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
           children: [
             const Positioned.fill(child: DottedBackground()),
             Padding(
-              padding: const EdgeInsets.fromLTRB(0, 12, 0, 14),
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 14),
               child: state.showSaved
                   ? _buildSaved(context)
                   : _buildEditor(context, state),

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../viewmodels/rantViewModel/rant_view_model.dart';
 import '../../viewmodels/recording/recording_view_model.dart';
+import '../../widgets/dotted_background.dart';
 
 class RantRecordingScreen extends StatelessWidget {
   const RantRecordingScreen({super.key});
@@ -27,28 +28,18 @@ class RantRecordingScreen extends StatelessWidget {
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor: const Color(0xFFFFE9CC),
+          backgroundColor: Colors.white,
           body: SafeArea(
             child: Stack(
               children: [
                 /// ===== DOTTED BACKGROUND =====
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _DottedBackgroundPainter(
-                      dotColor: const Color(0x18FF6E5A),
-                      spacing: 18,
-                      radius: 1.4,
-                    ),
-                  ),
-                ),
+                const Positioned.fill(child: DottedBackground()),
 
                 /// ===== MAIN CONTENT =====
                 Column(
                   children: [
-                    SizedBox(height: 20 * scaleH),
-
                     /// APP BAR
-                    figmaAppBar(context,scaleH),
+                    figmaAppBar(context),
 
                     /// CENTER AREA
                     Expanded(
@@ -131,13 +122,16 @@ class RantRecordingScreen extends StatelessWidget {
                     SizedBox(height: 16 * scaleH),
 
                     /// END RANT BUTTON
-                    GestureDetector(
-                      onTap: () => context
-                          .read<RantViewModel>()
-                          .endRanting(context),
-                      child: SvgPicture.asset(
-                        'assets/Frame 22.svg',
-                        width: 136 * scaleW,
+                    SizedBox(
+                      width: 136 * scaleW,
+                      child: _ShadowButton(
+                        onPressed: () => context
+                            .read<RantViewModel>()
+                            .endRanting(context),
+                        child: const Text(
+                          'End Rant',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ),
 
@@ -154,87 +148,93 @@ class RantRecordingScreen extends StatelessWidget {
 }
 
 /// ================= APP BAR =================
-Widget figmaAppBar(BuildContext context, double scaleW) {
+Widget figmaAppBar(BuildContext context) {
   final todayDate = DateFormat('d MMM').format(DateTime.now());
 
-  return SizedBox(
-    height: 64 * scaleW + 5,
+  return Container(
+    height: 60,
     width: double.infinity,
-    child: Stack(
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(6),
+      border: const Border(
+        left: BorderSide(color: Colors.black, width: 2),
+        right: BorderSide(color: Colors.black, width: 2),
+        bottom: BorderSide(color: Colors.black, width: 2),
+      ),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x33000000),
+          blurRadius: 0,
+          offset: Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Row(
       children: [
-        /// MAIN TRANSPARENT APP BAR
-        Container(
-          height: 64 * scaleW,
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            color: Colors.white54,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(16),
-              bottomRight: Radius.circular(16),
-            ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        const Spacer(),
+        Text(
+          'Today · $todayDate',
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
           ),
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16 * scaleW),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    iconSize: 20 * scaleW,
-                  ),
+        ),
+        const Spacer(),
+        const SizedBox(width: 24),
+      ],
+    ),
+  );
+}
 
-                  const Spacer(),
-                  Row(
-                    children: [
-                      Text(
-                        'Today · ',
-                        style: TextStyle(
-                          fontFamily: 'SyneMono',
-                          fontSize: 14 * scaleW,
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                        ),
-                      ),
-                      Text(
-                        todayDate,
-                        style: TextStyle(
-                          fontFamily: 'SyneMono',
-                          fontSize: 14 * scaleW,
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  SizedBox(width: 24 * scaleW),
-                ],
+class _ShadowButton extends StatelessWidget {
+  const _ShadowButton({required this.onPressed, required this.child});
+
+  final VoidCallback? onPressed;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: const Border(
+          right: BorderSide(color: Colors.black, width: 1.5),
+          bottom: BorderSide(color: Colors.black, width: 1.5),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF2A2A2A),
+            blurRadius: 0,
+            offset: Offset(2, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Material(
+          color: const Color(0xFFFF6E5A),
+          child: InkWell(
+            onTap: onPressed,
+            child: SizedBox(
+              height: 36,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                child: Center(child: DefaultTextStyle.merge(child: child)),
               ),
             ),
           ),
         ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(16),
-              bottomRight: Radius.circular(16),
-            ),
-            child: Container(
-              height: 5,
-              color: const Color(0xFF201B18),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 /// ================= WAVEFORM =================
 Widget simulatedWaveform(
@@ -272,30 +272,5 @@ Widget simulatedWaveform(
   );
 }
 
-/// ================= BACKGROUND PAINTER =================
-class _DottedBackgroundPainter extends CustomPainter {
-  const _DottedBackgroundPainter({
-    required this.dotColor,
-    required this.spacing,
-    required this.radius,
-  });
-
-  final Color dotColor;
-  final double spacing;
-  final double radius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = dotColor;
-    for (double y = 0; y < size.height; y += spacing) {
-      for (double x = 0; x < size.width; x += spacing) {
-        canvas.drawCircle(Offset(x, y), radius, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) =>
-      false;
-}
+// removed custom background painter; using shared DottedBackground
 
