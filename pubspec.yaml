@@ -42,6 +42,21 @@ dependencies:
   permission_handler: ^11.4.0
   speech_to_text: ^7.3.0
   audio_waveforms: ^2.0.2
+  flutter_painter: ^1.0.1
+  path_provider: ^2.1.5
+
+  # Supabase auth (magic link / OTP) and session persistence
+  supabase_flutter: ^2.8.0
+  # Deep linking so magic link opens the app
+  app_links: ^6.3.2
+  # Optional: check connectivity for better error messages
+  connectivity_plus: ^6.1.1
+
+  # Local save for reflect prompt/entry
+  shared_preferences: ^2.5.4
+  flutter_riverpod: ^2.6.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -65,9 +80,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
+    - assets/cards/
+    - assets/backgrounds/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

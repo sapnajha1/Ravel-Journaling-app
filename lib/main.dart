@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:journal_app/viewmodels/home_viewmodel.dart';
-import 'package:journal_app/viewmodels/rantViewModel/rant_history_viewmodel.dart';
-import 'package:journal_app/viewmodels/rantViewModel/rant_view_model.dart';
-import 'package:journal_app/views/home_view.dart';
-import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
-  runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => HomeViewModel()),
-          ChangeNotifierProvider(create: (_) => RantHistoryViewModel()),
-        ],
-        child: const MyApp(),
-      )
+import 'auth/auth_gate.dart';
+import 'config/supabase_config.dart';
+import 'data/local/local_store.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: SupabaseConfig.supabaseUrl,
+    anonKey: SupabaseConfig.supabaseAnonKey,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.implicit,
+      autoRefreshToken: true,
+      detectSessionInUri: true,
+    ),
   );
+
+  await LocalStore.init();
+
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -23,13 +29,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          textTheme: GoogleFonts.outfitTextTheme(),
-          primaryColor: Colors.orangeAccent,
-        ),
-        home: const HomeView()
-    );
+    return const AuthGate();
   }
 }
