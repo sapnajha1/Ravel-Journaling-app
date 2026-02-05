@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'auth/auth_gate.dart';
 import 'config/supabase_config.dart';
 import 'data/local/local_store.dart';
+import 'design_system/app_theme.dart';
+import 'presentation/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AuthGate();
+    return Consumer(
+      builder: (context, ref, child) {
+        final router = ref.watch(appRouterProvider);
+        return MaterialApp.router(
+          title: 'Journal App',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          routerConfig: router,
+        );
+      },
+    );
   }
 }
