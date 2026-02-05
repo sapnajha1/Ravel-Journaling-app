@@ -8,15 +8,31 @@ import '../recording/recording_view_model.dart';
 class RantViewModel extends ChangeNotifier {
   final RecordingViewModel recordingVM;
   final JournalRepository journalRepository;
+  bool isRecording = false;
+  TextEditingController textController = TextEditingController();
+
 
   RantViewModel({
     required this.recordingVM,
     required this.journalRepository,
   });
 
+  // Current stopRecording
+  void stopRecording() {
+    if (!isRecording) return;
+    isRecording = false;
+    notifyListeners();
+  }
+  // Future version for async/await
+  Future<void> stopRecordingAsync() async {
+    stopRecording(); // existing logic
+    await Future.delayed(const Duration(milliseconds: 50)); // optional, for async safety
+  }
+
   /// rant specific action
   Future<void> endRanting(BuildContext context) async {
-    recordingVM.stopRecording();
+     recordingVM.stopRecording();
+
     final content = recordingVM.textController.text.trim();
     if (content.isEmpty) {
       Navigator.pop(context);

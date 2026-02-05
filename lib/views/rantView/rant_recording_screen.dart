@@ -1,538 +1,3 @@
-// // import 'package:flutter/material.dart';
-// // import 'package:flutter_svg/flutter_svg.dart';
-// // import 'package:provider/provider.dart';
-// // import '../../viewmodels/rantViewModel/rant_view_model.dart';
-// // import '../../viewmodels/recording/recording_view_model.dart';
-// // import '../../widgets/dotted_background.dart';
-// // import '../../utils/date_formatters.dart';
-// //
-// // class RantRecordingScreen extends StatelessWidget {
-// //   const RantRecordingScreen({super.key});
-// //
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     final recordingVM = context.watch<RecordingViewModel>();
-// //     final rantVM = context.read<RantViewModel>();
-// //     final size = MediaQuery.of(context).size;
-// //
-// //     return GestureDetector(
-// //       behavior: HitTestBehavior.translucent,
-// //       onTap: () {
-// //         FocusScope.of(context).unfocus();
-// //       },
-// //       child: Scaffold(
-// //         resizeToAvoidBottomInset: false,
-// //         backgroundColor: Colors.white,
-// //         body: SafeArea(
-// //           child: Stack(
-// //             children: [
-// //               const Positioned.fill(child: DottedBackground()),
-// //               Column(
-// //                 children: [
-// //                   const SizedBox(height: 20),
-// //
-// //                   /// ===== TOP BAR =====
-// //                   figmaAppBar(context),
-// //
-// //                   /// ===== CENTER FRAME =====
-// //                   Expanded(
-// //                     child: Center(
-// //                       child: Stack(children: [
-// //                         // Background frame
-// //                         if (!recordingVM.isRecording && !recordingVM.isPaused)
-// //                           Center(
-// //                             child: SvgPicture.asset(
-// //                               'assets/Frame 156.svg',
-// //                               width: size.width * 0.75,
-// //                             ),
-// //                           ),
-// //
-// //                         // Audio Wave Form when recording
-// //                         if (recordingVM.isRecording || recordingVM.isPaused)
-// //                           Positioned(
-// //                             top: 112,
-// //                             left: 60,
-// //                             // right: 24,
-// //                             child: simulatedWaveform(
-// //                               recordingVM,
-// //                             ),
-// //                           ),
-// //
-// //                         // Voice input text
-// //                         if (recordingVM.displayText.isNotEmpty)
-// //                           Positioned(
-// //                             top: 224,
-// //                             left: 16,
-// //                             right: 16,
-// //                             child: Container(
-// //                               width: 328,
-// //                               height: 376,
-// //                               padding: const EdgeInsets.symmetric(
-// //                                 horizontal: 12,
-// //                                 vertical: 12,
-// //                               ),
-// //                               decoration: BoxDecoration(
-// //                                 color: Colors.transparent, // Figma ka background
-// //                                 borderRadius:
-// //                                     BorderRadius.circular(16), // curved corners
-// //                               ),
-// //                               child: TextField(
-// //                                 controller: recordingVM.textController,
-// //                                 scrollController:
-// //                                     recordingVM.textScrollController,
-// //                                 maxLines: null,
-// //                                 keyboardType: TextInputType.multiline,
-// //                                 textAlignVertical: TextAlignVertical.top,
-// //                                 decoration: const InputDecoration(
-// //                                   border: InputBorder.none,
-// //                                 ),
-// //                                 style:
-// //                                     const TextStyle(fontSize: 20, height: 1.4),
-// //                                 onChanged: (_) {
-// //                                   // Scroll automatically when text grows
-// //                                   WidgetsBinding.instance
-// //                                       .addPostFrameCallback((_) {
-// //                                     if (recordingVM
-// //                                         .textScrollController.hasClients) {
-// //                                       recordingVM.textScrollController.jumpTo(
-// //                                         recordingVM.textScrollController.position
-// //                                             .minScrollExtent,
-// //                                       );
-// //                                     }
-// //                                   });
-// //                                 },
-// //                               ),
-// //                             ),
-// //                           ),
-// //                       ]),
-// //                     ),
-// //                   ),
-// //
-// //                   /// ===== BOTTOM MIC / STOP =====
-// //                   Padding(
-// //                     padding: const EdgeInsets.only(bottom: 24),
-// //                     child: GestureDetector(
-// //                       onTap: () {
-// //                         if (recordingVM.isRecording) {
-// //                           // ⏸ pause
-// //                           recordingVM.pauseRecording();
-// //                         } else {
-// //                           // ▶️ start OR resume
-// //                           recordingVM.startRecording();
-// //                         }
-// //                       },
-// //                       child: SvgPicture.asset(
-// //                         recordingVM.isRecording
-// //                             ? 'assets/Group 13(1).svg' // STOP
-// //                             : 'assets/Group 13.svg', // MIC
-// //                         width: 72,
-// //                       ),
-// //                     ),
-// //                   ),
-// //
-// //                   const SizedBox(height: 16),
-// //
-// //                   /// END RANT BUTTON
-// //                   SizedBox(
-// //                     width: 150,
-// //                     child: _ShadowButton(
-// //                       onPressed: () =>
-// //                           context.read<RantViewModel>().endRanting(context),
-// //                       child: const Text(
-// //                         'End Rant',
-// //                         style: TextStyle(fontWeight: FontWeight.w700),
-// //                       ),
-// //                     ),
-// //                   ),
-// //                 ],
-// //               ),
-// //             ],
-// //           ),
-// //         ),
-// //       ),
-// //     );
-// //   }
-// // }
-// //
-// //
-// // Widget figmaAppBar(BuildContext context) {
-// //   return Container(
-// //     height: 60,
-// //     width: double.infinity,
-// //     padding: const EdgeInsets.symmetric(horizontal: 8),
-// //     decoration: BoxDecoration(
-// //       color: Colors.white,
-// //       borderRadius: BorderRadius.circular(6),
-// //       border: const Border(
-// //         left: BorderSide(color: Colors.black, width: 2),
-// //         right: BorderSide(color: Colors.black, width: 2),
-// //         bottom: BorderSide(color: Colors.black, width: 2),
-// //       ),
-// //       boxShadow: const [
-// //         BoxShadow(
-// //           color: Color(0x33000000),
-// //           blurRadius: 0,
-// //           offset: Offset(0, 2),
-// //         ),
-// //       ],
-// //     ),
-// //     child: Row(
-// //       children: [
-// //         IconButton(
-// //           icon: const Icon(Icons.arrow_back_ios_new),
-// //           onPressed: () => Navigator.pop(context),
-// //           padding: EdgeInsets.zero,
-// //           constraints: const BoxConstraints(),
-// //         ),
-// //         const Spacer(),
-// //         Text(
-// //           'Today · ${formatDayMonth(DateTime.now())}',
-// //           style: const TextStyle(
-// //             fontSize: 12,
-// //             fontWeight: FontWeight.w700,
-// //           ),
-// //         ),
-// //         const Spacer(),
-// //         const SizedBox(width: 24),
-// //       ],
-// //     ),
-// //   );
-// // }
-// //
-// // class _ShadowButton extends StatelessWidget {
-// //   const _ShadowButton({required this.onPressed, required this.child});
-// //
-// //   final VoidCallback? onPressed;
-// //   final Widget child;
-// //
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return DecoratedBox(
-// //       decoration: BoxDecoration(
-// //         borderRadius: BorderRadius.circular(6),
-// //         border: const Border(
-// //           right: BorderSide(color: Colors.black, width: 1.5),
-// //           bottom: BorderSide(color: Colors.black, width: 1.5),
-// //         ),
-// //         boxShadow: const [
-// //           BoxShadow(
-// //             color: Color(0xFF2A2A2A),
-// //             blurRadius: 0,
-// //             offset: Offset(2, 2),
-// //           ),
-// //         ],
-// //       ),
-// //       child: ClipRRect(
-// //         borderRadius: BorderRadius.circular(6),
-// //         child: Material(
-// //           color: const Color(0xFFFF6E5A),
-// //           child: InkWell(
-// //             onTap: onPressed,
-// //             child: SizedBox(
-// //               height: 36,
-// //               child: Padding(
-// //                 padding:
-// //                     const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-// //                 child: Center(child: DefaultTextStyle.merge(child: child)),
-// //               ),
-// //             ),
-// //           ),
-// //         ),
-// //       ),
-// //     );
-// //   }
-// // }
-// //
-// // Widget simulatedWaveform(RecordingViewModel vm) {
-// //   return SizedBox(
-// //     height: 60,
-// //     child: Row(
-// //       mainAxisAlignment: MainAxisAlignment.center,
-// //       children: vm.waveHeights.map((h) {
-// //         return Center(
-// //           child: AnimatedContainer(
-// //             duration: const Duration(milliseconds: 120),
-// //             margin: const EdgeInsets.symmetric(horizontal: 2),
-// //             width: 10,
-// //             height: h,
-// //             decoration: BoxDecoration(
-// //               color: const Color(0xffEF5350),
-// //               borderRadius: BorderRadius.circular(2),
-// //             ),
-// //           ),
-// //         );
-// //       }).toList(),
-// //     ),
-// //   );
-// // }
-//
-//
-// import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
-// import 'package:provider/provider.dart';
-// import '../../viewmodels/rantViewModel/rant_view_model.dart';
-// import '../../viewmodels/recording/recording_view_model.dart';
-// import '../../widgets/dotted_background.dart';
-// import '../../utils/date_formatters.dart';
-//
-// class RantRecordingScreen extends StatelessWidget {
-//   const RantRecordingScreen({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final recordingVM = context.watch<RecordingViewModel>();
-//     final rantVM = context.read<RantViewModel>();
-//     final size = MediaQuery.of(context).size;
-//
-//     return GestureDetector(
-//       behavior: HitTestBehavior.translucent,
-//       onTap: () {
-//         FocusScope.of(context).unfocus();
-//       },
-//       child: Scaffold(
-//         resizeToAvoidBottomInset: false,
-//         backgroundColor: Colors.white,
-//         body: SafeArea(
-//           child: Stack(
-//             children: [
-//               const Positioned.fill(child: DottedBackground()),
-//               Column(
-//                 children: [
-//                   const SizedBox(height: 20),
-//
-//                   /// ===== TOP BAR =====
-//                   figmaAppBar(context),
-//
-//                   /// ===== CENTER FRAME =====
-//                   Expanded(
-//                     child: Center(
-//                       child: Stack(children: [
-//                         // Background frame
-//                         if (!recordingVM.isRecording && !recordingVM.isPaused)
-//                           Center(
-//                             child: SvgPicture.asset(
-//                               'assets/Frame 156.svg',
-//                               width: size.width * 0.75,
-//                             ),
-//                           ),
-//
-//                         // Audio Wave Form when recording
-//                         if (recordingVM.isRecording || recordingVM.isPaused)
-//                           Positioned(
-//                             top: 112,
-//                             left: 60,
-//                             child: simulatedWaveform(
-//                               recordingVM,
-//                             ),
-//                           ),
-//
-//                         // 🔥 FIXED: Voice input text - ab upar se start hoga
-//                         if (recordingVM.displayText.isNotEmpty)
-//                           Positioned(
-//                             top: 224,
-//                             left: 16,
-//                             right: 16,
-//                             bottom: 120, // Add bottom constraint
-//                             child: Container(
-//                               padding: const EdgeInsets.symmetric(
-//                                 horizontal: 12,
-//                                 vertical: 12,
-//                               ),
-//                               decoration: BoxDecoration(
-//                                 color: Colors.transparent,
-//                                 borderRadius: BorderRadius.circular(16),
-//                               ),
-//                               child: SingleChildScrollView(
-//                                 // 🔥 REMOVED: reverse: true
-//                                 // Reverse false ya remove karo to text upar se start hoga
-//                                 controller: recordingVM.textScrollController,
-//                                 child: TextField(
-//                                   controller: recordingVM.textController,
-//                                   maxLines: null,
-//                                   keyboardType: TextInputType.multiline,
-//                                   // 🔥 FIXED: textAlignVertical ko top set karo
-//                                   textAlignVertical: TextAlignVertical.top,
-//                                   decoration: const InputDecoration(
-//                                     border: InputBorder.none,
-//                                     contentPadding: EdgeInsets.zero, // Remove extra padding
-//                                   ),
-//                                   style: const TextStyle(
-//                                     fontSize: 20,
-//                                     height: 1.4,
-//                                   ),
-//                                 ),
-//                               ),
-//                             ),
-//                           ),
-//                       ]),
-//                     ),
-//                   ),
-//
-//                   /// ===== BOTTOM MIC / STOP =====
-//                   Padding(
-//                     padding: const EdgeInsets.only(bottom: 24),
-//                     child: GestureDetector(
-//                       onTap: () {
-//                         if (recordingVM.isRecording) {
-//                           // ⏸ pause
-//                           recordingVM.pauseRecording();
-//                         } else if (recordingVM.isPaused) {
-//                           // ▶️ resume
-//                           recordingVM.pauseRecording();
-//                         } else {
-//                           // ▶️ start
-//                           recordingVM.startRecording();
-//                         }
-//                       },
-//                       child: SvgPicture.asset(
-//                         recordingVM.isRecording
-//                             ? 'assets/Group 13(1).svg' // STOP
-//                             : 'assets/Group 13.svg', // MIC
-//                         width: 72,
-//                       ),
-//                     ),
-//                   ),
-//
-//                   const SizedBox(height: 16),
-//
-//                   /// END RANT BUTTON
-//                   SizedBox(
-//                     width: 150,
-//                     child: _ShadowButton(
-//                       onPressed: () =>
-//                           context.read<RantViewModel>().endRanting(context),
-//                       child: const Text(
-//                         'End Rant',
-//                         style: TextStyle(fontWeight: FontWeight.w700),
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-//
-//
-// Widget figmaAppBar(BuildContext context) {
-//   return Container(
-//     height: 60,
-//     width: double.infinity,
-//     padding: const EdgeInsets.symmetric(horizontal: 8),
-//     decoration: BoxDecoration(
-//       color: Colors.white,
-//       borderRadius: BorderRadius.circular(6),
-//       border: const Border(
-//         left: BorderSide(color: Colors.black, width: 2),
-//         right: BorderSide(color: Colors.black, width: 2),
-//         bottom: BorderSide(color: Colors.black, width: 2),
-//       ),
-//       boxShadow: const [
-//         BoxShadow(
-//           color: Color(0x33000000),
-//           blurRadius: 0,
-//           offset: Offset(0, 2),
-//         ),
-//       ],
-//     ),
-//     child: Row(
-//       children: [
-//         IconButton(
-//           icon: const Icon(Icons.arrow_back_ios_new),
-//           onPressed: () => Navigator.pop(context),
-//           padding: EdgeInsets.zero,
-//           constraints: const BoxConstraints(),
-//         ),
-//         const Spacer(),
-//         Text(
-//           'Today · ${formatDayMonth(DateTime.now())}',
-//           style: const TextStyle(
-//             fontSize: 12,
-//             fontWeight: FontWeight.w700,
-//           ),
-//         ),
-//         const Spacer(),
-//         const SizedBox(width: 24),
-//       ],
-//     ),
-//   );
-// }
-//
-// class _ShadowButton extends StatelessWidget {
-//   const _ShadowButton({required this.onPressed, required this.child});
-//
-//   final VoidCallback? onPressed;
-//   final Widget child;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return DecoratedBox(
-//       decoration: BoxDecoration(
-//         borderRadius: BorderRadius.circular(6),
-//         border: const Border(
-//           right: BorderSide(color: Colors.black, width: 1.5),
-//           bottom: BorderSide(color: Colors.black, width: 1.5),
-//         ),
-//         boxShadow: const [
-//           BoxShadow(
-//             color: Color(0xFF2A2A2A),
-//             blurRadius: 0,
-//             offset: Offset(2, 2),
-//           ),
-//         ],
-//       ),
-//       child: ClipRRect(
-//         borderRadius: BorderRadius.circular(6),
-//         child: Material(
-//           color: const Color(0xFFFF6E5A),
-//           child: InkWell(
-//             onTap: onPressed,
-//             child: SizedBox(
-//               height: 36,
-//               child: Padding(
-//                 padding:
-//                 const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-//                 child: Center(child: DefaultTextStyle.merge(child: child)),
-//               ),
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-//
-// Widget simulatedWaveform(RecordingViewModel vm) {
-//   return SizedBox(
-//     height: 60,
-//     child: Row(
-//       mainAxisAlignment: MainAxisAlignment.center,
-//       children: vm.waveHeights.map((h) {
-//         return Center(
-//           child: AnimatedContainer(
-//             duration: const Duration(milliseconds: 120),
-//             margin: const EdgeInsets.symmetric(horizontal: 2),
-//             width: 10,
-//             height: h,
-//             decoration: BoxDecoration(
-//               color: const Color(0xffEF5350),
-//               borderRadius: BorderRadius.circular(2),
-//             ),
-//           ),
-//         );
-//       }).toList(),
-//     ),
-//   );
-// }
-
-
-
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -542,7 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../viewmodels/rantViewModel/rant_view_model.dart';
 import '../../viewmodels/recording/recording_view_model.dart';
+import '../../widgets/dotted_background.dart';
 import '../home_view.dart';
+// import '../shared_widgets/dotted_background.dart';
+
 
 class RantRecordingScreen extends StatefulWidget {
   const RantRecordingScreen({super.key});
@@ -567,31 +35,56 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
     super.dispose();
   }
 
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.paused ||
+  //       state == AppLifecycleState.inactive) {
+  //
+  //     if (_navigated) return;
+  //     _navigated = true;
+  //
+  //     final recordingVM =
+  //     context.read<RecordingViewModel>();
+  //     final rantVM =
+  //     context.read<RantViewModel>();
+  //
+  //     if (recordingVM.isRecording) {
+  //       recordingVM.stopRecording();
+  //     }
+  //
+  //     rantVM.endRanting(context);
+  //     Navigator.of(context).popUntil((route) => route.isFirst);
+  //
+  //
+  //     // Navigator.of(context).pushAndRemoveUntil(
+  //     //   MaterialPageRoute(builder: (_) => const HomeView()),
+  //     //       (route) => false,
+  //     // );
+  //   }
+  // }
+
+
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   final recordingVM = context.read<RecordingViewModel>();
+  //
+  //   if ((state == AppLifecycleState.paused || state == AppLifecycleState.inactive) &&
+  //       recordingVM.isRecording) {
+  //     recordingVM.stopRecording(); // sirf recording stop
+  //   }
+  // }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
+    if (_navigated) return; // already navigated, ignore
+    final recordingVM = context.read<RecordingViewModel>();
 
-      if (_navigated) return;
-      _navigated = true;
-
-      final recordingVM =
-      context.read<RecordingViewModel>();
-      final rantVM =
-      context.read<RantViewModel>();
-
-      if (recordingVM.isRecording) {
-        recordingVM.stopRecording();
-      }
-
-      rantVM.endRanting(context);
-
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeView()),
-            (route) => false,
-      );
+    if ((state == AppLifecycleState.paused || state == AppLifecycleState.inactive) &&
+        recordingVM.isRecording) {
+      recordingVM.stopRecording();
     }
   }
+
 
 
   @override
@@ -601,40 +94,59 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
     final scaleW = size.width / 360;
     final scaleH = size.height / 800;
 
+
     return PopScope(
       canPop: true,
-      onPopInvoked: (didPop) {
-        if (didPop) {
-          context.read<RecordingViewModel>().stopRecording();
-        }
+
+        onPopInvoked: (didPop) {
+          if (_navigated) return ; // agar already navigate kiya, pop ko ignore karo
+          if (didPop) {
+            context.read<RecordingViewModel>().stopRecording();
+          }
+
+      // onPopInvoked: (didPop) {
+      //   if (didPop) {
+      //     context.read<RecordingViewModel>().stopRecording();
+      //   }
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           backgroundColor: const Color(0xFFFFE9CC),
-          body: SafeArea(
-            child: Stack(
-              children: [
-                /// ===== DOTTED BACKGROUND =====
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _DottedBackgroundPainter(
-                      dotColor: const Color(0x18FF6E5A),
-                      spacing: 18,
-                      radius: 1.4,
-                    ),
-                  ),
+          body: Stack(
+            children: [
+               Positioned.fill(
+                child: DottedBackground(
+                  dotColor: Color(0x18FF6E5A),
+                  spacing: 18,
+                  radius: 1.4,
                 ),
-
-                /// ===== MAIN CONTENT =====
-                Column(
+              ),
+          
+              // Positioned.fill(
+              //   child: CustomPaint(
+              //     painter: _DottedBackgroundPainter(
+              //       dotColor: const Color(0x18FF6E5A),
+              //       spacing: 18,
+              //       radius: 1.4,
+              //     ),
+              //   ),
+              // ),
+          
+              /// ===== MAIN CONTENT =====
+              SafeArea(
+                child: Column(
                   children: [
                     SizedBox(height: 20 * scaleH),
-
+                          
                     /// APP BAR
-                    figmaAppBar(context,scaleH),
-
+                    figmaAppBar(
+                      entryDate: DateTime.now(),
+                      onBack: () => Navigator.of(context).pop(),
+                    ),
+                          
+                          
                     /// CENTER AREA
                     Expanded(
                       child: Stack(
@@ -647,7 +159,7 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                                 width: 281 * scaleW,
                               ),
                             ),
-
+                          
                           /// WAVEFORM
                           if (recordingVM.isRecording ||
                               recordingVM.displayText.isNotEmpty)
@@ -659,7 +171,7 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                                 width: 240 * scaleW,
                               ),
                             ),
-
+                          
                           /// TEXT AREA
                           if (recordingVM.displayText.isNotEmpty)
                             Positioned(
@@ -692,7 +204,7 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                         ],
                       ),
                     ),
-
+                          
                     /// MIC / STOP BUTTON
                     Padding(
                       padding:
@@ -713,32 +225,79 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                         ),
                       ),
                     ),
-
+                          
                     SizedBox(height: 16 * scaleH),
-
-                    /// END RANT BUTTON
+                          
                     // GestureDetector(
-                    //   onTap: () => context
-                    //       .read<RantViewModel>()
-                    //       .endRanting(context),
+                    //   onTap: () {
+                    //     final recordingVM = context.read<RecordingViewModel>();
+                    //
+                    //
+                    //     if (recordingVM.isRecording ) {
+                    //       recordingVM.stopRecording();
+                    //     }
+                    //
+                    //
+                    //     context.read<RantViewModel>().endRanting(context);
+                    //
+                    //     Navigator.of(context).push(
+                    //       MaterialPageRoute(
+                    //         builder: (_) => const AIscreen(),
+                    //       ),
+                    //     );
+                    //   },
                     //   child: SvgPicture.asset(
-                    //     'assets/Frame 22.svg',
+                    //     'assets/Frame 22(1).svg',
+                    //     width: 136 * scaleW,
+                    //   ),
+                    // ),
+
+
+                    // GestureDetector(
+                    //   onTap: () async {
+                    //     final recordingVM = context.read<RecordingViewModel>();
+                    //
+                    //     // Agar recording chal rahi hai to stop karo
+                    //     if (recordingVM.isRecording) {
+                    //        recordingVM.stopRecording();
+                    //     }
+                    //
+                    //     // End ranting
+                    //     context.read<RantViewModel>().endRanting(context);
+                    //
+                    //     // Mark as navigated so lifecycle/PopScope doesn't interfere
+                    //     _navigated = true;
+                    //
+                    //     // Navigate to AI screen
+                    //     Navigator.of(context).push(
+                    //       MaterialPageRoute(
+                    //         builder: (_) => const AIscreen(),
+                    //       ),
+                    //     );
+                    //   },
+                    //   child: SvgPicture.asset(
+                    //     'assets/Frame 22(1).svg',
                     //     width: 136 * scaleW,
                     //   ),
                     // ),
 
                     GestureDetector(
-                      onTap: () {
+                      onTap: () async {
                         final recordingVM = context.read<RecordingViewModel>();
+                        final rantVM = context.read<RantViewModel>();
 
+                        // Agar recording chal rahi hai to stop karo aur await karo
+                        // if (recordingVM.isRecording) {
+                        //    recordingVM.stopRecording();
+                        // }
 
-                        if (recordingVM.isRecording ) {
-                          recordingVM.stopRecording();
-                        }
+                        // End ranting (ye hi save karta hai history me)
+                        await rantVM.endRanting(context);
 
+                        // Mark as navigated so PopScope/lifecycle doesn't interfere
+                        _navigated = true;
 
-                        context.read<RantViewModel>().endRanting(context);
-
+                        // Navigate to AI screen
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const AIscreen(),
@@ -754,97 +313,105 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                     SizedBox(height: 16 * scaleH),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+          
+          ]),
         ),
-      ),
+    )
     );
   }
 }
 
-/// ================= APP BAR =================
-Widget figmaAppBar(BuildContext context, double scaleW) {
-  final todayDate = DateFormat('d MMM').format(DateTime.now());
 
-  return SizedBox(
-    height: 64 * scaleW + 5,
-    width: double.infinity,
-    child: Stack(
-      children: [
-        /// MAIN TRANSPARENT APP BAR
-        Container(
-          height: 64 * scaleW,
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            color:
-            Color(0xFFFFF7F0),            // Colors.white54,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(16),
-              bottomRight: Radius.circular(16),
+class figmaAppBar extends StatelessWidget {
+  const figmaAppBar({
+    required this.entryDate,
+    required this.onBack,
+    super.key,
+  });
+
+  final DateTime entryDate;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF9F7), // background
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF201B18), // bottom shadow
+            offset: Offset(0, 5),
+            blurRadius: 0,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 1️⃣ Back arrow
+          GestureDetector(
+            onTap: onBack,
+            child: const Icon(
+              Icons.arrow_back_ios_new,
+              size: 24,
             ),
           ),
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16 * scaleW),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    iconSize: 20 * scaleW,
-                  ),
 
-                  const Spacer(),
-                  Row(
-                    children: [
-                      Text(
-                        'Today · ',
-                        style: GoogleFonts.syneMono(
-                          fontSize: 14 * scaleW,
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                        ),
-                      ),
-                      Text(
-                        todayDate,
-                        style: GoogleFonts.syneMono(
-                          fontSize: 14 * scaleW,
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  SizedBox(width: 24 * scaleW),
-                ],
+          const SizedBox(width: 8),
+
+          // 2️⃣ Center dynamic date
+          Expanded(
+            child: Center(
+              child: Text(
+                'Today, ${_formatDateWithOrdinal(entryDate)}',
+                style: GoogleFonts.syneMono(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
+                  color: const Color(0xFF52443F),
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(16),
-              bottomRight: Radius.circular(16),
-            ),
-            child: Container(
-              height: 5,
-              color: const Color(0xFF201B18),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+
+          // 3️⃣ No delete icon
+          const SizedBox(width: 24),
+        ],
+      ),
+    );
+  }
+
+  String _formatDateWithOrdinal(DateTime date) {
+    final day = date.day;
+    final suffix = _getDaySuffix(day);
+    final month = DateFormat('MMM').format(date); // Jan, Feb...
+    return '$day$suffix $month';
+  }
+
+  String _getDaySuffix(int day) {
+    if (day >= 11 && day <= 13) return 'th';
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  }
 }
+
 /// ================= WAVEFORM =================
 Widget simulatedWaveform(
     RecordingViewModel vm, {

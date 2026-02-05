@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 import '../data/models/journal_entry.dart';
 import '../viewmodels/history_view_model.dart';
+import '../viewmodels/rantViewModel/rant_view_model.dart';
+import '../views/home_view.dart';
 import '../widgets/dotted_background.dart';
 import '../widgets/history_card.dart';
 
@@ -20,6 +23,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<HistoryViewModel>();
+    final size = MediaQuery.of(context).size;
+    final scaleW = size.width / 360;
+    final scaleH = size.height / 800;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF9F7),
@@ -55,6 +61,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Expanded(
                   child: _buildBody(context, vm),
                 ),
+
               ],
             ),
           ],
@@ -430,48 +437,141 @@ class _HistoryEntryCard extends StatelessWidget {
   }
 }
 
-class HistoryEntryDetailScreen extends StatelessWidget {
+class HistoryEntryDetailScreen extends StatefulWidget {
   const HistoryEntryDetailScreen({super.key, required this.entry});
 
   final JournalEntry entry;
 
   @override
+  State<HistoryEntryDetailScreen> createState() => _HistoryEntryDetailScreenState();
+}
+
+class _HistoryEntryDetailScreenState extends State<HistoryEntryDetailScreen> {
+
+  late TextEditingController _controller;
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.entry.content);
+
+    // After first frame, scroll to end
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final scaleW = size.width / 360;
+    final scaleH = size.height / 800;
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            const Positioned.fill(child: DottedBackground()),
-            Column(
+      body: Stack(
+        children: [
+          const Positioned.fill(child: DottedBackground()),
+          SafeArea(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _DetailTopBar(
-                  title: _detailTitle(entry.entryType),
-                  dateText:
-                      'Today, ${DateFormat('d MMM').format(entry.entryDate)}',
+                  entryDate: widget.entry.entryDate,
                   onBack: () => Navigator.of(context).pop(),
+                  onDelete: () {
+                    showDeleteRantDialog(context, widget.entry);
+                  },
                 ),
+
                 const SizedBox(height: 12),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: SingleChildScrollView(
-                      child: Text(
-                        entry.content,
+                      controller: _scrollController,
+                      reverse: false,
+                      child: TextField(
+                        controller: _controller,
+                        maxLines: null,
+                        keyboardType: TextInputType.multiline,
+                        textAlignVertical: TextAlignVertical.top,
                         style: const TextStyle(
                           fontSize: 14,
                           height: 1.6,
+                          color: Colors.black,
+                        ),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+
+                // Expanded(
+                //   child: Padding(
+                //     padding: const EdgeInsets.symmetric(horizontal: 16),
+                //     child: SingleChildScrollView(
+                //       child: Text(
+                //         widget.entry.content,
+                //         style: const TextStyle(
+                //           fontSize: 14,
+                //           height: 1.6,
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                const SizedBox(height: 80),
+
+                /// ===== FIXED BOTTOM BUTTONS =====
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      /// LEFT SVG
+                      GestureDetector(
+                        onTap: () {
+                          // TODO: left button action
+                        },
+                        child: SvgPicture.asset(
+                          'assets/Group 13(2).svg',
+                          width: 48 * scaleW,
+                          height: 48 * scaleH,
+                        ),
+                      ),
+
+                      /// RIGHT SVG
+                      GestureDetector(
+                        onTap: () {
+                          // TODO: right button action
+                        },
+                        child: SvgPicture.asset(
+                          'assets/Frame 22(3).svg',
+                          width: 154 * scaleW,
+                          height: 48 * scaleH,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -492,65 +592,322 @@ class HistoryEntryDetailScreen extends StatelessWidget {
 
 class _DetailTopBar extends StatelessWidget {
   const _DetailTopBar({
-    required this.title,
-    required this.dateText,
+    required this.entryDate,
     required this.onBack,
+    required this.onDelete,
+    super.key,
   });
 
-  final String title;
-  final String dateText;
+  final DateTime entryDate;
   final VoidCallback onBack;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      width: 360,
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: const Border(
-          left: BorderSide(color: Colors.black, width: 2),
-          right: BorderSide(color: Colors.black, width: 2),
-          bottom: BorderSide(color: Colors.black, width: 2),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
         ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x33000000),
+            color: Color(0xFF201B18),
+            offset: Offset(0, 5),
             blurRadius: 0,
-            offset: Offset(0, 2),
+            spreadRadius: 0,
           ),
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          IconButton(
-            onPressed: onBack,
-            icon: const Icon(Icons.arrow_back_ios_new),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          const Spacer(),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+          // 1️⃣ Back arrow
+          GestureDetector(
+            onTap: onBack,
+            child: const Icon(
+              Icons.arrow_back_ios_new,
+              size: 24,
             ),
           ),
-          const SizedBox(width: 6),
-          Text(
-            dateText,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+
+          const SizedBox(width: 8),
+
+          Expanded(
+            child: Center(
+              child: Text(
+                'Today, ${_formatDateWithOrdinal(entryDate)}',
+                style: GoogleFonts.syneMono(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
+                  color: const Color(0xFF52443F),
+                ),
+              ),
             ),
           ),
-          const Spacer(),
-          const SizedBox(width: 24),
+
+          GestureDetector(
+            onTap: onDelete,
+            child: SvgPicture.asset(
+              'assets/delete.svg',
+              width: 20,
+              height: 24,
+            ),
+          ),
         ],
       ),
     );
   }
+
+  String _formatDateWithOrdinal(DateTime date) {
+    final day = date.day;
+    final suffix = _getDaySuffix(day);
+    final month = DateFormat('MMM').format(date); // Jan, Feb...
+    return '$day$suffix $month';
+  }
+
+  String _getDaySuffix(int day) {
+    if (day >= 11 && day <= 13) return 'th';
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  }
 }
+
+void showDeleteRantDialog(
+    BuildContext parentContext,
+    JournalEntry entry,
+    ) {
+  final date = DateFormat('d MMM').format(entry.entryDate);
+
+  // Dynamically determine the type label
+  String typeLabel;
+  switch (entry.entryType) {
+    case 'reflection':
+      typeLabel = 'Reflect';
+      break;
+    case 'rant':
+      typeLabel = 'Rant';
+      break;
+    case 'scribble':
+      typeLabel = 'Scribble';
+      break;
+    default:
+      typeLabel = 'Entry';
+  }
+
+  showDialog(
+    context: parentContext,
+    barrierDismissible: false,
+    builder: (dialogContext) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.black, width: 1.5),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              /// ===== TITLE =====
+              Text(
+                'Delete $typeLabel',
+                style: GoogleFonts.syneMono(
+                  color: const Color(0xFFFF7B6B),
+                  fontSize: 20,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              /// ===== DESCRIPTION =====
+              Text(
+                'Please confirm if you want to delete $typeLabel dated $date',
+                style: GoogleFonts.syneMono(
+                  fontSize: 16,
+                  height: 1.7,
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+
+                  /// CANCEL
+                  InkWell(
+                    onTap: () => Navigator.pop(dialogContext),
+                    child: SvgPicture.asset(
+                      'assets/Frame 177.svg',
+                      height: 36,
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  /// DELETE
+                  InkWell(
+                    onTap: () async {
+                      Navigator.pop(dialogContext);
+
+                      // Determine correct ViewModel if needed
+                      if (entry.entryType == 'rant') {
+                        final rantVM = parentContext.read<RantViewModel>();
+                        await rantVM.deleteRant(entry);
+                      }
+                      // Similarly, you can handle reflection/scribble ViewModels
+                      // else if (entry.entryType == 'reflection') { ... }
+
+                      Navigator.of(parentContext)
+                          .pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (_) => const HistoryScreen(),
+                        ),
+                            (route) => false,
+                      );
+
+                      ScaffoldMessenger.of(parentContext).showSnackBar(
+                        SnackBar(
+                          content: Text('$typeLabel deleted'),
+                        ),
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      'assets/Frame 22(2).svg',
+                      height: 36,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
+
+// void showDeleteRantDialog(
+//     BuildContext parentContext,
+//     JournalEntry entry,
+//     ) {
+//   final date = DateFormat('d MMM').format(entry.entryDate);
+//
+//   showDialog(
+//     context: parentContext,
+//     barrierDismissible: false,
+//     builder: (dialogContext) {
+//       return Dialog(
+//         backgroundColor: Colors.transparent,
+//         insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+//         child: Container(
+//           padding: const EdgeInsets.all(20),
+//           decoration: BoxDecoration(
+//             color: Colors.white,
+//             border: Border.all(color: Colors.black, width: 1.5),
+//           ),
+//           child: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//
+//               /// TITLE
+//               Text(
+//                 'Delete Rant',
+//                 style: GoogleFonts.syneMono(
+//                   color: const Color(0xFFFF7B6B),
+//                   fontSize: 20,
+//                 ),
+//               ),
+//
+//               const SizedBox(height: 12),
+//
+//               /// DESCRIPTION
+//               Text(
+//                 'Please confirm if you want to delete rant dated $date',
+//                 style: GoogleFonts.syneMono(
+//                   fontSize: 16,
+//                   height: 1.7,
+//                 ),
+//               ),
+//
+//               const SizedBox(height: 28),
+//
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.end,
+//                 children: [
+//
+//                   /// CANCEL
+//                   InkWell(
+//                     onTap: () => Navigator.pop(dialogContext),
+//                     child: SvgPicture.asset(
+//                       'assets/Frame 177.svg',
+//                       height: 36,
+//                     ),
+//                   ),
+//
+//                   const SizedBox(width: 16),
+//
+//                   /// DELETE
+//                   InkWell(
+//                     onTap: () async {
+//
+//                       Navigator.pop(dialogContext);
+//
+//                       final rantVM =
+//                       parentContext.read<RantViewModel>();
+//
+//                       /// ⭐ PASS ENTRY HERE
+//                       await rantVM.deleteRant(entry);
+//
+//                       /// Navigate
+//                       Navigator.of(parentContext)
+//                           .pushAndRemoveUntil(
+//                         MaterialPageRoute(
+//                           builder: (_) => const HistoryScreen(),
+//                         ),
+//                             (route) => false,
+//                       );
+//
+//                       /// Snackbar
+//                       ScaffoldMessenger.of(parentContext)
+//                           .showSnackBar(
+//                         const SnackBar(
+//                           content: Text('Rant deleted'),
+//                         ),
+//                       );
+//                     },
+//                     child: SvgPicture.asset(
+//                       'assets/Frame 22(2).svg',
+//                       height: 36,
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ],
+//           ),
+//         ),
+//       );
+//     },
+//   );
+// }
