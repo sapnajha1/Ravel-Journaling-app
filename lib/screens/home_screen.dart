@@ -185,19 +185,11 @@ class _HomeTabState extends State<HomeTab> {
     final direction = v < 0 ? -1 : 1;
 
     setState(() {
-      _swipeDirection = direction;
-      _isSwiping = true;
-    });
-
-    Future.delayed(const Duration(milliseconds: 340), () {
-      if (!mounted) return;
-      setState(() {
-        _frontIndex = direction == 1
-            ? (_frontIndex + 1) % _cards.length
-            : (_frontIndex + 2) % _cards.length;
-        _swipeDirection = 0;
-        _isSwiping = false;
-      });
+      _frontIndex = direction == 1
+          ? (_frontIndex + 1) % _cards.length
+          : (_frontIndex + 2) % _cards.length;
+      _swipeDirection = 0;
+      _isSwiping = false;
     });
   }
 
