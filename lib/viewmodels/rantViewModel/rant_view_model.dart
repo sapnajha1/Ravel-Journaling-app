@@ -38,7 +38,13 @@ class RantViewModel extends ChangeNotifier {
     );
     Navigator.pop(context);
   }
+  Future<void> deleteCurrentRant() async {
+    // API call OR local delete logic
+    // example:
+    // await repository.deleteRant(currentRantId);
 
+    notifyListeners();
+  }
 }
 
 
