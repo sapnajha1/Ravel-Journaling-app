@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../widgets/dotted_background.dart';
 import '../../design_system/app_colors.dart';
 import '../../design_system/app_spacing.dart';
 import 'app_text.dart';
-import 'dotted_background_painter.dart';
 import 'primary_button.dart';
 import 'secondary_button.dart';
 
@@ -18,6 +18,8 @@ class OnboardingScaffold extends StatelessWidget {
     this.onSecondaryPressed,
     this.showSkip = true,
     this.showBack = false,
+    this.backButtonFlex = 3,
+    this.nextButtonFlex = 7,
   });
 
   final Widget child;
@@ -28,6 +30,9 @@ class OnboardingScaffold extends StatelessWidget {
   final VoidCallback onSkipPressed;
   final bool showSkip;
   final bool showBack;
+  /// Back:Next width ratio (e.g. 3:7 for 30:70).
+  final int backButtonFlex;
+  final int nextButtonFlex;
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +40,7 @@ class OnboardingScaffold extends StatelessWidget {
       backgroundColor: AppColors.backgroundBase,
       body: Stack(
         children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: DottedBackgroundPainter(
-                dotColor: AppColors.textTertiary.withOpacity(0.3),
-              ),
-            ),
-          ),
+          const Positioned.fill(child: DottedBackground()),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.medium),
@@ -69,6 +68,7 @@ class OnboardingScaffold extends StatelessWidget {
                     children: [
                       if (showBack && secondaryLabel != null)
                         Expanded(
+                          flex: backButtonFlex,
                           child: SecondaryButton(
                             label: secondaryLabel!,
                             onPressed: onSecondaryPressed,
@@ -77,6 +77,7 @@ class OnboardingScaffold extends StatelessWidget {
                       if (showBack && secondaryLabel != null)
                         const SizedBox(width: AppSpacing.small),
                       Expanded(
+                        flex: nextButtonFlex,
                         child: PrimaryButton(
                           label: primaryLabel,
                           onPressed: onPrimaryPressed,

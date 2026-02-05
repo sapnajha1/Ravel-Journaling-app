@@ -40,7 +40,7 @@ class PrimaryButton extends StatelessWidget {
               child: AppText(
                 label,
                 style: AppTextStyle.bodyMedium,
-                color: AppColors.textPrimary,
+                color: Colors.white,
               ),
             ),
           ),

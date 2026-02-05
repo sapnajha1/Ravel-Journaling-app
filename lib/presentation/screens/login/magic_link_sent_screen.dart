@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../widgets/dotted_background.dart';
 import '../../../design_system/app_colors.dart';
-import '../../../design_system/app_radius.dart';
 import '../../../design_system/app_spacing.dart';
 import '../../app_providers.dart';
 import '../../widgets/app_text.dart';
-import '../../widgets/dotted_background_painter.dart';
 
 class MagicLinkSentScreen extends ConsumerStatefulWidget {
   const MagicLinkSentScreen({super.key, required this.email});
@@ -50,35 +50,18 @@ class _MagicLinkSentScreenState extends ConsumerState<MagicLinkSentScreen> {
       backgroundColor: AppColors.backgroundBase,
       body: Stack(
         children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: DottedBackgroundPainter(
-                dotColor: AppColors.textTertiary.withOpacity(0.3),
-              ),
-            ),
-          ),
+          const Positioned.fill(child: DottedBackground()),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.medium),
               child: Column(
                 children: [
                   const Spacer(),
-                  Container(
+                  SvgPicture.asset(
+                    'assets/cards/login-page-2.svg',
                     height: AppSpacing.section,
                     width: AppSpacing.section,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(AppRadius.circular),
-                      border: Border.all(
-                        color: AppColors.textPrimary,
-                        width: AppRadius.borderWidth,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.lock_outline,
-                      color: AppColors.textPrimary,
-                      size: AppSpacing.large,
-                    ),
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(height: AppSpacing.large),
                   AppText(

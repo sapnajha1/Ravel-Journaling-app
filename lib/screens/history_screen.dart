@@ -27,35 +27,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: Stack(
           children: [
             const Positioned.fill(child: DottedBackground()),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    'History',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      'History',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _HistoryViewToggle(
-                    isListView: _isListView,
-                    onToggle: (isListView) {
-                      setState(() => _isListView = isListView);
-                    },
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _HistoryViewToggle(
+                      isListView: _isListView,
+                      onToggle: (isListView) {
+                        setState(() => _isListView = isListView);
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: _buildBody(context, vm),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: _buildBody(context, vm),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

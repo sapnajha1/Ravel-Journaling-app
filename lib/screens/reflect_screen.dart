@@ -306,17 +306,19 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
   }
 
   Widget _buildEntryField() {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: TextField(
-        controller: _entryController,
-        scrollController: _entryScrollController,
-        maxLines: null,
-        expands: true,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          hintText: 'Start typing here...',
-        ),
+    return TextField(
+      controller: _entryController,
+      scrollController: _entryScrollController,
+      maxLines: null,
+      expands: true,
+      decoration: const InputDecoration(
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        filled: true,
+        fillColor: Colors.transparent,
+        hintText: 'Start typing here...',
+        contentPadding: EdgeInsets.zero,
       ),
     );
   }

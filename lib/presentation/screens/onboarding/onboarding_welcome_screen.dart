@@ -15,25 +15,27 @@ class OnboardingWelcomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return OnboardingScaffold(
       primaryLabel: "Let's Begin",
-      onPrimaryPressed: () => context.go('/onboarding/actions'),
+      onPrimaryPressed: () => context.push('/onboarding/actions'),
       onSkipPressed: () => context.go('/login'),
       child: Column(
         children: [
           const Spacer(),
           SvgPicture.asset(
-            'assets/Group 6.svg',
-            height: AppSpacing.section * 3,
+            'assets/cards/login-page-1.svg',
+            height: AppSpacing.section,
+            width: AppSpacing.section,
+            fit: BoxFit.contain,
           ),
           const SizedBox(height: AppSpacing.large),
           const AppText(
             'Welcome to your space\nfor honest feelings',
-            style: AppTextStyle.headlineSmall,
+            style: AppTextStyle.titleLarge,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.small),
           AppText(
             'A safe place to process emotions, vent frustrations, and express yourself without judgment.',
-            style: AppTextStyle.bodySmall,
+            style: AppTextStyle.bodyMedium,
             color: AppColors.textSecondary,
             textAlign: TextAlign.center,
           ),
