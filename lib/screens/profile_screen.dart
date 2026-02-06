@@ -6,19 +6,42 @@ import 'package:provider/provider.dart';
 import '../auth/auth_controller.dart';
 import '../viewmodels/rantViewModel/rant_view_model.dart';
 import '../views/home_view.dart';
-import 'edit_profile.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key, required this.authController, });
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key, required this.authController});
 
   final AuthController authController;
 
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _isEditingName = false;
+  late TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.authController.displayName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authController = widget.authController;
     final email = authController.userEmail ?? '';
-    final userName =
-        authController.userEmail?.split('@').first ?? 'User';
+    final displayName = authController.displayName;
+    final userName = displayName.trim().isNotEmpty ? displayName : (authController.userEmail?.split('@').first ?? 'User');
+
+    if (_isEditingName) {
+      return _buildEditNameContent(authController);
+    }
 
     return SingleChildScrollView(
       child: Padding(
@@ -49,28 +72,23 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
 
-                Text(
-                  userName,
-                  style: GoogleFonts.syneMono(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w400,
-                    height: 1.5,
-                    color: const Color(0xFF201B18),
+                Expanded(
+                  child: Text(
+                    userName,
+                    style: GoogleFonts.syneMono(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                      color: const Color(0xFF201B18),
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
 
-                /// PUSH TO EXTREME RIGHT
-                const Spacer(),
-
                 GestureDetector(
-                  onTap:
-                  // nEdit,
-                      () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => EditProfileScreen(authController: authController,),
-                      ),
-                    );
+                  onTap: () {
+                    _nameController.text = authController.displayName;
+                    setState(() => _isEditingName = true);
                   },
                   child: SvgPicture.asset(
                     'assets/pencil-3.svg',
@@ -130,9 +148,7 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
             GestureDetector(
-              onTap: () async {
-                await authController.signOut();
-              },
+              onTap: () => _showLogoutDialog(context, authController),
               child: SvgPicture.asset(
                 'assets/Frame 183.svg',
                 width: 91,
@@ -177,107 +193,249 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildEditNameContent(AuthController authController) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Edit Name',
+            style: GoogleFonts.syneMono(
+              fontSize: 24,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+              color: const Color(0xFF201B18),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Change Name',
+            style: GoogleFonts.syneMono(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              height: 1.7,
+              color: const Color(0xFF52443F),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF9F7),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: const Color(0xFF201B18),
+                width: 2,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFF201B18),
+                  offset: Offset(2, 2),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _nameController,
+              style: GoogleFonts.syneMono(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF201B18),
+              ),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  setState(() => _isEditingName = false);
+                },
+                child: SvgPicture.asset(
+                  'assets/cross.svg',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+              const SizedBox(width: 24),
+              GestureDetector(
+                onTap: () async {
+                  final newName = _nameController.text.trim();
+                  setState(() => _isEditingName = false);
+                  await authController.updateDisplayName(newName);
+                },
+                child: SvgPicture.asset(
+                  'assets/tick.svg',
+                  width: 34,
+                  height: 24,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-
-
+void _showLogoutDialog(BuildContext context, AuthController authController) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(
+        'Log out',
+        style: GoogleFonts.syneMono(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF201B18),
+        ),
+      ),
+      content: Text(
+        'Are you sure you want to log out?',
+        style: GoogleFonts.syneMono(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          height: 1.5,
+          color: const Color(0xFF52443F),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: Text(
+            'Cancel',
+            style: GoogleFonts.syneMono(
+              fontSize: 16,
+              color: const Color(0xFF52443F),
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(ctx);
+            await authController.signOut();
+          },
+          child: Text(
+            'Log out',
+            style: GoogleFonts.syneMono(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFFFF7B6B),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
 void showDeleteRantDialog(BuildContext context) {
-
   showDialog(
     context: context,
     barrierDismissible: false,
     builder: (context) {
+      final screenWidth = MediaQuery.of(context).size.width;
+      final maxWidth = screenWidth - 32;
       return Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.black, width: 1.5),
-            borderRadius: BorderRadius.zero, // square box
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// 🔴 TITLE
-              Text(
-                'Delete Account',
-                style: GoogleFonts.syneMono(
-                  color: const Color(0xFFFF7B6B),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w400,
-                  height: 1.5,
-                ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.black, width: 1.5),
+                borderRadius: BorderRadius.zero,
               ),
-
-              const SizedBox(height: 12),
-
-              /// ⚫ DESCRIPTION
-              Text(
-                'Please confirm to delete your account. Data can be saved in local files and accessed again later',
-                style: GoogleFonts.syneMono(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  height: 1.7,
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              const KeepJournalCheckbox(),
-
-
-              const SizedBox(height: 28),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  /// CANCEL BUTTON
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: SvgPicture.asset(
-                      'assets/Frame 22(2).svg',
-                      height: 48,
+                  Text(
+                    'Delete Account',
+                    style: GoogleFonts.syneMono(
+                      color: const Color(0xFFFF7B6B),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
                     ),
                   ),
-
-                  const SizedBox(width: 16),
-
-                  /// DELETE BUTTON
-                  InkWell(
-                    onTap: () async {
-                      Navigator.pop(context);
-
-                      final rantVM = context.read<RantViewModel>();
-                      await rantVM.deleteCurrentRant();
-
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (_) => const HomeView(),
-                        ),
-                            (route) => false,
-                      );
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Account Deleted'),
-                        ),
-                      );
-                    },
-                    child: SvgPicture.asset(
-                      'assets/Frame 177(1).svg',
-                      height: 48,
+                  const SizedBox(height: 12),
+                  Text(
+                    'Please confirm to delete your account. Data can be saved in local files and accessed again later',
+                    style: GoogleFonts.syneMono(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      height: 1.7,
                     ),
+                    softWrap: true,
+                  ),
+                  const SizedBox(height: 28),
+                  const KeepJournalCheckbox(),
+                  const SizedBox(height: 28),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => Navigator.pop(context),
+                          child: Center(
+                            child: SvgPicture.asset(
+                              'assets/Frame 22(2).svg',
+                              height: 48,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            Navigator.pop(context);
+
+                            final rantVM = context.read<RantViewModel>();
+                            await rantVM.deleteCurrentRant();
+
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (_) => const HomeView(),
+                              ),
+                              (route) => false,
+                            );
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Account Deleted'),
+                              ),
+                            );
+                          },
+                          child: Center(
+                            child: SvgPicture.asset(
+                              'assets/Frame 177(1).svg',
+                              height: 48,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       );
@@ -333,14 +491,16 @@ class _KeepJournalCheckboxState extends State<KeepJournalCheckbox> {
 
           const SizedBox(width: 12),
 
-          /// TEXT
-          Text(
-            'Keep my journal data in phone',
-            style: GoogleFonts.syneMono(
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              height: 1.7,
+          Expanded(
+            child: Text(
+              'Keep my journal data in phone',
+              style: GoogleFonts.syneMono(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                height: 1.7,
+              ),
+              softWrap: true,
             ),
           ),
         ],
