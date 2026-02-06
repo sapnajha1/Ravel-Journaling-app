@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../data/models/journal_entry.dart';
 import '../../data/repositories/journal_repository.dart';
 import '../recording/recording_view_model.dart';
 
@@ -14,7 +15,7 @@ class RantViewModel extends ChangeNotifier {
 
   RantViewModel({
     required this.recordingVM,
-    required this.journalRepository,
+  required this.journalRepository,
   });
 
   // Current stopRecording
@@ -61,6 +62,10 @@ class RantViewModel extends ChangeNotifier {
 
     notifyListeners();
   }
+  Future<void> deleteRant(JournalEntry entry) async {
+    // await repository.deleteEntry(entry.id);
+  }
+
 }
 
 

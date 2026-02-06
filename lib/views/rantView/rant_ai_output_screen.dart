@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'fire_animation.dart';
 
 class AIscreen extends StatelessWidget {
   const AIscreen({super.key});
@@ -25,39 +26,86 @@ class AIscreen extends StatelessWidget {
                   ),
                 ),
               ),
-              Column(
+                Column(
                   children: [
+                    /// 🟡 CENTER BLOCK (155 + line + 188)
+                    Expanded(
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            /// FRAME 155
+                            SvgPicture.asset(
+                              'assets/Frame 155(3).svg',
+                              width: 328 * scaleW,
+                              height: 156 * scaleH,
+                              fit: BoxFit.contain,
+                            ),
 
-                    const Spacer(),
-                    SvgPicture.asset(
-                      'assets/Frame 155.svg',
-                      width: 328 * scaleW,
-                      height: 156 * scaleH,
-                      fit: BoxFit.contain,
+                            SizedBox(height: 24 * scaleH),
+
+                            /// LINE 2
+                            SvgPicture.asset(
+                              'assets/Line 2.svg',
+                              width: 333 * scaleW,
+                              height: 1,
+                              fit: BoxFit.fill,
+                            ),
+
+                            SizedBox(height: 24 * scaleH),
+
+                            /// FRAME 188
+                            SvgPicture.asset(
+                              'assets/fireText2.svg',
+                              width: 333 * scaleW,
+                              height: 34 * scaleH,
+                              fit: BoxFit.contain,
+                            ),
+
+                            SizedBox(height: 24 * scaleH),
+
+                            /// FRAME 188
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const FireAnimation(),
+                                  ),
+                                );
+                              },
+                              child: SvgPicture.asset(
+                                'assets/letgo.svg',
+                                width: 333 * scaleW,
+                                height: 34 * scaleH,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+
+                          ],
+                        ),
+                      ),
                     ),
 
-                    const Spacer(),
-
-                    /// 🔘 BOTTOM BUTTONS
+                    /// 🔘 BOTTOM BUTTON
                     Padding(
                       padding: EdgeInsets.only(bottom: 24 * scaleH),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          SvgPicture.asset(
-                            'assets/Frame 156(1).svg',
-                            width: 156 * scaleW,
-                            height: 48 * scaleH,
-                          ),
-                          SvgPicture.asset(
-                            'assets/Frame 155(1).svg',
-                            width: 156 * scaleW,
-                            height: 48 * scaleH,
-                          ),
-                        ],
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).popUntil((route) => route.isFirst);
+
+                        },
+                        child: SvgPicture.asset(
+                          'assets/Frame 156(3).svg',
+                          width: 136 * scaleW,
+                          height: 48 * scaleH,
+                          fit: BoxFit.contain,
+                        ),
                       ),
-                      )
-                        ]),
+                    ),
+
+                  ],
+                ),
               ],)
           ),
     );

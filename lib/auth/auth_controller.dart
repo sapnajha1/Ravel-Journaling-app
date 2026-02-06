@@ -38,6 +38,11 @@ class AuthController extends ChangeNotifier {
   /// AuthGate can show this once on LoginScreen then clear it.
   String? sessionExpiredMessage;
 
+  String? _userName;
+
+  /// Expose user name
+  String? get userName => _userName;
+
   void _onAuthStateChange(AuthState state) {
     final newSession = state.session;
     final newUser = newSession?.user;
@@ -75,6 +80,11 @@ class AuthController extends ChangeNotifier {
     await Supabase.instance.client.auth.signOut();
     _session = null;
     _user = null;
+    notifyListeners();
+  }
+
+  void updateUserName(String name) {
+    _userName = name;
     notifyListeners();
   }
 

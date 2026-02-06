@@ -51,7 +51,7 @@ dependencies:
   # Deep linking so magic link opens the app
   app_links: ^6.3.2
   # Optional: check connectivity for better error messages
-  connectivity_plus: ^6.1.1
+  connectivity_plus: ^7.0.0
 
   # Local save for reflect prompt/entry
   shared_preferences: ^2.5.4
@@ -59,6 +59,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_painter_v2: ^2.1.0+1
+  lottie: ^3.3.2
 
 dev_dependencies:
   flutter_test:

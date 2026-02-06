@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:journal_app/views/rantView/rant_recording_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../data/repositories/journal_repository.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../viewmodels/rantViewModel/rant_view_model.dart';
 import '../viewmodels/recording/recording_view_model.dart';
@@ -89,7 +90,7 @@ class HomeView extends StatelessWidget {
                                   ChangeNotifierProvider(
                                     create: (_) => RantViewModel(
                                       recordingVM: recordingVM,
-                                      // historyVM: context.read<RantHistoryViewModel>(),
+                                      journalRepository: context.read<JournalRepository>(),                                      // historyVM: context.read<RantHistoryViewModel>(),
                                     ),
                                   ),
                                 ],

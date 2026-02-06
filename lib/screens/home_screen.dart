@@ -16,6 +16,7 @@ import '../viewmodels/recording/recording_view_model.dart';
 import '../views/rantView/rant_recording_screen.dart';
 import '../widgets/dotted_background.dart';
 import '../utils/date_formatters.dart';
+import 'edit_profile.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
 import 'reflect_screen.dart';
@@ -25,6 +26,7 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.authController});
 
   final AuthController authController;
+
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -49,6 +51,40 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
+    // final content =
+    // _selectedIndex == 0
+    //     ? HomeTab(
+    //   userEmail: widget.authController.userEmail ?? '',
+    //   onOpenCard: _openCard,
+    // )
+    //     : _selectedIndex == 1
+    //     ? ChangeNotifierProvider(
+    //   create: (_) => HistoryViewModel(
+    //     repository: _journalRepository,
+    //     connectivity: _connectivity,
+    //     userId: widget.authController.user?.id,
+    //   ),
+    //   child: const HistoryScreen(),
+    // )
+    //     : _selectedIndex == 2
+    //     ? ProfileScreen(
+    //   authController: widget.authController,
+    //   onEdit: () {
+    //     setState(() {
+    //       _selectedIndex = 3;
+    //     });
+    //   },
+    // )
+    //     : EditProfileScreen(
+    //   authController: widget.authController,
+    //   onBack: () {
+    //     setState(() {
+    //       _selectedIndex = 2;
+    //     });
+    //   },
+    // );
+
+
     final content = _selectedIndex == 0
         ? HomeTab(
             userEmail: widget.authController.userEmail ?? '',
@@ -64,6 +100,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const HistoryScreen(),
               )
             : ProfileScreen(authController: widget.authController);
+
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -185,11 +223,19 @@ class _HomeTabState extends State<HomeTab> {
     final direction = v < 0 ? -1 : 1;
 
     setState(() {
-      _frontIndex = direction == 1
-          ? (_frontIndex + 1) % _cards.length
-          : (_frontIndex + 2) % _cards.length;
-      _swipeDirection = 0;
-      _isSwiping = false;
+      _swipeDirection = direction;
+      _isSwiping = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 340), () {
+      if (!mounted) return;
+      setState(() {
+        _frontIndex = direction == 1
+            ? (_frontIndex + 1) % _cards.length
+            : (_frontIndex + 2) % _cards.length;
+        _swipeDirection = 0;
+        _isSwiping = false;
+      });
     });
   }
 
@@ -815,4 +861,9 @@ class _NavItem extends StatelessWidget {
     );
   }
 }
+
+enum ProfileViewMode { view, edit }
+
+ProfileViewMode _profileViewMode = ProfileViewMode.view;
+
 

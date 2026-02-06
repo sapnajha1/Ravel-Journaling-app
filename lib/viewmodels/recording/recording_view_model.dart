@@ -24,7 +24,6 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
     _speech.listen(
         onListeningTextChanged: (text) {
           updateFromSpeech(text);
-          // notifyListeners();
         },
         onListeningStateChanged: (state) {}
     );
