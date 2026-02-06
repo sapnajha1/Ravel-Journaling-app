@@ -141,7 +141,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                             'No prompt selected. You can write freely.',
                         style: TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.normal,
                           fontFamily: GoogleFonts.syneMono().fontFamily,
                         ),
                       ),
@@ -183,7 +183,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                               ? Colors.black54
                               : const Color(0xFFFF6E5A),
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.normal,
                           fontFamily: GoogleFonts.syneMono().fontFamily,
                         ),
                       ),
@@ -324,7 +324,11 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       scrollController: _entryScrollController,
       maxLines: null,
       expands: true,
-      style: GoogleFonts.gochiHand(fontSize: 20, height: 1.5),
+      style: GoogleFonts.gochiHand(
+        fontSize: 20,
+        height: 1.5,
+        fontWeight: FontWeight.w400,
+      ),
       decoration: InputDecoration(
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
@@ -332,7 +336,11 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
         filled: true,
         fillColor: Colors.transparent,
         hintText: 'Start typing here...',
-        hintStyle: GoogleFonts.gochiHand(fontSize: 20, height: 1.5),
+        hintStyle: GoogleFonts.gochiHand(
+          fontSize: 20,
+          height: 1.5,
+          fontWeight: FontWeight.w400,
+        ),
         contentPadding: EdgeInsets.zero,
       ),
     );

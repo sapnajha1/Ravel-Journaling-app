@@ -63,6 +63,7 @@ class AppTextStyles {
   static TextStyle get handwritten => GoogleFonts.gochiHand(
         fontSize: 20,
         height: 1.5,
+        fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
       );
 

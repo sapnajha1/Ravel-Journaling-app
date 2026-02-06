@@ -58,6 +58,16 @@ class PromptRepository {
     return _loadCachedPrompts();
   }
 
+  /// Returns the prompt with the given id from cache, or null if not found.
+  Prompt? getPromptById(String id) {
+    final prompts = _loadCachedPrompts();
+    try {
+      return prompts.firstWhere((p) => p.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> refreshReflectionPrompts() async {
     final prompts = await _fetchRemoteReflectionPrompts();
     await _cachePrompts(prompts);

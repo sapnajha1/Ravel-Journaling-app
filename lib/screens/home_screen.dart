@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   connectivity: _connectivity,
                   userId: widget.authController.user?.id,
                 ),
-                child: const HistoryScreen(),
+                child: HistoryScreen(journalRepository: _journalRepository),
               )
             : ProfileScreen(authController: widget.authController);
     return Scaffold(
@@ -690,8 +690,8 @@ class _Header extends StatelessWidget {
         Text(
           greeting,
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
+            fontSize: 22,
+            fontWeight: FontWeight.w400,
             color: Colors.black,
             fontFamily: GoogleFonts.syneMono().fontFamily,
           ),
