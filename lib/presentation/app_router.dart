@@ -56,7 +56,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoginFlow =
           location == '/login' || location == '/magic-link-sent';
 
-      if (!isOnboarded && !isOnboarding) {
+      // Allow "Skip to Login" to go directly to email screen; don't force back to onboarding
+      if (!isOnboarded && !isOnboarding && !isLoginFlow) {
         return '/onboarding/welcome';
       }
 

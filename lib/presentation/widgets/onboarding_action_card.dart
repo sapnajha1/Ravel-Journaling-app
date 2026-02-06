@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../design_system/app_colors.dart';
 import '../../design_system/app_radius.dart';
-import '../../design_system/app_shadows.dart';
 import '../../design_system/app_spacing.dart';
-import 'app_text.dart';
 
-/// Onboarding card for Reflect/Rant/Scribble. Icon has no border; optional background SVG for Rant.
+/// Onboarding card for Reflect/Rant/Scribble. Normal card with bottom shadow; title 16px (colored), description 14px.
 class OnboardingActionCard extends StatelessWidget {
   const OnboardingActionCard({
     super.key,
@@ -15,111 +14,87 @@ class OnboardingActionCard extends StatelessWidget {
     required this.description,
     this.iconAsset,
     this.iconTint,
-    this.backgroundSvg,
-  }) : assert(iconAsset != null || backgroundSvg != null,
-            'Provide iconAsset or backgroundSvg');
+    this.titleColor,
+  }) : assert(iconAsset != null, 'Provide iconAsset');
 
   final String title;
   final String description;
   final String? iconAsset;
   final Color? iconTint;
-  final String? backgroundSvg;
+  /// Color for the card title only (Reflect=purple, Rant=orange, Scribble=teal). Description uses primary text color.
+  final Color? titleColor;
+
+  static const double _titleSize = 16;
+  static const double _descriptionSize = 14;
 
   @override
   Widget build(BuildContext context) {
+    final content = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (iconAsset != null)
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.small),
+            child: SvgPicture.asset(
+              iconAsset!,
+              height: AppSpacing.xl,
+              width: AppSpacing.xl,
+              colorFilter: iconTint != null
+                  ? ColorFilter.mode(iconTint!, BlendMode.srcIn)
+                  : const ColorFilter.mode(
+                      AppColors.textPrimary,
+                      BlendMode.srcIn,
+                    ),
+            ),
+          ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: _titleSize,
+                  height: 1.4,
+                  fontWeight: FontWeight.w700,
+                  color: titleColor ?? AppColors.textPrimary,
+                  fontFamily: GoogleFonts.syneMono().fontFamily,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.micro),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: _descriptionSize,
+                  height: 1.4,
+                  color: AppColors.textPrimary,
+                  fontFamily: GoogleFonts.syneMono().fontFamily,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    const padding = EdgeInsets.all(AppSpacing.small);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: AppColors.textPrimary,
           width: AppRadius.borderWidth,
         ),
-        boxShadow: const [AppShadows.shadow5],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x30000000),
+            offset: Offset(0, 4),
+            blurRadius: 8,
+          ),
+        ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        child: backgroundSvg != null
-            ? Stack(
-                children: [
-                  Positioned.fill(
-                    child: SvgPicture.asset(
-                      backgroundSvg!,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.small),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AppText(
-                                title,
-                                style: AppTextStyle.titleSmall,
-                              ),
-                              const SizedBox(height: AppSpacing.micro),
-                              AppText(
-                                description,
-                                style: AppTextStyle.bodySmall,
-                                color: AppColors.textSecondary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              )
-            : Padding(
-                padding: const EdgeInsets.all(AppSpacing.small),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (iconAsset != null)
-                      Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.small),
-                        child: SvgPicture.asset(
-                          iconAsset!,
-                          height: AppSpacing.xl,
-                          width: AppSpacing.xl,
-                          colorFilter: iconTint != null
-                              ? ColorFilter.mode(
-                                  iconTint!,
-                                  BlendMode.srcIn,
-                                )
-                              : const ColorFilter.mode(
-                                  AppColors.textPrimary,
-                                  BlendMode.srcIn,
-                                ),
-                        ),
-                      ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppText(
-                            title,
-                            style: AppTextStyle.titleSmall,
-                          ),
-                          const SizedBox(height: AppSpacing.micro),
-                          AppText(
-                            description,
-                            style: AppTextStyle.bodySmall,
-                            color: AppColors.textSecondary,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-      ),
+      child: Padding(padding: padding, child: content),
     );
   }
 }

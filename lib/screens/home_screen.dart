@@ -52,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final content = _selectedIndex == 0
         ? HomeTab(
             userEmail: widget.authController.userEmail ?? '',
+            displayName: widget.authController.displayName,
             onOpenCard: _openCard,
           )
         : _selectedIndex == 1
@@ -134,10 +135,12 @@ class HomeTab extends StatefulWidget {
   const HomeTab({
     super.key,
     required this.userEmail,
+    this.displayName = '',
     required this.onOpenCard,
   });
 
   final String userEmail;
+  final String displayName;
   final void Function(_JournalCardType) onOpenCard;
 
   @override
@@ -172,8 +175,11 @@ class _HomeTabState extends State<HomeTab> {
   bool _isSwiping = false;
 
   String _displayName() {
+    if (widget.displayName.trim().isNotEmpty) {
+      return widget.displayName.trim();
+    }
     final email = widget.userEmail;
-    if (email.isEmpty) return 'Roshan';
+    if (email.isEmpty) return 'there';
     final local = email.split('@').first;
     if (local.isEmpty) return 'there';
     return local[0].toUpperCase() + local.substring(1);

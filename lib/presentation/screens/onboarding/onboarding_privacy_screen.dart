@@ -24,7 +24,10 @@ class OnboardingPrivacyScreen extends ConsumerWidget {
       },
       secondaryLabel: 'Back',
       onSecondaryPressed: () => context.pop(),
-      onSkipPressed: () => context.go('/login'),
+      onSkipPressed: () async {
+        await ref.read(onboardingStatusProvider.notifier).complete();
+        if (context.mounted) context.go('/login');
+      },
       showBack: true,
       backButtonFlex: 3,
       nextButtonFlex: 7,

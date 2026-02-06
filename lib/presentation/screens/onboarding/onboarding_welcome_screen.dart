@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../design_system/app_colors.dart';
 import '../../../design_system/app_spacing.dart';
+import '../../app_providers.dart';
 import '../../widgets/app_text.dart';
 import '../../widgets/onboarding_scaffold.dart';
 
@@ -16,7 +17,10 @@ class OnboardingWelcomeScreen extends ConsumerWidget {
     return OnboardingScaffold(
       primaryLabel: "Let's Begin",
       onPrimaryPressed: () => context.push('/onboarding/actions'),
-      onSkipPressed: () => context.go('/login'),
+      onSkipPressed: () async {
+        await ref.read(onboardingStatusProvider.notifier).complete();
+        if (context.mounted) context.go('/login');
+      },
       child: Column(
         children: [
           const Spacer(),

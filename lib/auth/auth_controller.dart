@@ -34,6 +34,33 @@ class AuthController extends ChangeNotifier {
   /// Current user email for display (e.g. on Home and Profile).
   String? get userEmail => _user?.email;
 
+  /// Display name from user metadata (e.g. full_name), or email prefix, or empty.
+  String get displayName {
+    if (_user == null) return '';
+    final meta = _user!.userMetadata;
+    if (meta != null) {
+      final name = meta['full_name']?.toString();
+      if (name != null && name.trim().isNotEmpty) return name.trim();
+    }
+    final email = _user!.email;
+    if (email != null && email.isNotEmpty) {
+      final at = email.indexOf('@');
+      return at > 0 ? email.substring(0, at) : email;
+    }
+    return '';
+  }
+
+  /// Update display name in Supabase user metadata.
+  Future<void> updateDisplayName(String name) async {
+    if (_user == null) return;
+    final trimmed = name.trim();
+    await Supabase.instance.client.auth.updateUser(
+      UserAttributes(data: {'full_name': trimmed.isEmpty ? null : trimmed}),
+    );
+    _user = Supabase.instance.client.auth.currentUser;
+    notifyListeners();
+  }
+
   /// Set when session was cleared due to error (expired/revoked), not user logout.
   /// AuthGate can show this once on LoginScreen then clear it.
   String? sessionExpiredMessage;
