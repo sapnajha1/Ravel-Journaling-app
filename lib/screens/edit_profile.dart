@@ -25,11 +25,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void initState() {
     super.initState();
     nameController = TextEditingController(
-      text: widget.authController.userEmail
-          ?.split('@')
-          .first ?? '',
+      text: widget.authController.displayName,
     );
-
   }
 
   @override
@@ -126,11 +123,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     const SizedBox(width: 24),
                     GestureDetector(
-                      onTap: () {
-                        widget.authController.updateUserName(
+                      onTap: () async {
+                        await widget.authController.updateDisplayName(
                           nameController.text.trim(),
                         );
-                        Navigator.pop(context);
+                        if (context.mounted) Navigator.pop(context);
                       },
                       child: SvgPicture.asset(
                         'assets/tick.svg',

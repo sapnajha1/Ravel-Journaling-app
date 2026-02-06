@@ -113,96 +113,84 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor: const Color(0xFFFFE9CC),
-          body: Stack(
-            children: [
-               Positioned.fill(
-                child: DottedBackground(
-                  dotColor: Color(0x18FF6E5A),
-                  spacing: 18,
-                  radius: 1.4,
-                ),
-              ),
-          
-              // Positioned.fill(
-              //   child: CustomPaint(
-              //     painter: _DottedBackgroundPainter(
-              //       dotColor: const Color(0x18FF6E5A),
-              //       spacing: 18,
-              //       radius: 1.4,
-              //     ),
-              //   ),
-              // ),
-          
-              /// ===== MAIN CONTENT =====
-              SafeArea(
-                child: Column(
+          body: SafeArea(
+            child: Stack(
+              children: [
+                const Positioned.fill(child: DottedBackground()),
+                /// ===== MAIN CONTENT =====
+                Positioned.fill(
+                  child: Column(
                   children: [
-                    SizedBox(height: 20 * scaleH),
-                          
-                    /// APP BAR
+                    /// APP BAR – at top like reflect screen (no gap)
                     figmaAppBar(
                       entryDate: DateTime.now(),
                       onBack: () => Navigator.of(context).pop(),
                     ),
                           
                           
-                    /// CENTER AREA
+                    /// CENTER AREA – waveform only; transcription on background (no box)
                     Expanded(
-                      child: Stack(
-                        children: [
-                          if (!recordingVM.isRecording &&
-                              recordingVM.displayText.isEmpty)
-                            Center(
+                      child: !recordingVM.isRecording &&
+                              recordingVM.displayText.isEmpty
+                          ? Center(
                               child: SvgPicture.asset(
                                 'assets/Frame 156(2).svg',
                                 width: 281 * scaleW,
                               ),
-                            ),
-                          
-                          /// WAVEFORM
-                          if (recordingVM.isRecording ||
-                              recordingVM.displayText.isNotEmpty)
-                            Positioned(
-                              top: 40 * scaleH,
-                              left: 60 * scaleW,
-                              child: simulatedWaveform(
-                                recordingVM,
-                                width: 240 * scaleW,
-                              ),
-                            ),
-                          
-                          /// TEXT AREA
-                          if (recordingVM.displayText.isNotEmpty)
-                            Positioned(
-                              top: 140 * scaleH,
-                              left: 16 * scaleW,
-                              right: 16 * scaleW,
-                              bottom: 40 * scaleH,
-                              child: SingleChildScrollView(
-                                reverse: true,
-                                padding: EdgeInsets.only(
-                                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                                ),
-                                child: TextField(
-                                  controller: recordingVM.textController,
-                                  maxLines: null,
-                                  keyboardType: TextInputType.multiline,
-                                  textAlignVertical: TextAlignVertical.top,
-                                  style:
-                                  GoogleFonts.gochiHand(
-                                    // fontFamily: 'SyneMono',
-                                    fontSize: 18 * scaleW,
-                                    height: 1.7,
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                /// Waveform only at top
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    top: 40 * scaleH,
+                                    left: 60 * scaleW,
+                                    right: 60 * scaleW,
                                   ),
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
+                                  child: Center(
+                                    child: simulatedWaveform(
+                                      recordingVM,
+                                      width: 240 * scaleW,
+                                    ),
                                   ),
                                 ),
-                              ),
+                                /// Transcription from top, just below waveform – no box
+                                if (recordingVM.displayText.isNotEmpty)
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: SingleChildScrollView(
+                                        reverse: false,
+                                        padding: EdgeInsets.only(
+                                          top: 12 * scaleH,
+                                          left: 16 * scaleW,
+                                          right: 16 * scaleW,
+                                          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                                        ),
+                                        child: TextField(
+                                          controller: recordingVM.textController,
+                                          maxLines: null,
+                                          keyboardType: TextInputType.multiline,
+                                          textAlignVertical: TextAlignVertical.top,
+                                          style: GoogleFonts.gochiHand(
+                                            fontSize: 18 * scaleW,
+                                            height: 1.7,
+                                          ),
+                                          decoration: const InputDecoration(
+                                            border: InputBorder.none,
+                                            enabledBorder: InputBorder.none,
+                                            focusedBorder: InputBorder.none,
+                                            filled: false,
+                                            contentPadding: EdgeInsets.zero,
+                                            isDense: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                        ],
-                      ),
                     ),
                           
                     /// MIC / STOP BUTTON
@@ -291,16 +279,20 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                         //    recordingVM.stopRecording();
                         // }
 
-                        // End ranting (ye hi save karta hai history me)
-                        await rantVM.endRanting(context);
+                        // End ranting (saves to history); get saved entry for "Let it go" delete
+                        final savedEntry = await rantVM.endRanting(context);
 
                         // Mark as navigated so PopScope/lifecycle doesn't interfere
                         _navigated = true;
 
-                        // Navigate to AI screen
+                        if (!context.mounted) return;
+                        // Navigate to AI screen with saved entry so "Let it go" can delete it
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const AIscreen(),
+                            builder: (_) => AIscreen(
+                              savedEntry: savedEntry,
+                              journalRepository: rantVM.journalRepository,
+                            ),
                           ),
                         );
                       },
@@ -314,10 +306,11 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                   ],
                 ),
               ),
-          
-          ]),
+              ],
+            ),
+          ),
         ),
-    )
+      ),
     );
   }
 }

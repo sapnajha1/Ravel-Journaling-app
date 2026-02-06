@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../widgets/dotted_background.dart';
+
 class FireAnimation extends StatelessWidget {
   const FireAnimation({super.key});
 
@@ -12,21 +14,12 @@ class FireAnimation extends StatelessWidget {
     final scaleH = size.height / 800;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFE9CC),
       body: SafeArea(
-          child:
-          Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _DottedBackgroundPainter(
-                    dotColor: const Color(0x18FF6E5A),
-                    spacing: 18,
-                    radius: 1.4,
-                  ),
-                ),
-              ),
-              Column(
+        child: Stack(
+          children: [
+            const Positioned.fill(child: DottedBackground()),
+            Positioned.fill(
+              child: Column(
                 children: [
                   Expanded(
                     child: Center(
@@ -72,36 +65,10 @@ class FireAnimation extends StatelessWidget {
 
                 ],
               ),
-            ],)
+            ),
+          ],
+        ),
       ),
     );
   }
-}
-
-
-
-class _DottedBackgroundPainter extends CustomPainter {
-  const _DottedBackgroundPainter({
-    required this.dotColor,
-    required this.spacing,
-    required this.radius,
-  });
-
-  final Color dotColor;
-  final double spacing;
-  final double radius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = dotColor;
-    for (double y = 0; y < size.height; y += spacing) {
-      for (double x = 0; x < size.width; x += spacing) {
-        canvas.drawCircle(Offset(x, y), radius, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) =>
-      false;
 }

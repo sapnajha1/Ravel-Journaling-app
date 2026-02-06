@@ -1,8 +1,11 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:journal_app/views/rantView/rant_recording_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../data/local/local_store.dart';
 import '../data/repositories/journal_repository.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../viewmodels/rantViewModel/rant_view_model.dart';
@@ -83,14 +86,18 @@ class HomeView extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (screenContext) {
                               final recordingVM = RecordingViewModel(screenContext);
-
+                              final journalRepository = JournalRepository(
+                                Supabase.instance.client,
+                                LocalStore.journalBox(),
+                                Connectivity(),
+                              );
                               return MultiProvider(
                                 providers: [
                                   ChangeNotifierProvider.value(value: recordingVM),
                                   ChangeNotifierProvider(
                                     create: (_) => RantViewModel(
                                       recordingVM: recordingVM,
-                                      journalRepository: context.read<JournalRepository>(),                                      // historyVM: context.read<RantHistoryViewModel>(),
+                                      journalRepository: journalRepository,
                                     ),
                                   ),
                                 ],

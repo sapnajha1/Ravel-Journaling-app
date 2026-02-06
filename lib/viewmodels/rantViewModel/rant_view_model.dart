@@ -30,14 +30,14 @@ class RantViewModel extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 50)); // optional, for async safety
   }
 
-  /// rant specific action
-  Future<void> endRanting(BuildContext context) async {
-     recordingVM.stopRecording();
+  /// Rant specific action. Saves the rant and returns the saved entry (or null if not saved).
+  Future<JournalEntry?> endRanting(BuildContext context) async {
+    recordingVM.stopRecording();
 
     final content = recordingVM.textController.text.trim();
     if (content.isEmpty) {
       Navigator.pop(context);
-      return;
+      return null;
     }
 
     final userId = Supabase.instance.client.auth.currentUser?.id;
@@ -46,15 +46,17 @@ class RantViewModel extends ChangeNotifier {
         const SnackBar(content: Text('Please sign in to save your rant.')),
       );
       Navigator.pop(context);
-      return;
+      return null;
     }
 
-    await journalRepository.saveRantEntry(
+    final entry = await journalRepository.saveRantEntry(
       userId: userId,
       content: content,
     );
     Navigator.pop(context);
+    return entry;
   }
+
   Future<void> deleteCurrentRant() async {
     // API call OR local delete logic
     // example:
@@ -63,7 +65,8 @@ class RantViewModel extends ChangeNotifier {
     notifyListeners();
   }
   Future<void> deleteRant(JournalEntry entry) async {
-    // await repository.deleteEntry(entry.id);
+    await journalRepository.deleteEntry(entry);
+    notifyListeners();
   }
 
 }

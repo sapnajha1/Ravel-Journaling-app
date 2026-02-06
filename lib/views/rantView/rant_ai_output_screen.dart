@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+
+import '../../data/models/journal_entry.dart';
+import '../../data/repositories/journal_repository.dart';
+import '../../widgets/dotted_background.dart';
 import 'fire_animation.dart';
 
 class AIscreen extends StatelessWidget {
-  const AIscreen({super.key});
+  const AIscreen({
+    super.key,
+    this.savedEntry,
+    required this.journalRepository,
+  });
+
+  final JournalEntry? savedEntry;
+  final JournalRepository journalRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -12,21 +23,12 @@ class AIscreen extends StatelessWidget {
     final scaleH = size.height / 800;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFE9CC),
       body: SafeArea(
-          child:
-            Stack(
-              children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _DottedBackgroundPainter(
-                    dotColor: const Color(0x18FF6E5A),
-                    spacing: 18,
-                    radius: 1.4,
-                  ),
-                ),
-              ),
-                Column(
+        child: Stack(
+          children: [
+            const Positioned.fill(child: DottedBackground()),
+            Positioned.fill(
+              child: Column(
                   children: [
                     /// 🟡 CENTER BLOCK (155 + line + 188)
                     Expanded(
@@ -64,15 +66,20 @@ class AIscreen extends StatelessWidget {
 
                             SizedBox(height: 24 * scaleH),
 
-                            /// FRAME 188
+                            /// Let it go: delete the saved rant then go to fire animation
                             InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const FireAnimation(),
-                                  ),
-                                );
+                              onTap: () async {
+                                if (savedEntry != null) {
+                                  await journalRepository.deleteEntry(savedEntry!);
+                                }
+                                if (context.mounted) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const FireAnimation(),
+                                    ),
+                                  );
+                                }
                               },
                               child: SvgPicture.asset(
                                 'assets/letgo.svg',
@@ -104,38 +111,12 @@ class AIscreen extends StatelessWidget {
                       ),
                     ),
 
-                  ],
-                ),
-              ],)
-          ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
-}
-
-
-
-class _DottedBackgroundPainter extends CustomPainter {
-  const _DottedBackgroundPainter({
-    required this.dotColor,
-    required this.spacing,
-    required this.radius,
-  });
-
-  final Color dotColor;
-  final double spacing;
-  final double radius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = dotColor;
-    for (double y = 0; y < size.height; y += spacing) {
-      for (double x = 0; x < size.width; x += spacing) {
-        canvas.drawCircle(Offset(x, y), radius, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) =>
-      false;
 }

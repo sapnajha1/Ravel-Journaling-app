@@ -3,11 +3,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-// import 'package:flutter_painter/flutter_painter.dart';
+import 'package:flutter_painter/flutter_painter.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter_painter_v2/flutter_painter.dart';
-import 'package:flutter_painter_v2/flutter_painter_extensions.dart';
-import 'package:flutter_painter_v2/flutter_painter_pure.dart';
 
 /// PaintScreen
 ///

@@ -78,6 +78,43 @@ class JournalRepository {
     }
   }
 
+  Future<void> updateEntry(JournalEntry entry) async {
+    await _box.put(entry.localId, entry.toJson());
+    final isOnline = await _isOnline();
+    if (isOnline && entry.remoteId != null) {
+      await _updateRemoteEntry(entry);
+    }
+  }
+
+  Future<void> deleteEntry(JournalEntry entry) async {
+    await _box.delete(entry.localId);
+    final isOnline = await _isOnline();
+    final remoteId = entry.remoteId;
+    if (isOnline && remoteId != null) {
+      await _client
+          .from('journal_entries')
+          .delete()
+          .match({'id': remoteId});
+    }
+  }
+
+  Future<void> _updateRemoteEntry(JournalEntry entry) async {
+    final remoteId = entry.remoteId;
+    if (remoteId == null) return;
+    await _client.from('journal_entries').update({
+      'content': entry.content,
+      'title': entry.title,
+      'entry_date': _dateOnly(entry.entryDate),
+    }).match({'id': remoteId});
+  }
+
+  String _dateOnly(DateTime value) {
+    final year = value.year.toString().padLeft(4, '0');
+    final month = value.month.toString().padLeft(2, '0');
+    final day = value.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
+  }
+
   Future<List<JournalEntry>> fetchHistoryEntries(String userId) async {
     final localEntries = _localEntriesForUser(userId);
     final isOnline = await _isOnline();
@@ -114,7 +151,7 @@ class JournalRepository {
   Future<List<JournalEntry>> _fetchRemoteEntries(String userId) async {
     final response = await _client
         .from('journal_entries')
-        .select('id, user_id, entry_type, prompt_id, title, content, entry_date')
+        .select('id, user_id, entry_type, prompt_id, title, content, entry_date, created_at')
         .eq('user_id', userId)
         .order('entry_date', ascending: false);
     return (response as List<dynamic>)
