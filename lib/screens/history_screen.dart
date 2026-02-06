@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -33,13 +34,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 12),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
                       'History',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
+                        fontFamily: GoogleFonts.syneMono().fontFamily,
                       ),
                     ),
                   ),
@@ -68,10 +70,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildBody(BuildContext context, HistoryViewModel vm) {
     if (!_isListView) {
-      return const Center(
+      return Center(
         child: Text(
           'Calendar view coming soon',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontFamily: GoogleFonts.syneMono().fontFamily,
+          ),
         ),
       );
     }
@@ -81,14 +86,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
 
     if (vm.errorMessage != null) {
-      return Center(child: Text(vm.errorMessage!));
+      return Center(
+        child: Text(
+          vm.errorMessage!,
+          style: TextStyle(fontFamily: GoogleFonts.syneMono().fontFamily),
+        ),
+      );
     }
 
     if (vm.entries.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           'No entries yet',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontFamily: GoogleFonts.syneMono().fontFamily,
+          ),
         ),
       );
     }
@@ -217,10 +230,11 @@ class _ToggleButton extends StatelessWidget {
         child: Center(
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
               fontSize: 12,
               fontWeight: FontWeight.w600,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
         ),
@@ -256,6 +270,7 @@ class _ToggleButton extends StatelessWidget {
               color: isActive ? Colors.white : Colors.black,
               fontSize: 12,
               fontWeight: FontWeight.w600,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
         ),
@@ -317,9 +332,10 @@ class _DatePill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.w700,
           fontSize: 12,
+          fontFamily: GoogleFonts.syneMono().fontFamily,
         ),
       ),
     );
@@ -360,18 +376,20 @@ class _HistoryEntryCard extends StatelessWidget {
                   ),
                   child: Text(
                     typeLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
+                      fontFamily: GoogleFonts.syneMono().fontFamily,
                     ),
                   ),
                 ),
                 const Spacer(),
                 Text(
                   timeLabel,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
                   ),
                 ),
               ],
@@ -381,9 +399,10 @@ class _HistoryEntryCard extends StatelessWidget {
               entry.content,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 height: 1.4,
+                fontFamily: GoogleFonts.syneMono().fontFamily,
               ),
             ),
           ],
@@ -462,9 +481,10 @@ class HistoryEntryDetailScreen extends StatelessWidget {
                     child: SingleChildScrollView(
                       child: Text(
                         entry.content,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           height: 1.6,
+                          fontFamily: GoogleFonts.syneMono().fontFamily,
                         ),
                       ),
                     ),
@@ -537,17 +557,19 @@ class _DetailTopBar extends StatelessWidget {
           const Spacer(),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
           const SizedBox(width: 6),
           Text(
             dateText,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
           const Spacer(),

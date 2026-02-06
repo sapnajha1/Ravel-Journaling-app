@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../features/reflect/reflect_controller.dart';
 import '../widgets/dotted_background.dart';
@@ -124,9 +125,10 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                       state.isOffline
                           ? 'Offline mode • ${state.pendingSyncCount} unsynced'
                           : '${state.pendingSyncCount} unsynced • syncing soon',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
+                        fontFamily: GoogleFonts.syneMono().fontFamily,
                       ),
                     ),
                   ),
@@ -137,9 +139,10 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                       child: Text(
                         state.prompt?.text ??
                             'No prompt selected. You can write freely.',
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 20,
                           fontWeight: FontWeight.w700,
+                          fontFamily: GoogleFonts.syneMono().fontFamily,
                         ),
                       ),
                     ),
@@ -179,8 +182,9 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                           color: state.isLoading
                               ? Colors.black54
                               : const Color(0xFFFF6E5A),
-                          fontSize: 12,
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
+                          fontFamily: GoogleFonts.syneMono().fontFamily,
                         ),
                       ),
                     ],
@@ -245,9 +249,12 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                                     AlwaysStoppedAnimation<Color>(Colors.black),
                               ),
                             )
-                          : const Text(
+                          : Text(
                               'End Session',
-                              style: TextStyle(fontWeight: FontWeight.w700),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontFamily: GoogleFonts.syneMono().fontFamily,
+                              ),
                             ),
                     ),
                   ],
@@ -284,17 +291,23 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                   child: const Icon(Icons.self_improvement, size: 28),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'You showed up for yourself today.\nThat takes courage',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
+                  ),
                 ),
                 const Spacer(),
                 _ShadowButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text(
+                  child: Text(
                     'Back to Home',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontFamily: GoogleFonts.syneMono().fontFamily,
+                    ),
                   ),
                 ),
               ],
@@ -311,13 +324,15 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       scrollController: _entryScrollController,
       maxLines: null,
       expands: true,
-      decoration: const InputDecoration(
+      style: GoogleFonts.gochiHand(fontSize: 20, height: 1.5),
+      decoration: InputDecoration(
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
         filled: true,
         fillColor: Colors.transparent,
         hintText: 'Start typing here...',
+        hintStyle: GoogleFonts.gochiHand(fontSize: 20, height: 1.5),
         contentPadding: EdgeInsets.zero,
       ),
     );
@@ -386,9 +401,10 @@ class _TopBar extends StatelessWidget {
           const Spacer(),
           Text(
             dateText,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
           const Spacer(),
@@ -433,7 +449,14 @@ class _ShadowButton extends StatelessWidget {
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                child: Center(child: DefaultTextStyle.merge(child: child)),
+                child: Center(
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      fontFamily: GoogleFonts.syneMono().fontFamily,
+                    ),
+                    child: child,
+                  ),
+                ),
               ),
             ),
           ),

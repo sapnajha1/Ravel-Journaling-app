@@ -578,10 +578,11 @@ class _CardVisual extends StatelessWidget {
                 child: Text(
                   data.title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: Colors.black,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
                   ),
                 ),
               ),
@@ -600,10 +601,11 @@ class _CardVisual extends StatelessWidget {
                   child: Text(
                     data.description,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       height: 1.4,
                       fontWeight: FontWeight.w600,
+                      fontFamily: GoogleFonts.syneMono().fontFamily,
                     ),
                   ),
                 ),
@@ -624,7 +626,12 @@ class _CardVisual extends StatelessWidget {
                   child: Padding(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                    child: Text(data.buttonText),
+                    child: Text(
+                      data.buttonText,
+                      style: TextStyle(
+                        fontFamily: GoogleFonts.syneMono().fontFamily,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -671,20 +678,22 @@ class _Header extends StatelessWidget {
           ),
           child: Text(
             dateText,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
               fontSize: 12,
               fontWeight: FontWeight.w800,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
         ),
         const SizedBox(height: 16),
         Text(
           greeting,
-          style: const TextStyle(
-            fontSize: 22,
+          style: TextStyle(
+            fontSize: 24,
             fontWeight: FontWeight.w600,
             color: Colors.black,
+            fontFamily: GoogleFonts.syneMono().fontFamily,
           ),
         ),
       ],
@@ -799,10 +808,11 @@ class _NavItem extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           label,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
+                            fontFamily: GoogleFonts.syneMono().fontFamily,
                           ),
                         ),
                       ],
