@@ -52,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final content = _selectedIndex == 0
         ? HomeTab(
             userEmail: widget.authController.userEmail ?? '',
+            displayName: widget.authController.displayName,
             onOpenCard: _openCard,
           )
         : _selectedIndex == 1
@@ -61,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   connectivity: _connectivity,
                   userId: widget.authController.user?.id,
                 ),
-                child: const HistoryScreen(),
+                child: HistoryScreen(journalRepository: _journalRepository),
               )
             : ProfileScreen(authController: widget.authController);
     return Scaffold(
@@ -74,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.fromLTRB(16, 4, 16, math.max(12, bottomInset + 8)),
+        padding: EdgeInsets.fromLTRB(16, 4, 16, math.max(6, bottomInset + 2)),
         child: _CustomBottomBar(
           selectedIndex: _selectedIndex,
           onTap: (index) => setState(() => _selectedIndex = index),
@@ -134,10 +135,12 @@ class HomeTab extends StatefulWidget {
   const HomeTab({
     super.key,
     required this.userEmail,
+    this.displayName = '',
     required this.onOpenCard,
   });
 
   final String userEmail;
+  final String displayName;
   final void Function(_JournalCardType) onOpenCard;
 
   @override
@@ -172,8 +175,11 @@ class _HomeTabState extends State<HomeTab> {
   bool _isSwiping = false;
 
   String _displayName() {
+    if (widget.displayName.trim().isNotEmpty) {
+      return widget.displayName.trim();
+    }
     final email = widget.userEmail;
-    if (email.isEmpty) return 'Roshan';
+    if (email.isEmpty) return 'there';
     final local = email.split('@').first;
     if (local.isEmpty) return 'there';
     return local[0].toUpperCase() + local.substring(1);
@@ -578,10 +584,11 @@ class _CardVisual extends StatelessWidget {
                 child: Text(
                   data.title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: Colors.black,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
                   ),
                 ),
               ),
@@ -600,10 +607,11 @@ class _CardVisual extends StatelessWidget {
                   child: Text(
                     data.description,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       height: 1.4,
                       fontWeight: FontWeight.w600,
+                      fontFamily: GoogleFonts.syneMono().fontFamily,
                     ),
                   ),
                 ),
@@ -624,7 +632,12 @@ class _CardVisual extends StatelessWidget {
                   child: Padding(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                    child: Text(data.buttonText),
+                    child: Text(
+                      data.buttonText,
+                      style: TextStyle(
+                        fontFamily: GoogleFonts.syneMono().fontFamily,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -671,20 +684,22 @@ class _Header extends StatelessWidget {
           ),
           child: Text(
             dateText,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
               fontSize: 12,
               fontWeight: FontWeight.w800,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
         ),
         const SizedBox(height: 16),
         Text(
           greeting,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 22,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w400,
             color: Colors.black,
+            fontFamily: GoogleFonts.syneMono().fontFamily,
           ),
         ),
       ],
@@ -704,7 +719,7 @@ class _CustomBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 64,
+      height: 58,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -775,39 +790,53 @@ class _NavItem extends StatelessWidget {
         onTap: onTap,
         child: Center(
           child: selected
-              ? Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: active,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x33000000),
-                        blurRadius: 8,
-                        offset: Offset(0, 4),
+              ? LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon, size: 20, color: Colors.white),
-                      if (label.isNotEmpty) ...[
-                        const SizedBox(width: 6),
-                        Text(
-                          label,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth,
+                        maxHeight: 48,
+                      ),
+                      decoration: BoxDecoration(
+                        color: active,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x33000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 18, color: Colors.white),
+                          if (label.isNotEmpty) ...[
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                label,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                  fontFamily: GoogleFonts.syneMono().fontFamily,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  },
                 )
               : Icon(icon, size: 22, color: inactive),
         ),

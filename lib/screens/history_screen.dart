@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../data/models/journal_entry.dart';
+import '../data/repositories/journal_repository.dart';
+import '../design_system/app_colors.dart';
+import '../features/reflect/reflect_controller.dart';
 import '../viewmodels/history_view_model.dart';
 import '../widgets/dotted_background.dart';
 import '../widgets/history_card.dart';
 
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
+  const HistoryScreen({super.key, required this.journalRepository});
+
+  final JournalRepository journalRepository;
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -31,13 +39,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 12),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
                     'History',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
+                      fontFamily: GoogleFonts.syneMono().fontFamily,
                     ),
                   ),
                 ),
@@ -65,10 +74,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildBody(BuildContext context, HistoryViewModel vm) {
     if (!_isListView) {
-      return const Center(
+      return Center(
         child: Text(
           'Calendar view coming soon',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontFamily: GoogleFonts.syneMono().fontFamily,
+          ),
         ),
       );
     }
@@ -78,14 +90,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
 
     if (vm.errorMessage != null) {
-      return Center(child: Text(vm.errorMessage!));
+      return Center(
+        child: Text(
+          vm.errorMessage!,
+          style: TextStyle(fontFamily: GoogleFonts.syneMono().fontFamily),
+        ),
+      );
     }
 
     if (vm.entries.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           'No entries yet',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontFamily: GoogleFonts.syneMono().fontFamily,
+          ),
         ),
       );
     }
@@ -99,12 +119,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
         return _HistorySection(
           label: _sectionLabel(section.date),
           entries: section.entries,
-          onTapEntry: (entry) {
-            Navigator.of(context).push(
+          onTapEntry: (entry) async {
+            await Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => HistoryEntryDetailScreen(entry: entry),
+                builder: (_) => HistoryEntryDetailScreen(
+                  entry: entry,
+                  journalRepository: widget.journalRepository,
+                ),
               ),
             );
+            if (context.mounted) {
+              context.read<HistoryViewModel>().refresh();
+            }
           },
         );
       },
@@ -214,10 +240,11 @@ class _ToggleButton extends StatelessWidget {
         child: Center(
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
               fontSize: 12,
               fontWeight: FontWeight.w600,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
         ),
@@ -253,6 +280,7 @@ class _ToggleButton extends StatelessWidget {
               color: isActive ? Colors.white : Colors.black,
               fontSize: 12,
               fontWeight: FontWeight.w600,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
         ),
@@ -314,9 +342,10 @@ class _DatePill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.w700,
           fontSize: 12,
+          fontFamily: GoogleFonts.syneMono().fontFamily,
         ),
       ),
     );
@@ -332,9 +361,15 @@ class _HistoryEntryCard extends StatelessWidget {
   final JournalEntry entry;
   final VoidCallback onTap;
 
+  static String formatTimeOnly(DateTime dateTime) {
+    final local = dateTime.isUtc ? dateTime.toLocal() : dateTime;
+    return DateFormat('h:mm a').format(local);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final timeLabel = DateFormat('h:mm a').format(entry.entryDate);
+    final dateTimeForDisplay = entry.createdTimestamp ?? entry.entryDate;
+    final timeLabel = formatTimeOnly(dateTimeForDisplay);
     final typeLabel = _typeLabel(entry.entryType);
     final typeColor = _typeColor(entry.entryType);
 
@@ -357,18 +392,20 @@ class _HistoryEntryCard extends StatelessWidget {
                   ),
                   child: Text(
                     typeLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
+                      fontFamily: GoogleFonts.syneMono().fontFamily,
                     ),
                   ),
                 ),
                 const Spacer(),
                 Text(
                   timeLabel,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.normal,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
                   ),
                 ),
               ],
@@ -378,9 +415,11 @@ class _HistoryEntryCard extends StatelessWidget {
               entry.content,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 height: 1.4,
+                fontWeight: FontWeight.normal,
+                fontFamily: GoogleFonts.syneMono().fontFamily,
               ),
             ),
           ],
@@ -430,44 +469,333 @@ class _HistoryEntryCard extends StatelessWidget {
   }
 }
 
-class HistoryEntryDetailScreen extends StatelessWidget {
-  const HistoryEntryDetailScreen({super.key, required this.entry});
+class HistoryEntryDetailScreen extends ConsumerStatefulWidget {
+  const HistoryEntryDetailScreen({
+    super.key,
+    required this.entry,
+    required this.journalRepository,
+  });
 
   final JournalEntry entry;
+  final JournalRepository journalRepository;
+
+  @override
+  ConsumerState<HistoryEntryDetailScreen> createState() =>
+      _HistoryEntryDetailScreenState();
+}
+
+class _HistoryEntryDetailScreenState
+    extends ConsumerState<HistoryEntryDetailScreen> {
+  late final TextEditingController _contentController;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _contentController = TextEditingController(text: widget.entry.content);
+  }
+
+  @override
+  void dispose() {
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  String _dateLabel(DateTime date) {
+    final monthName = DateFormat('MMMM').format(date);
+    return '${_ordinal(date.day)} $monthName ${date.year}';
+  }
+
+  String _ordinal(int day) {
+    if (day >= 11 && day <= 13) return '${day}th';
+    switch (day % 10) {
+      case 1:
+        return '${day}st';
+      case 2:
+        return '${day}nd';
+      case 3:
+        return '${day}rd';
+      default:
+        return '${day}th';
+    }
+  }
+
+  String _todayOrDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final entryDay = DateTime(date.year, date.month, date.day);
+    final monthName = DateFormat('MMM').format(date);
+    final dayOrdinal = _ordinal(date.day);
+    if (entryDay == today) {
+      return 'Today · $dayOrdinal $monthName';
+    }
+    return '$dayOrdinal $monthName ${date.year}';
+  }
+
+  Future<void> _saveChanges() async {
+    final content = _contentController.text.trim();
+    if (content.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Content cannot be empty')),
+      );
+      return;
+    }
+    setState(() => _isSaving = true);
+    try {
+      final updated = widget.entry.copyWith(content: content);
+      await widget.journalRepository.updateEntry(updated);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Changes saved')),
+      );
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final typeLabel = _deleteTypeLabel(widget.entry.entryType);
+    final typeLower = typeLabel.toLowerCase();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => _DeleteConfirmDialog(
+        title: 'Delete $typeLabel',
+        typeLower: typeLower,
+        dateLabel: _dateLabel(widget.entry.entryDate),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await widget.journalRepository.deleteEntry(widget.entry);
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete: $e')),
+      );
+    }
+  }
+
+  String _deleteTypeLabel(String type) {
+    switch (type) {
+      case 'reflection':
+        return 'Reflection';
+      case 'rant':
+        return 'Rant';
+      case 'scribble':
+        return 'Scribble';
+      default:
+        return 'Entry';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isReflection = widget.entry.entryType == 'reflection';
+    final promptText = isReflection && widget.entry.promptId != null
+        ? ref.read(promptRepositoryProvider).getPromptById(widget.entry.promptId!)
+        : null;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
             const Positioned.fill(child: DottedBackground()),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _DetailTopBar(
-                  title: _detailTitle(entry.entryType),
-                  dateText:
-                      'Today, ${DateFormat('d MMM').format(entry.entryDate)}',
-                  onBack: () => Navigator.of(context).pop(),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: SingleChildScrollView(
-                      child: Text(
-                        entry.content,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          height: 1.6,
-                        ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _HistoryDetailTopBar(
+                    dateText: _todayOrDate(widget.entry.entryDate),
+                    onBack: () => Navigator.of(context).pop(),
+                    onDelete: _confirmDelete,
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (promptText != null) ...[
+                            Text(
+                              promptText.text,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.normal,
+                                color: AppColors.textPrimary,
+                                fontFamily: GoogleFonts.syneMono().fontFamily,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                          Expanded(
+                            child: TextField(
+                              controller: _contentController,
+                              maxLines: null,
+                              expands: true,
+                              style: GoogleFonts.gochiHand(
+                                fontSize: 20,
+                                height: 1.5,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0xFF2A2A2A),
+                                      blurRadius: 0,
+                                      offset: Offset(2, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: SizedBox(
+                                  width: 42,
+                                  height: 42,
+                                  child: SvgPicture.asset('assets/cards/mic.svg'),
+                                ),
+                              ),
+                              const Spacer(),
+                              _HistoryShadowButton(
+                                onPressed: _isSaving ? null : _saveChanges,
+                                child: _isSaving
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<
+                                              Color>(Colors.black),
+                                        ),
+                                      )
+                                    : Text(
+                                        'Save Changes',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontFamily:
+                                              GoogleFonts.syneMono().fontFamily,
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DeleteConfirmDialog extends StatelessWidget {
+  const _DeleteConfirmDialog({
+    required this.title,
+    required this.typeLower,
+    required this.dateLabel,
+  });
+
+  final String title;
+  final String typeLower;
+  final String dateLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.primaryBase, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x50000000),
+              blurRadius: 12,
+              offset: Offset(2, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 24,
+                color: AppColors.primaryBase,
+                fontWeight: FontWeight.w700,
+                fontFamily: GoogleFonts.syneMono().fontFamily,
+              ),
+            ),
+            const SizedBox(height: 16),
+            RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textPrimary,
+                  fontFamily: GoogleFonts.syneMono().fontFamily,
                 ),
-                const SizedBox(height: 12),
+                children: [
+                  TextSpan(
+                      text:
+                          'Please confirm if you want to delete the $typeLower dated '),
+                  TextSpan(
+                    text: dateLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const TextSpan(text: '.'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: _DialogButton(
+                    label: 'Cancel',
+                    primary: false,
+                    onPressed: () => Navigator.of(context).pop(false),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _DialogButton(
+                    label: 'Delete',
+                    primary: true,
+                    onPressed: () => Navigator.of(context).pop(true),
+                  ),
+                ),
               ],
             ),
           ],
@@ -475,31 +803,72 @@ class HistoryEntryDetailScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _detailTitle(String type) {
-    switch (type) {
-      case 'reflection':
-        return 'Reflect - Filled';
-      case 'rant':
-        return 'Rant - Filled';
-      case 'scribble':
-        return 'Scribble - Filled';
-      default:
-        return 'Entry - Filled';
-    }
+class _DialogButton extends StatelessWidget {
+  const _DialogButton({
+    required this.label,
+    required this.primary,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool primary;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        color: primary ? AppColors.primaryBase : Colors.white,
+        border: Border.all(
+          color: AppColors.primaryBase,
+          width: primary ? 0 : 2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF2A2A2A),
+            blurRadius: 0,
+            offset: Offset(2, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(6),
+          child: SizedBox(
+            height: 44,
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: primary ? Colors.white : AppColors.primaryBase,
+                  fontFamily: GoogleFonts.syneMono().fontFamily,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
-class _DetailTopBar extends StatelessWidget {
-  const _DetailTopBar({
-    required this.title,
+class _HistoryDetailTopBar extends StatelessWidget {
+  const _HistoryDetailTopBar({
     required this.dateText,
     required this.onBack,
+    required this.onDelete,
   });
 
-  final String title;
   final String dateText;
   final VoidCallback onBack;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -533,23 +902,73 @@ class _DetailTopBar extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Text(
             dateText,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
           ),
           const Spacer(),
-          const SizedBox(width: 24),
+          IconButton(
+            onPressed: onDelete,
+            icon: const Icon(Icons.delete_outline),
+            color: AppColors.primaryBase,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _HistoryShadowButton extends StatelessWidget {
+  const _HistoryShadowButton({required this.onPressed, required this.child});
+
+  final VoidCallback? onPressed;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: const Border(
+          right: BorderSide(color: Colors.black, width: 1.5),
+          bottom: BorderSide(color: Colors.black, width: 1.5),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF2A2A2A),
+            blurRadius: 0,
+            offset: Offset(2, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Material(
+          color: const Color(0xFFFF6E5A),
+          child: InkWell(
+            onTap: onPressed,
+            child: SizedBox(
+              height: 36,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                child: Center(
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      fontFamily: GoogleFonts.syneMono().fontFamily,
+                    ),
+                    child: child,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -66,7 +66,7 @@ class RantRecordingScreen extends StatelessWidget {
                               ),
                             ),
 
-                          /// TEXT AREA
+                          /// TEXT AREA (no box, same as dotted background)
                           if (recordingVM.displayText.isNotEmpty)
                             Positioned(
                               top: (88 + 80 + 24) * scaleH,
@@ -90,6 +90,11 @@ class RantRecordingScreen extends StatelessWidget {
                                   ),
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    filled: true,
+                                    fillColor: Colors.transparent,
+                                    contentPadding: EdgeInsets.zero,
                                   ),
                                 ),
                               ),

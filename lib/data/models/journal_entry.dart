@@ -9,6 +9,7 @@ class JournalEntry {
     this.title,
     this.isSynced = false,
     this.remoteId,
+    this.createdTimestamp,
   });
 
   final String localId;
@@ -20,6 +21,8 @@ class JournalEntry {
   final DateTime entryDate;
   final bool isSynced;
   final String? remoteId;
+  /// Creation time from database (e.g. created_at / created_timestamp). Used for display on history card.
+  final DateTime? createdTimestamp;
 
   JournalEntry copyWith({
     String? localId,
@@ -31,6 +34,7 @@ class JournalEntry {
     DateTime? entryDate,
     bool? isSynced,
     String? remoteId,
+    DateTime? createdTimestamp,
   }) {
     return JournalEntry(
       localId: localId ?? this.localId,
@@ -42,6 +46,7 @@ class JournalEntry {
       entryDate: entryDate ?? this.entryDate,
       isSynced: isSynced ?? this.isSynced,
       remoteId: remoteId ?? this.remoteId,
+      createdTimestamp: createdTimestamp ?? this.createdTimestamp,
     );
   }
 
@@ -55,6 +60,7 @@ class JournalEntry {
         'entry_date': entryDate.toIso8601String(),
         'is_synced': isSynced,
         'remote_id': remoteId,
+        'created_timestamp': createdTimestamp?.toIso8601String(),
       };
 
   Map<String, dynamic> toRemoteInsert() => {
@@ -73,6 +79,11 @@ class JournalEntry {
     return '$year-$month-$day';
   }
 
+  static DateTime? _parseTimestamp(dynamic value) {
+    if (value == null) return null;
+    return DateTime.tryParse(value.toString());
+  }
+
   factory JournalEntry.fromJson(Map<dynamic, dynamic> json) {
     return JournalEntry(
       localId: (json['local_id'] ?? '').toString(),
@@ -85,6 +96,8 @@ class JournalEntry {
           DateTime.now(),
       isSynced: json['is_synced'] == true,
       remoteId: json['remote_id']?.toString(),
+      createdTimestamp: _parseTimestamp(
+          json['created_timestamp'] ?? json['created_at'] ?? json['createdTimestamp']),
     );
   }
 
@@ -101,6 +114,8 @@ class JournalEntry {
           DateTime.now(),
       isSynced: true,
       remoteId: remoteId,
+      createdTimestamp: _parseTimestamp(
+          json['created_at'] ?? json['created_timestamp'] ?? json['createdTimestamp']),
     );
   }
 }
