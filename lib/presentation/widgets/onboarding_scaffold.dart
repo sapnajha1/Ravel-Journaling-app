@@ -52,11 +52,15 @@ class OnboardingScaffold extends StatelessWidget {
                       const Spacer(),
                       if (showSkip)
                         GestureDetector(
+                          behavior: HitTestBehavior.translucent,
                           onTap: onSkipPressed,
-                          child: AppText(
-                            'Skip to Login',
-                            style: AppTextStyle.bodySmall,
-                            color: AppColors.primaryBase,
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.small),
+                            child: AppText(
+                              'Skip to Login',
+                              style: AppTextStyle.bodySmall,
+                              color: AppColors.primaryBase,
+                            ),
                           ),
                         ),
                     ],

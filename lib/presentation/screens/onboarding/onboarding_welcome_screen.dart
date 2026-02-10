@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,7 +19,13 @@ class OnboardingWelcomeScreen extends ConsumerWidget {
       primaryLabel: "Let's Begin",
       onPrimaryPressed: () => context.push('/onboarding/actions'),
       onSkipPressed: () async {
-        await ref.read(onboardingStatusProvider.notifier).complete();
+        try {
+          await ref.read(onboardingStatusProvider.notifier).complete();
+        } catch (e, st) {
+          if (kDebugMode) {
+            debugPrint('Onboarding skip (welcome) failed: $e\n$st');
+          }
+        }
         if (context.mounted) context.go('/login');
       },
       child: Column(

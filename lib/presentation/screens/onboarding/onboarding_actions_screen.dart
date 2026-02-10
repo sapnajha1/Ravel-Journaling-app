@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +21,13 @@ class OnboardingActionsScreen extends ConsumerWidget {
       secondaryLabel: 'Back',
       onSecondaryPressed: () => context.pop(),
       onSkipPressed: () async {
-        await ref.read(onboardingStatusProvider.notifier).complete();
+        try {
+          await ref.read(onboardingStatusProvider.notifier).complete();
+        } catch (e, st) {
+          if (kDebugMode) {
+            debugPrint('Onboarding skip (actions) failed: $e\n$st');
+          }
+        }
         if (context.mounted) context.go('/login');
       },
       showBack: true,

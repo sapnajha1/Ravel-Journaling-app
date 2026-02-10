@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -17,7 +18,13 @@ class OnboardingPrivacyScreen extends ConsumerWidget {
     return OnboardingScaffold(
       primaryLabel: 'Next',
       onPrimaryPressed: () async {
-        await ref.read(onboardingStatusProvider.notifier).complete();
+        try {
+          await ref.read(onboardingStatusProvider.notifier).complete();
+        } catch (e, st) {
+          if (kDebugMode) {
+            debugPrint('Onboarding complete (privacy primary) failed: $e\n$st');
+          }
+        }
         if (context.mounted) {
           context.push('/login');
         }
@@ -25,7 +32,13 @@ class OnboardingPrivacyScreen extends ConsumerWidget {
       secondaryLabel: 'Back',
       onSecondaryPressed: () => context.pop(),
       onSkipPressed: () async {
-        await ref.read(onboardingStatusProvider.notifier).complete();
+        try {
+          await ref.read(onboardingStatusProvider.notifier).complete();
+        } catch (e, st) {
+          if (kDebugMode) {
+            debugPrint('Onboarding skip (privacy) failed: $e\n$st');
+          }
+        }
         if (context.mounted) context.go('/login');
       },
       showBack: true,
