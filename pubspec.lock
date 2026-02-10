@@ -424,6 +424,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.0"
+  manual_speech_to_text:
+    dependency: "direct main"
+    description:
+      name: manual_speech_to_text
+      sha256: d8bd03e571a56ad22141e81b308b55415ba66a3d2c9cfb3490ac4137dba1daea
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
   matcher:
     dependency: transitive
     description:

@@ -40,6 +40,7 @@ dependencies:
   intl: ^0.20.2
   permission_handler: ^11.4.0
   speech_to_text: ^7.3.0
+  manual_speech_to_text: ^1.0.4
   deepgram_speech_to_text: ^4.1.0
   audio_waveforms: ^2.0.2
   flutter_painter: ^1.0.1

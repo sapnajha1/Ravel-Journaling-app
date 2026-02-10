@@ -1,21 +1,22 @@
 import 'dart:math';
 
-import 'package:deepgram_speech_to_text/deepgram_speech_to_text.dart';
 import 'package:flutter/material.dart';
+import 'package:manual_speech_to_text/manual_speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:record/record.dart';
 
-/// Real-time transcription using Deepgram (Nova-2 + language=multi for English + Hinglish).
+/// Recording / transcription view model backed by `manual_speech_to_text`.
+///
+/// This keeps the public surface that the rant screen expects:
+/// - `startRecording` / `stopRecording`
+/// - `displayText` + `textController`
+/// - waveform via `waveHeights` + `isSpeaking`
+///
+/// Under the hood we:
+/// - Use OS speech recognition via [ManualSttController] for real-time text
+/// - Request microphone permission explicitly
+/// - Maintain `liveText` (interim) + `finalText` (confirmed)
 class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
-  static const String _deepgramApiKey =
-      String.fromEnvironment('DEEPGRAM_API_KEY');
-
-  static const String _deepgramModel = 'nova-2';
-  static const String _deepgramLanguage = 'multi';
-
-  final AudioRecorder _recorder = AudioRecorder();
-  Deepgram? _deepgram;
-  DeepgramLiveListener? _listener;
+  late final ManualSttController _speech;
 
   List<double> waveHeights = List.filled(20, 6);
   bool isSpeaking = false;
@@ -30,18 +31,39 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   String liveText = '';
   String finalText = '';
 
+  /// Base text at the moment a listening session starts. Interim results
+  /// are layered on top of this.
+  String _baseTextAtSessionStart = '';
+
   RecordingViewModel(BuildContext context) {
     WidgetsBinding.instance.addObserver(this);
-    _initializeStt();
+    _speech = ManualSttController(context);
+    _initSpeech();
   }
 
-  Future<void> _initializeStt() async {
-    if (_deepgramApiKey.isEmpty) {
-      debugPrint(
-          'DEEPGRAM_API_KEY not set. Pass via --dart-define for STT.');
-      return;
-    }
-    _deepgram ??= Deepgram(_deepgramApiKey);
+  void _initSpeech() {
+    _speech.listen(
+      onListeningStateChanged: (state) {
+        isRecording = state == ManualSttState.listening;
+        notifyListeners();
+      },
+      onListeningTextChanged: (text) {
+        // `text` is the current recognised text in this session.
+        liveText = text;
+        isSpeaking = liveText.trim().isNotEmpty;
+        _updateFromSpeech();
+      },
+      onSoundLevelChanged: (level) {
+        isSpeaking = level > 10.0;
+        _updateWaveform();
+        notifyListeners();
+      },
+    );
+
+    // Configure defaults – you can tweak these later if needed.
+    _speech.localId = 'en-US';
+    _speech.enableHapticFeedback = true;
+    _speech.pauseIfMuteFor = const Duration(seconds: 60);
   }
 
   @override
@@ -55,7 +77,7 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   void _forceStopRecording() {
     if (isRecording || isPaused) {
-      _stopStreaming();
+      _speech.stopStt();
       isRecording = false;
       isPaused = false;
       _resetWaveform();
@@ -64,75 +86,32 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> startRecording() async {
-    final status = await Permission.microphone.request();
-    if (!status.isGranted) return;
+    if (isInitializing || isRecording) return;
 
-    if (isInitializing) return;
     isInitializing = true;
     lastError = null;
     notifyListeners();
 
-    try {
-      await _initializeStt();
-      if (_deepgram == null) {
-        lastError = 'DEEPGRAM_API_KEY not set';
-        isInitializing = false;
-        notifyListeners();
-        return;
-      }
+    // Explicitly request microphone permission so we can surface a clear error.
+    final status = await Permission.microphone.request();
+    if (!status.isGranted) {
+      lastError = 'Microphone permission is required for speech.';
+      isInitializing = false;
+      notifyListeners();
+      return;
+    }
 
+    try {
       isPaused = false;
       isRecording = true;
+      _baseTextAtSessionStart = finalText.isNotEmpty
+          ? finalText
+          : textController.text; // preserve any typed text
+      liveText = '';
       _resetWaveform();
       notifyListeners();
 
-      final micStream = await _recorder.startStream(
-        const RecordConfig(
-          encoder: AudioEncoder.pcm16bits,
-          sampleRate: 16000,
-          numChannels: 1,
-        ),
-      );
-
-      _listener?.close();
-      _listener = _deepgram!.listen.liveListener(
-        micStream,
-        queryParams: {
-          'model': _deepgramModel,
-          'language': _deepgramLanguage,
-          'punctuate': true,
-          'smart_format': true,
-          'interim_results': true,
-          'vad_events': true,
-          'endpointing': 100,
-          'encoding': 'linear16',
-          'sample_rate': 16000,
-        },
-      );
-
-      _listener!.stream.listen(
-        (res) {
-          final transcript = _extractTranscript(res);
-          if (transcript.trim().isEmpty) return;
-          final isFinal =
-              res.map['is_final'] == true || res.map['speech_final'] == true;
-          if (isFinal) {
-            finalText = '$finalText $transcript'.trim();
-            liveText = '';
-          } else {
-            liveText = transcript;
-          }
-          isSpeaking = displayText.trim().isNotEmpty;
-          _updateWaveform();
-          _updateFromSpeech();
-        },
-        onError: (e) {
-          lastError = e.toString();
-          notifyListeners();
-        },
-      );
-
-      _listener!.start();
+      _speech.startStt();
     } catch (e) {
       lastError = e.toString();
       isRecording = false;
@@ -144,11 +123,11 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> pauseRecording() async {
+    _speech.pauseStt();
     if (liveText.isNotEmpty) {
       finalText = '$finalText $liveText'.trim();
       liveText = '';
     }
-    _stopStreaming();
     isPaused = true;
     isRecording = false;
     _resetWaveform();
@@ -157,11 +136,11 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> stopRecording() async {
+    _speech.stopStt();
     if (liveText.isNotEmpty) {
       finalText = '$finalText $liveText'.trim();
       liveText = '';
     }
-    _stopStreaming();
     isRecording = false;
     isPaused = false;
     _resetWaveform();
@@ -169,35 +148,12 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  void _stopStreaming() {
-    _listener?.close();
-    _listener = null;
-    _recorder.stop();
-  }
-
-  String _extractTranscript(dynamic res) {
-    final direct = res?.transcript as String?;
-    if (direct != null && direct.trim().isNotEmpty) return direct;
-    final map = res?.map as Map?;
-    final channel = map?['channel'];
-    if (channel is Map) {
-      final alternatives = channel['alternatives'];
-      if (alternatives is List && alternatives.isNotEmpty) {
-        final alt = alternatives.first;
-        if (alt is Map && alt['transcript'] is String) {
-          return alt['transcript'] as String;
-        }
-      }
-    }
-    return '';
-  }
-
   void _resetWaveform() {
     waveHeights = List.filled(20, 6);
   }
 
   String get displayText =>
-      liveText.isNotEmpty ? '$finalText $liveText' : finalText;
+      liveText.isNotEmpty ? '$finalText $liveText'.trim() : finalText;
 
   void _updateFromSpeech() {
     textController.text = displayText;
@@ -240,8 +196,8 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _stopStreaming();
-    _recorder.dispose();
+    _speech.dispose();
     super.dispose();
   }
 }
+
