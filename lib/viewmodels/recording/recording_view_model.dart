@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:manual_speech_to_text/manual_speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Recording / transcription view model backed by `manual_speech_to_text`.
 ///
@@ -15,6 +16,8 @@ import 'package:permission_handler/permission_handler.dart';
 /// - Use OS speech recognition via [ManualSttController] for real-time text
 /// - Request microphone permission explicitly
 /// - Maintain `liveText` (interim) + `finalText` (confirmed)
+/// - Optionally refine the final text with punctuation via a Supabase
+///   Edge Function that calls Gemini (or any LLM) **after** recording stops.
 class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   late final ManualSttController _speech;
 
@@ -26,7 +29,7 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   bool isRecording = false;
   bool isPaused = false;
   bool isInitializing = false;
-  bool isTranscribing = false;
+  bool isTranscribing = false; // true while backend is refining punctuation
   String? lastError;
   String liveText = '';
   String finalText = '';
@@ -133,6 +136,10 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
     _resetWaveform();
     _updateFromSpeech();
     notifyListeners();
+
+    // Optional: also refine on pause so the user sees punctuation even if
+    // they don't fully stop the rant.
+    await _refineTranscriptWithBackend();
   }
 
   Future<void> stopRecording() async {
@@ -146,6 +153,10 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
     _resetWaveform();
     _updateFromSpeech();
     notifyListeners();
+
+    // When the user fully stops, call the backend once to improve punctuation
+    // and casing. This does NOT change words – only formatting.
+    await _refineTranscriptWithBackend();
   }
 
   void _resetWaveform() {
@@ -154,6 +165,52 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   String get displayText =>
       liveText.isNotEmpty ? '$finalText $liveText'.trim() : finalText;
+
+  /// Send the final transcript to a Supabase Edge Function that uses Gemini
+  /// (or any LLM) to:
+  /// - add punctuation
+  /// - fix casing
+  /// - keep Hinglish words exactly as-is
+  ///
+  /// This runs **after** we have collected speech-to-text, so real-time
+  /// performance is not impacted.
+  Future<void> _refineTranscriptWithBackend() async {
+    final raw = finalText.trim();
+    if (raw.isEmpty) return;
+
+    if (isTranscribing) return; // avoid double-calls
+
+    isTranscribing = true;
+    lastError = null;
+    notifyListeners();
+
+    try {
+      final supabase = Supabase.instance.client;
+      final response = await supabase.functions.invoke(
+        'punctuate-transcript',
+        body: {'transcript': raw},
+      );
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final refined = (data['text'] as String?)?.trim();
+        if (refined != null && refined.isNotEmpty && refined != raw) {
+          finalText = refined;
+        }
+      } else {
+        // Unexpected response shape – surface a hint so you can debug.
+        lastError =
+            'Punctuation refine: unexpected response type ${data.runtimeType}';
+      }
+    } catch (e) {
+      // On any error we keep the original text and just surface the error.
+      lastError = 'Punctuation refine failed: $e';
+    } finally {
+      liveText = '';
+      isTranscribing = false;
+      _updateFromSpeech();
+    }
+  }
 
   void _updateFromSpeech() {
     textController.text = displayText;
