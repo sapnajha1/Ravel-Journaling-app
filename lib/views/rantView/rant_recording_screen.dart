@@ -158,35 +158,68 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                                 /// Transcription from top, just below waveform – no box
                                 if (recordingVM.displayText.isNotEmpty)
                                   Expanded(
-                                    child: Align(
-                                      alignment: Alignment.topCenter,
-                                      child: SingleChildScrollView(
-                                        reverse: false,
-                                        padding: EdgeInsets.only(
-                                          top: 12 * scaleH,
-                                          left: 16 * scaleW,
-                                          right: 16 * scaleW,
-                                          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                                        ),
-                                        child: TextField(
-                                          controller: recordingVM.textController,
-                                          maxLines: null,
-                                          keyboardType: TextInputType.multiline,
-                                          textAlignVertical: TextAlignVertical.top,
-                                          style: GoogleFonts.gochiHand(
-                                            fontSize: 18 * scaleW,
-                                            height: 1.7,
+                                    child: Stack(
+                                      children: [
+                                        Align(
+                                          alignment: Alignment.topCenter,
+                                          child: SingleChildScrollView(
+                                            reverse: false,
+                                            padding: EdgeInsets.only(
+                                              top: 12 * scaleH,
+                                              left: 16 * scaleW,
+                                              right: 16 * scaleW,
+                                              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                                            ),
+                                            child: TextField(
+                                              controller: recordingVM.textController,
+                                              maxLines: null,
+                                              keyboardType: TextInputType.multiline,
+                                              textAlignVertical: TextAlignVertical.top,
+                                              style: GoogleFonts.gochiHand(
+                                                fontSize: 18 * scaleW,
+                                                height: 1.7,
+                                              ),
+                                              decoration: const InputDecoration(
+                                                border: InputBorder.none,
+                                                enabledBorder: InputBorder.none,
+                                                focusedBorder: InputBorder.none,
+                                                filled: false,
+                                                contentPadding: EdgeInsets.zero,
+                                                isDense: true,
+                                              ),
+                                            ),
                                           ),
-                                          decoration: const InputDecoration(
-                                            border: InputBorder.none,
-                                            enabledBorder: InputBorder.none,
-                                            focusedBorder: InputBorder.none,
-                                            filled: false,
-                                            contentPadding: EdgeInsets.zero,
-                                            isDense: true,
-                                          ),
                                         ),
-                                      ),
+                                        if (recordingVM.isTranscribing)
+                                          Positioned.fill(
+                                            child: Container(
+                                              color: Colors.white.withOpacity(0.6),
+                                              child: Center(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 28,
+                                                      height: 28,
+                                                      child: CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black54),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 12),
+                                                    Text(
+                                                      'Processing...',
+                                                      style: GoogleFonts.syneMono(
+                                                        fontSize: 14,
+                                                        color: Colors.black87,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
                               ],
@@ -274,31 +307,38 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                         final recordingVM = context.read<RecordingViewModel>();
                         final rantVM = context.read<RantViewModel>();
 
-                        // Agar recording chal rahi hai to stop karo aur await karo
-                        // if (recordingVM.isRecording) {
-                        //    recordingVM.stopRecording();
-                        // }
-
-                        // End ranting (saves to history); get saved entry for "Let it go" delete
-                        final savedEntry = await rantVM.endRanting(context);
+                        // End ranting (does not save; content passed to AI screen so "Let it Go" = never stored)
+                        final content = await rantVM.endRanting(context);
 
                         // Mark as navigated so PopScope/lifecycle doesn't interfere
                         _navigated = true;
 
                         if (!context.mounted) return;
-                        // Navigate to AI screen with saved entry so "Let it go" can delete it
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => AIscreen(
-                              savedEntry: savedEntry,
+                              savedEntry: null,
+                              rantContent: content,
                               journalRepository: rantVM.journalRepository,
                             ),
                           ),
                         );
                       },
-                      child: SvgPicture.asset(
-                        'assets/Frame 22(1).svg',
-                        width: 136 * scaleW,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x40000000),
+                              offset: Offset(3, 3),
+                              blurRadius: 4,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: SvgPicture.asset(
+                          'assets/Frame 22(1).svg',
+                          width: 136 * scaleW,
+                        ),
                       ),
                     ),
 

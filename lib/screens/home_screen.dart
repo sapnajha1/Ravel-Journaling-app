@@ -159,7 +159,7 @@ class _HomeTabState extends State<HomeTab> {
       type: _JournalCardType.rant,
       title: 'Rant',
       description:
-          'Get it off your chest, feel lighter in 2 minutes - no filter, no judgment',
+          'Get it off your chest, feel lighter in 2 minutes',
       buttonText: 'Let It Out Now',
     ),
     _JournalCardData(

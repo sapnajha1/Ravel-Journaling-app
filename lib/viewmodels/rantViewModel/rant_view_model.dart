@@ -30,8 +30,10 @@ class RantViewModel extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 50)); // optional, for async safety
   }
 
-  /// Rant specific action. Saves the rant and returns the saved entry (or null if not saved).
-  Future<JournalEntry?> endRanting(BuildContext context) async {
+  /// End ranting: stops recording and returns the transcript content.
+  /// Does NOT save to history; saving happens only when user taps the bottom button on the AI screen (Keep).
+  /// "Let it Go" never stores the rant.
+  Future<String?> endRanting(BuildContext context) async {
     recordingVM.stopRecording();
 
     final content = recordingVM.textController.text.trim();
@@ -43,18 +45,14 @@ class RantViewModel extends ChangeNotifier {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to save your rant.')),
+        const SnackBar(content: Text('Please sign in to continue.')),
       );
       Navigator.pop(context);
       return null;
     }
 
-    final entry = await journalRepository.saveRantEntry(
-      userId: userId,
-      content: content,
-    );
     Navigator.pop(context);
-    return entry;
+    return content;
   }
 
   Future<void> deleteCurrentRant() async {

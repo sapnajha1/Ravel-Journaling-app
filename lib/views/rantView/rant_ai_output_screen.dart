@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../data/models/journal_entry.dart';
 import '../../data/repositories/journal_repository.dart';
@@ -10,10 +11,13 @@ class AIscreen extends StatelessWidget {
   const AIscreen({
     super.key,
     this.savedEntry,
+    this.rantContent,
     required this.journalRepository,
   });
 
   final JournalEntry? savedEntry;
+  /// Transcript content when rant was not saved yet (e.g. so "Let it Go" = never stored).
+  final String? rantContent;
   final JournalRepository journalRepository;
 
   @override
@@ -66,12 +70,9 @@ class AIscreen extends StatelessWidget {
 
                             SizedBox(height: 24 * scaleH),
 
-                            /// Let it go: delete the saved rant then go to fire animation
+                            /// Let it go: do not store rant; go to fire animation (nothing to delete)
                             InkWell(
                               onTap: () async {
-                                if (savedEntry != null) {
-                                  await journalRepository.deleteEntry(savedEntry!);
-                                }
                                 if (context.mounted) {
                                   Navigator.push(
                                     context,
@@ -94,13 +95,23 @@ class AIscreen extends StatelessWidget {
                       ),
                     ),
 
-                    /// 🔘 BOTTOM BUTTON
+                    /// 🔘 BOTTOM BUTTON (Keep: save rant then go home)
                     Padding(
                       padding: EdgeInsets.only(bottom: 24 * scaleH),
                       child: InkWell(
-                        onTap: () {
-                          Navigator.of(context).popUntil((route) => route.isFirst);
-
+                        onTap: () async {
+                          if (rantContent != null && rantContent!.trim().isNotEmpty) {
+                            final userId = Supabase.instance.client.auth.currentUser?.id;
+                            if (userId != null) {
+                              await journalRepository.saveRantEntry(
+                                userId: userId,
+                                content: rantContent!.trim(),
+                              );
+                            }
+                          }
+                          if (context.mounted) {
+                            Navigator.of(context).popUntil((route) => route.isFirst);
+                          }
                         },
                         child: SvgPicture.asset(
                           'assets/Frame 156(3).svg',
