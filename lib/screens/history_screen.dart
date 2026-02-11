@@ -469,8 +469,12 @@ class _HistoryEntryDetailScreenState
   @override
   Widget build(BuildContext context) {
     final isReflection = widget.entry.entryType == 'reflection';
-    final promptText = isReflection && widget.entry.promptId != null
-        ? ref.read(promptRepositoryProvider).getPromptById(widget.entry.promptId!)
+    final String? promptOrTitleText = isReflection
+        ? (widget.entry.promptId != null
+            ? ref.read(promptRepositoryProvider).getPromptById(widget.entry.promptId!)?.text
+            : (widget.entry.title != null && widget.entry.title!.trim().isNotEmpty
+                ? widget.entry.title
+                : null))
         : null;
 
     return Scaffold(
@@ -496,9 +500,9 @@ class _HistoryEntryDetailScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (promptText != null) ...[
+                          if (promptOrTitleText != null) ...[
                             Text(
-                              promptText.text,
+                              promptOrTitleText,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.normal,

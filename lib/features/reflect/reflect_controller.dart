@@ -156,7 +156,21 @@ class ReflectController extends StateNotifier<ReflectState> {
   }
 
   void clearPrompt() {
-    state = state.copyWith(prompt: null);
+    state = ReflectState(
+      isLoading: state.isLoading,
+      isSaving: state.isSaving,
+      isOffline: state.isOffline,
+      showSaved: state.showSaved,
+      pendingSyncCount: state.pendingSyncCount,
+      prompt: null,
+      errorMessage: state.errorMessage,
+    );
+  }
+
+  /// Call after "Reflect Again" to show the editor again and optionally load a new prompt.
+  Future<void> resetForNewReflection({bool loadNewPrompt = true}) async {
+    state = state.copyWith(showSaved: false);
+    if (loadNewPrompt) await loadPrompt();
   }
 
   Future<bool> saveEntry({
