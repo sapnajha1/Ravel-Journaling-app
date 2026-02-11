@@ -20,6 +20,7 @@ class OnboardingScaffold extends StatelessWidget {
     this.showBack = false,
     this.backButtonFlex = 3,
     this.nextButtonFlex = 7,
+    this.title,
   });
 
   final Widget child;
@@ -33,6 +34,7 @@ class OnboardingScaffold extends StatelessWidget {
   /// Back:Next width ratio (e.g. 3:7 for 30:70).
   final int backButtonFlex;
   final int nextButtonFlex;
+  final Widget? title;
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +67,10 @@ class OnboardingScaffold extends StatelessWidget {
                         ),
                     ],
                   ),
+                  if (title != null) ...[
+                    const SizedBox(height: AppSpacing.small),
+                    title!,
+                  ],
                   const SizedBox(height: AppSpacing.large),
                   Expanded(child: child),
                   const SizedBox(height: AppSpacing.medium),

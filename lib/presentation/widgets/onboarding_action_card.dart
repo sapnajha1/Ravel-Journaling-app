@@ -88,9 +88,10 @@ class OnboardingActionCard extends StatelessWidget {
         ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x30000000),
-            offset: Offset(0, 4),
-            blurRadius: 8,
+            color: Color(0x20000000),
+            offset: Offset(0, 2),
+            blurRadius: 4,
+            spreadRadius: 0,
           ),
         ],
       ),
