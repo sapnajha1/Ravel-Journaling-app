@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth/auth_controller.dart';
 import '../data/local/local_store.dart';
+import '../design_system/app_colors.dart';
 import '../data/repositories/journal_repository.dart';
 import '../viewmodels/history_view_model.dart';
 import '../viewmodels/rantViewModel/rant_view_model.dart';
@@ -75,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.fromLTRB(16, 4, 16, math.max(6, bottomInset + 2)),
+        padding: EdgeInsets.fromLTRB(16, 4, 16, math.max(18, bottomInset + 14)),
         child: _CustomBottomBar(
           selectedIndex: _selectedIndex,
           onTap: (index) => setState(() => _selectedIndex = index),
@@ -153,7 +154,7 @@ class _HomeTabState extends State<HomeTab> {
       type: _JournalCardType.rant,
       title: 'Rant',
       description:
-          'Get it off your chest, feel lighter in 2 minutes - no filter, no judgment',
+          'Get it off your chest, feel lighter in 2 minutes',
       buttonText: 'Let It Out Now',
     ),
     _JournalCardData(
@@ -576,7 +577,7 @@ class _CardVisual extends StatelessWidget {
           child: SvgPicture.asset(_cardSvg(), fit: BoxFit.fill),
         ),
         Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -587,7 +588,7 @@ class _CardVisual extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
-                    color: Colors.black,
+                    color: AppColors.textPrimary,
                     fontFamily: GoogleFonts.syneMono().fontFamily,
                   ),
                 ),
@@ -608,9 +609,10 @@ class _CardVisual extends StatelessWidget {
                     data.description,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       height: 1.4,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textPrimary,
                       fontFamily: GoogleFonts.syneMono().fontFamily,
                     ),
                   ),
@@ -685,8 +687,8 @@ class _Header extends StatelessWidget {
           child: Text(
             dateText,
             style: TextStyle(
-              color: Colors.black,
-              fontSize: 12,
+              color: AppColors.textPrimary,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
               fontFamily: GoogleFonts.syneMono().fontFamily,
             ),
@@ -696,9 +698,9 @@ class _Header extends StatelessWidget {
         Text(
           greeting,
           style: TextStyle(
-            fontSize: 22,
+            fontSize: 20,
             fontWeight: FontWeight.w400,
-            color: Colors.black,
+            color: AppColors.textPrimary,
             fontFamily: GoogleFonts.syneMono().fontFamily,
           ),
         ),
@@ -723,7 +725,7 @@ class _CustomBottomBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.black, width: 2),
         boxShadow: const [
           // right-bottom border effect
@@ -816,7 +818,7 @@ class _NavItem extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(icon, size: 18, color: Colors.white),
+                          Icon(icon, size: 18, color: AppColors.textPrimary),
                           if (label.isNotEmpty) ...[
                             const SizedBox(width: 4),
                             Flexible(
@@ -825,9 +827,9 @@ class _NavItem extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 11,
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 14,
                                   fontFamily: GoogleFonts.syneMono().fontFamily,
                                 ),
                               ),

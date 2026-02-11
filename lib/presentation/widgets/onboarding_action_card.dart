@@ -6,7 +6,7 @@ import '../../design_system/app_colors.dart';
 import '../../design_system/app_radius.dart';
 import '../../design_system/app_spacing.dart';
 
-/// Onboarding card for Reflect/Rant/Scribble. Normal card with bottom shadow; title 16px (colored), description 14px.
+/// Onboarding card for Reflect/Rant/Scribble. Normal card with bottom shadow; title 16px (colored), description 16px.
 class OnboardingActionCard extends StatelessWidget {
   const OnboardingActionCard({
     super.key,
@@ -25,7 +25,7 @@ class OnboardingActionCard extends StatelessWidget {
   final Color? titleColor;
 
   static const double _titleSize = 16;
-  static const double _descriptionSize = 14;
+  static const double _descriptionSize = 16;
 
   @override
   Widget build(BuildContext context) {

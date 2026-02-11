@@ -21,13 +21,7 @@ class OnboardingActionsScreen extends ConsumerWidget {
       secondaryLabel: 'Back',
       onSecondaryPressed: () => context.pop(),
       onSkipPressed: () async {
-        try {
-          await ref.read(onboardingStatusProvider.notifier).complete();
-        } catch (e, st) {
-          if (kDebugMode) {
-            debugPrint('Onboarding skip (actions) failed: $e\n$st');
-          }
-        }
+        await ref.read(onboardingStatusProvider.notifier).complete();
         if (context.mounted) context.go('/login');
       },
       showBack: true,
@@ -63,7 +57,7 @@ class OnboardingActionsScreen extends ConsumerWidget {
                   OnboardingActionCard(
                     title: 'Rant',
                     description:
-                        'Get it off your chest, feel lighter in 2 minutes - no filter, no judgment',
+                        'Get it off your chest, feel lighter in 2 minutes',
                     iconAsset: 'assets/cards/cloud-storm-svgrepo-com 1.svg',
                     iconTint: AppColors.releaseBase,
                     titleColor: AppColors.releaseBase,

@@ -23,8 +23,6 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  bool _isListView = true;
-
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<HistoryViewModel>();
@@ -51,16 +49,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _HistoryViewToggle(
-                    isListView: _isListView,
-                    onToggle: (isListView) {
-                      setState(() => _isListView = isListView);
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12),
                 Expanded(
                   child: _buildBody(context, vm),
                 ),
@@ -73,18 +61,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildBody(BuildContext context, HistoryViewModel vm) {
-    if (!_isListView) {
-      return Center(
-        child: Text(
-          'Calendar view coming soon',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontFamily: GoogleFonts.syneMono().fontFamily,
-          ),
-        ),
-      );
-    }
-
     if (vm.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -180,112 +156,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       default:
         return '${day}th';
     }
-  }
-}
-
-class _HistoryViewToggle extends StatelessWidget {
-  const _HistoryViewToggle({
-    required this.isListView,
-    required this.onToggle,
-  });
-
-  final bool isListView;
-  final void Function(bool) onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    const active = Color(0xFFFF6E5A);
-    return Row(
-      children: [
-        Expanded(
-          child: _ToggleButton(
-            label: 'List View',
-            isActive: isListView,
-            activeColor: active,
-            onTap: () => onToggle(true),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _ToggleButton(
-            label: 'Calendar View',
-            isActive: !isListView,
-            activeColor: active,
-            onTap: () => onToggle(false),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ToggleButton extends StatelessWidget {
-  const _ToggleButton({
-    required this.label,
-    required this.isActive,
-    required this.activeColor,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isActive;
-  final Color activeColor;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!isActive) {
-      return InkWell(
-        onTap: onTap,
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              fontFamily: GoogleFonts.syneMono().fontFamily,
-            ),
-          ),
-        ),
-      );
-    }
-    return InkWell(
-      borderRadius: BorderRadius.circular(6),
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isActive ? activeColor : Colors.white,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.black, width: 1.5),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0xFF2A2A2A),
-              blurRadius: 0,
-              offset: Offset(2, 2),
-            ),
-            BoxShadow(
-              color: Color(0x26000000),
-              blurRadius: 6,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isActive ? Colors.white : Colors.black,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              fontFamily: GoogleFonts.syneMono().fontFamily,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -859,6 +729,151 @@ class _DialogButton extends StatelessWidget {
   }
 }
 
+class _DeleteConfirmDialog extends StatelessWidget {
+  const _DeleteConfirmDialog({
+    required this.title,
+    required this.typeLower,
+    required this.dateLabel,
+  });
+
+  final String title;
+  final String typeLower;
+  final String dateLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.primaryBase, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x50000000),
+              blurRadius: 12,
+              offset: Offset(2, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 24,
+                color: AppColors.primaryBase,
+                fontWeight: FontWeight.w700,
+                fontFamily: GoogleFonts.syneMono().fontFamily,
+              ),
+            ),
+            const SizedBox(height: 16),
+            RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textPrimary,
+                  fontFamily: GoogleFonts.syneMono().fontFamily,
+                ),
+                children: [
+                  TextSpan(
+                      text:
+                          'Please confirm if you want to delete the $typeLower dated '),
+                  TextSpan(
+                    text: dateLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const TextSpan(text: '.'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: _DialogButton(
+                    label: 'Cancel',
+                    primary: false,
+                    onPressed: () => Navigator.of(context).pop(false),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _DialogButton(
+                    label: 'Delete',
+                    primary: true,
+                    onPressed: () => Navigator.of(context).pop(true),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DialogButton extends StatelessWidget {
+  const _DialogButton({
+    required this.label,
+    required this.primary,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool primary;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        color: primary ? AppColors.primaryBase : Colors.white,
+        border: Border.all(
+          color: AppColors.primaryBase,
+          width: primary ? 0 : 2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF2A2A2A),
+            blurRadius: 0,
+            offset: Offset(2, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(6),
+          child: SizedBox(
+            height: 44,
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: primary ? Colors.white : AppColors.primaryBase,
+                  fontFamily: GoogleFonts.syneMono().fontFamily,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HistoryDetailTopBar extends StatelessWidget {
+  const _HistoryDetailTopBar({
 class _HistoryDetailTopBar extends StatelessWidget {
   const _HistoryDetailTopBar({
     required this.dateText,

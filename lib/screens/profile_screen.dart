@@ -32,6 +32,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
+  void _openEditName() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => _EditNameScreen(
+          authController: widget.authController,
+          initialName: widget.authController.displayName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDeleteAccountDialog() async {
+    final confirmed = await showDialog<_DeleteAccountResult>(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (context) => const _DeleteAccountDialog(),
+    );
+    if (confirmed == null || !mounted) return;
+    if (confirmed.clearLocalData) {
+      try {
+        LocalStore.journalBox().clear();
+        LocalStore.promptBox().clear();
+      } catch (_) {}
+    }
+    try {
+      await widget.authController.signOut();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Sign out failed: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authController = widget.authController;

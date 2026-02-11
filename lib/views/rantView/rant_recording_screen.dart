@@ -126,8 +126,8 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                       entryDate: DateTime.now(),
                       onBack: () => Navigator.of(context).pop(),
                     ),
-                          
-                          
+
+
                     /// CENTER AREA – waveform only; transcription on background (no box)
                     Expanded(
                       child: !recordingVM.isRecording &&
@@ -192,7 +192,7 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                               ],
                             ),
                     ),
-                          
+
                     /// MIC / STOP BUTTON
                     Padding(
                       padding:
@@ -213,9 +213,9 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                         ),
                       ),
                     ),
-                          
+
                     SizedBox(height: 16 * scaleH),
-                          
+
                     // GestureDetector(
                     //   onTap: () {
                     //     final recordingVM = context.read<RecordingViewModel>();
