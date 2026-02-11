@@ -21,7 +21,7 @@ class PrimaryButton extends StatelessWidget {
     return SizedBox(
       height: AppSpacing.xl,
       width: double.infinity,
-      child: DecoratedBox(
+        child: DecoratedBox(
         decoration: BoxDecoration(
           color: AppColors.primaryBase,
           borderRadius: BorderRadius.circular(AppRadius.button),
@@ -40,7 +40,7 @@ class PrimaryButton extends StatelessWidget {
               child: AppText(
                 label,
                 style: AppTextStyle.bodyMedium,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
