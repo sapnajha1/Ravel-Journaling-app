@@ -32,13 +32,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  static int _savedTabIndex = 0;
+  late int _selectedIndex;
   late final Connectivity _connectivity;
   late final JournalRepository _journalRepository;
 
   @override
   void initState() {
     super.initState();
+    _selectedIndex = _savedTabIndex;
     _connectivity = Connectivity();
     _journalRepository = JournalRepository(
       Supabase.instance.client,
@@ -76,10 +78,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.fromLTRB(16, 4, 16, math.max(18, bottomInset + 14)),
+        padding: EdgeInsets.fromLTRB(16, 4, 16, math.max(18, bottomInset + 16)),
         child: _CustomBottomBar(
           selectedIndex: _selectedIndex,
-          onTap: (index) => setState(() => _selectedIndex = index),
+          onTap: (index) {
+            _savedTabIndex = index;
+            setState(() => _selectedIndex = index);
+          },
         ),
       ),
     );
@@ -154,7 +159,7 @@ class _HomeTabState extends State<HomeTab> {
       type: _JournalCardType.rant,
       title: 'Rant',
       description:
-          'Get it off your chest, feel lighter in 2 minutes',
+          'Get it off your chest, feel lighter in 2 minutes - no filter, no judgment',
       buttonText: 'Let It Out Now',
     ),
     _JournalCardData(

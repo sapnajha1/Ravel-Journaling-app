@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../auth/auth_controller.dart';
+import '../data/local/local_store.dart';
 import '../viewmodels/rantViewModel/rant_view_model.dart';
 import '../views/home_view.dart';
 
@@ -33,21 +34,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _openEditName() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _EditNameScreen(
-          authController: widget.authController,
-          initialName: widget.authController.displayName,
-        ),
-      ),
-    );
+    setState(() => _isEditingName = true);
   }
 
   Future<void> _showDeleteAccountDialog() async {
     final confirmed = await showDialog<_DeleteAccountResult>(
       context: context,
       barrierColor: Colors.black54,
-      builder: (context) => const _DeleteAccountDialog(),
+      builder: (context) => _DeleteAccountDialog(),
     );
     if (confirmed == null || !mounted) return;
     if (confirmed.clearLocalData) {
@@ -255,34 +249,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            height: 48,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF9F7),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: const Color(0xFF201B18),
-                width: 2,
-              ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0xFF201B18),
-                  offset: Offset(2, 2),
-                  blurRadius: 0,
-                ),
-              ],
+          TextField(
+            controller: _nameController,
+            style: GoogleFonts.syneMono(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF201B18),
             ),
-            child: TextField(
-              controller: _nameController,
-              style: GoogleFonts.syneMono(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: const Color(0xFF201B18),
+            decoration: InputDecoration(
+              isDense: true,
+              filled: true,
+              fillColor: const Color(0xFFFFF9F7),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: const BorderSide(color: Color(0xFF201B18), width: 2),
               ),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                isDense: true,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: const BorderSide(color: Color(0xFF201B18), width: 2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: const BorderSide(color: Color(0xFF201B18), width: 2),
               ),
             ),
           ),
@@ -316,6 +305,89 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DeleteAccountResult {
+  const _DeleteAccountResult({required this.clearLocalData});
+  final bool clearLocalData;
+}
+
+class _DeleteAccountDialog extends StatefulWidget {
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  bool _keepJournalData = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Delete Account',
+              style: GoogleFonts.syneMono(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF201B18),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Are you sure you want to delete your account?',
+              style: GoogleFonts.syneMono(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF52443F),
+              ),
+            ),
+            const SizedBox(height: 16),
+            InkWell(
+              onTap: () => setState(() => _keepJournalData = !_keepJournalData),
+              child: Row(
+                children: [
+                  Icon(
+                    _keepJournalData ? Icons.check_box : Icons.check_box_outline_blank,
+                    color: const Color(0xFFFF7B6B),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Keep my journal data on this device',
+                      style: GoogleFonts.syneMono(
+                        fontSize: 14,
+                        color: const Color(0xFF201B18),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Cancel', style: GoogleFonts.syneMono(color: const Color(0xFF52443F))),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(_DeleteAccountResult(clearLocalData: !_keepJournalData)),
+                  child: Text('Delete', style: GoogleFonts.syneMono(fontWeight: FontWeight.w600, color: const Color(0xFFFF7B6B))),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
