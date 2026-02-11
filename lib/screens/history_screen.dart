@@ -44,8 +44,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: Text(
                     'History',
                     style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w400,
                       fontFamily: GoogleFonts.syneMono().fontFamily,
                     ),
                   ),
@@ -253,6 +253,7 @@ class _HistoryEntryCard extends StatelessWidget {
       child: HistoryCard(
         svgAsset: _historyCardAsset(entry.entryType),
         backgroundColor: const Color(0xFFFFF9F7),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -268,8 +269,9 @@ class _HistoryEntryCard extends StatelessWidget {
                   child: Text(
                     typeLabel,
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      color: _typeTextColor(entry.entryType),
                       fontFamily: GoogleFonts.syneMono().fontFamily,
                     ),
                   ),
@@ -278,20 +280,21 @@ class _HistoryEntryCard extends StatelessWidget {
                 Text(
                   timeLabel,
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.normal,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textTertiary,
                     fontFamily: GoogleFonts.syneMono().fontFamily,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               entry.content,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 height: 1.4,
                 fontWeight: FontWeight.normal,
                 fontFamily: GoogleFonts.syneMono().fontFamily,
@@ -327,6 +330,19 @@ class _HistoryEntryCard extends StatelessWidget {
         return const Color(0xFFD3F0D9);
       default:
         return const Color(0xFFF2F2F2);
+    }
+  }
+
+  Color _typeTextColor(String type) {
+    switch (type) {
+      case 'reflection':
+        return AppColors.purpleDark;
+      case 'rant':
+        return AppColors.releaseDark;
+      case 'scribble':
+        return AppColors.expressDark;
+      default:
+        return AppColors.textPrimary;
     }
   }
 
@@ -751,7 +767,7 @@ class _DeleteConfirmDialog extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.primaryBase, width: 2),
+          border: Border.all(color: Colors.black, width: 2),
           boxShadow: const [
             BoxShadow(
               color: Color(0x50000000),
@@ -767,8 +783,8 @@ class _DeleteConfirmDialog extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                fontSize: 24,
-                color: AppColors.primaryBase,
+                fontSize: 20,
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w700,
                 fontFamily: GoogleFonts.syneMono().fontFamily,
               ),
@@ -837,10 +853,7 @@ class _DialogButton extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(6),
         color: primary ? AppColors.primaryBase : Colors.white,
-        border: Border.all(
-          color: AppColors.primaryBase,
-          width: primary ? 0 : 2,
-        ),
+        border: Border.all(color: Colors.black, width: 2),
         boxShadow: const [
           BoxShadow(
             color: Color(0xFF2A2A2A),
@@ -862,7 +875,7 @@ class _DialogButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: primary ? Colors.white : AppColors.primaryBase,
+                  color: primary ? Colors.white : AppColors.textPrimary,
                   fontFamily: GoogleFonts.syneMono().fontFamily,
                 ),
               ),
@@ -927,8 +940,15 @@ class _HistoryDetailTopBar extends StatelessWidget {
           const Spacer(),
           IconButton(
             onPressed: onDelete,
-            icon: const Icon(Icons.delete_outline),
-            color: AppColors.primaryBase,
+            icon: SvgPicture.asset(
+              'assets/delete.svg',
+              width: 24,
+              height: 24,
+              colorFilter: const ColorFilter.mode(
+                Color(0xFFE53935),
+                BlendMode.srcIn,
+              ),
+            ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -949,10 +969,7 @@ class _HistoryShadowButton extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(6),
-        border: const Border(
-          right: BorderSide(color: Colors.black, width: 1.5),
-          bottom: BorderSide(color: Colors.black, width: 1.5),
-        ),
+        border: Border.all(color: Colors.black, width: 2),
         boxShadow: const [
           BoxShadow(
             color: Color(0xFF2A2A2A),
@@ -975,6 +992,7 @@ class _HistoryShadowButton extends StatelessWidget {
                 child: Center(
                   child: DefaultTextStyle(
                     style: TextStyle(
+                      color: AppColors.textPrimary,
                       fontFamily: GoogleFonts.syneMono().fontFamily,
                     ),
                     child: child,
