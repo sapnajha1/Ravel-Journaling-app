@@ -112,7 +112,11 @@ class _HomeScreenState extends State<HomeScreen> {
         screen = const ScribbleScreen();
         break;
       case _JournalCardType.reflect:
-        screen = const ReflectScreen();
+        final reflectRecordingVM = RecordingViewModel(context);
+        screen = ChangeNotifierProvider.value(
+          value: reflectRecordingVM,
+          child: const ReflectScreen(),
+        );
         break;
     }
     Navigator.of(context).push(

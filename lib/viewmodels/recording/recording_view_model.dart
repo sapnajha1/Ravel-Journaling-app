@@ -38,7 +38,11 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   /// are layered on top of this.
   String _baseTextAtSessionStart = '';
 
-  RecordingViewModel(BuildContext context) {
+  /// When true, [stopRecording] / [pauseRecording] skip the backend
+  /// punctuation refinement so text appears immediately (e.g. reflect/history).
+  final bool skipPunctuationRefinement;
+
+  RecordingViewModel(BuildContext context, {this.skipPunctuationRefinement = false}) {
     WidgetsBinding.instance.addObserver(this);
     _speech = ManualSttController(context);
     _initSpeech();
@@ -86,6 +90,18 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
       _resetWaveform();
       notifyListeners();
     }
+  }
+
+  /// Call before [startRecording] when using this VM for reflect/history so
+  /// existing content is preserved and new speech appends to it.
+  void setSessionText(String text) {
+    finalText = text;
+    textController.text = text;
+    liveText = '';
+    textController.selection = TextSelection.fromPosition(
+      TextPosition(offset: textController.text.length),
+    );
+    notifyListeners();
   }
 
   Future<void> startRecording() async {
@@ -139,7 +155,7 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
     // Optional: also refine on pause so the user sees punctuation even if
     // they don't fully stop the rant.
-    await _refineTranscriptWithBackend();
+    if (!skipPunctuationRefinement) await _refineTranscriptWithBackend();
   }
 
   Future<void> stopRecording() async {
@@ -155,8 +171,8 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
 
     // When the user fully stops, call the backend once to improve punctuation
-    // and casing. This does NOT change words – only formatting.
-    await _refineTranscriptWithBackend();
+    // and casing (unless disabled for reflect/history).
+    if (!skipPunctuationRefinement) await _refineTranscriptWithBackend();
   }
 
   void _resetWaveform() {

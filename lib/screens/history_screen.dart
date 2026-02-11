@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 
 import '../data/models/journal_entry.dart';
 import '../data/repositories/journal_repository.dart';
 import '../design_system/app_colors.dart';
 import '../features/reflect/reflect_controller.dart';
 import '../viewmodels/history_view_model.dart';
+import '../viewmodels/recording/recording_view_model.dart';
 import '../widgets/dotted_background.dart';
 import '../widgets/history_card.dart';
+import '../widgets/recording_waveform.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key, required this.journalRepository});
@@ -98,9 +100,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
           onTapEntry: (entry) async {
             await Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => HistoryEntryDetailScreen(
-                  entry: entry,
-                  journalRepository: widget.journalRepository,
+                builder: (ctx) => provider.ChangeNotifierProvider(
+                  create: (_) => RecordingViewModel(ctx),
+                  child: HistoryEntryDetailScreen(
+                    entry: entry,
+                    journalRepository: widget.journalRepository,
+                  ),
                 ),
               ),
             );
@@ -354,10 +359,14 @@ class HistoryEntryDetailScreen extends ConsumerStatefulWidget {
       _HistoryEntryDetailScreenState();
 }
 
+/// Light purple waveform color for history detail (same as reflect).
+const Color _kHistoryWaveformColor = Color(0xFFE6DDFF);
+
 class _HistoryEntryDetailScreenState
     extends ConsumerState<HistoryEntryDetailScreen> {
   late final TextEditingController _contentController;
   bool _isSaving = false;
+  bool _wasRecordingOrTranscribing = false;
 
   @override
   void initState() {
@@ -466,6 +475,16 @@ class _HistoryEntryDetailScreenState
     }
   }
 
+  void _syncContentFromRecording() {
+    final recordingVM = context.read<RecordingViewModel>();
+    if (_contentController.text != recordingVM.displayText) {
+      _contentController.text = recordingVM.displayText;
+      _contentController.selection = TextSelection.collapsed(
+        offset: _contentController.text.length,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isReflection = widget.entry.entryType == 'reflection';
@@ -476,6 +495,16 @@ class _HistoryEntryDetailScreenState
                 ? widget.entry.title
                 : null))
         : null;
+
+    final recordingVM = context.watch<RecordingViewModel>();
+    final busy = recordingVM.isRecording || recordingVM.isTranscribing;
+    if (busy) {
+      _syncContentFromRecording();
+      _wasRecordingOrTranscribing = true;
+    } else if (_wasRecordingOrTranscribing) {
+      _syncContentFromRecording();
+      _wasRecordingOrTranscribing = false;
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -513,67 +542,179 @@ class _HistoryEntryDetailScreenState
                             const SizedBox(height: 12),
                           ],
                           Expanded(
-                            child: TextField(
-                              controller: _contentController,
-                              maxLines: null,
-                              expands: true,
-                              style: GoogleFonts.gochiHand(
-                                fontSize: 20,
-                                height: 1.5,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                filled: true,
-                                fillColor: Colors.transparent,
-                                contentPadding: EdgeInsets.zero,
-                              ),
+                            child: Stack(
+                              children: [
+                                TextField(
+                                  controller: _contentController,
+                                  maxLines: null,
+                                  expands: true,
+                                  style: GoogleFonts.gochiHand(
+                                    fontSize: 20,
+                                    height: 1.5,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    filled: true,
+                                    fillColor: Colors.transparent,
+                                    contentPadding: EdgeInsets.zero,
+                                  ),
+                                ),
+                                if (recordingVM.isTranscribing)
+                                  Positioned.fill(
+                                    child: Container(
+                                      color: Colors.white.withOpacity(0.6),
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const SizedBox(
+                                              width: 28,
+                                              height: 28,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                        Color>(Colors.black54),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              'Processing...',
+                                              style: GoogleFonts.syneMono(
+                                                fontSize: 14,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              DecoratedBox(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Color(0xFF2A2A2A),
-                                      blurRadius: 0,
-                                      offset: Offset(2, 2),
+                              // When recording: full-width waveform box with stop inside (same as reflect)
+                              if (recordingVM.isRecording) ...[
+                                Expanded(
+                                  child: Container(
+                                    height: 56,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF5F3FF),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                          color: Colors.black, width: 2),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Color(0xFF2A2A2A),
+                                          blurRadius: 0,
+                                          offset: Offset(2, 2),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                child: SizedBox(
-                                  width: 42,
-                                  height: 42,
-                                  child: SvgPicture.asset('assets/cards/mic.svg'),
-                                ),
-                              ),
-                              const Spacer(),
-                              _HistoryShadowButton(
-                                onPressed: _isSaving ? null : _saveChanges,
-                                child: _isSaving
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<
-                                              Color>(Colors.black),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: LayoutBuilder(
+                                            builder: (_, constraints) =>
+                                                Center(
+                                              child: recordingWaveform(
+                                                recordingVM,
+                                                width: constraints.maxWidth,
+                                                barColor: _kHistoryWaveformColor,
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                      )
-                                    : Text(
-                                        'Save Changes',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontFamily:
-                                              GoogleFonts.syneMono().fontFamily,
+                                        GestureDetector(
+                                          onTap: () =>
+                                              recordingVM.stopRecording(),
+                                          child: Container(
+                                            width: 40,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: const Color(0xFFE53935),
+                                              border: Border.all(
+                                                  color: Colors.black,
+                                                  width: 2),
+                                              boxShadow: const [
+                                                BoxShadow(
+                                                  color: Color(0xFF2A2A2A),
+                                                  blurRadius: 0,
+                                                  offset: Offset(2, 2),
+                                                ),
+                                              ],
+                                            ),
+                                            child: const Icon(
+                                                Icons.stop_rounded,
+                                                color: Colors.white,
+                                                size: 24),
+                                          ),
                                         ),
-                                      ),
-                              ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ] else ...[
+                                // When not recording: mic + Save Changes
+                                GestureDetector(
+                                  onTap: () {
+                                    recordingVM.setSessionText(
+                                        _contentController.text);
+                                    recordingVM.startRecording();
+                                  },
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Color(0xFF2A2A2A),
+                                          blurRadius: 0,
+                                          offset: Offset(2, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: SizedBox(
+                                      width: 42,
+                                      height: 42,
+                                      child: SvgPicture.asset(
+                                          'assets/cards/mic.svg'),
+                                    ),
+                                  ),
+                                ),
+                                const Spacer(),
+                                _HistoryShadowButton(
+                                  onPressed:
+                                      _isSaving ? null : _saveChanges,
+                                  child: _isSaving
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<
+                                                Color>(Colors.black),
+                                          ),
+                                        )
+                                      : Text(
+                                          'Save Changes',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontFamily: GoogleFonts
+                                                .syneMono()
+                                                .fontFamily,
+                                          ),
+                                        ),
+                                ),
+                              ],
                             ],
                           ),
                         ],

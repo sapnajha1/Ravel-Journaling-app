@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 import '../design_system/app_colors.dart';
 import '../features/reflect/reflect_controller.dart';
+import '../viewmodels/recording/recording_view_model.dart';
 import '../widgets/dotted_background.dart';
+import '../widgets/recording_waveform.dart';
 
 class ReflectScreen extends ConsumerStatefulWidget {
   const ReflectScreen({super.key});
@@ -14,12 +17,16 @@ class ReflectScreen extends ConsumerStatefulWidget {
   ConsumerState<ReflectScreen> createState() => _ReflectScreenState();
 }
 
+/// Light purple waveform color for reflect (matches reflect history card).
+const Color _kReflectWaveformColor = Color(0xFFE6DDFF);
+
 class _ReflectScreenState extends ConsumerState<ReflectScreen> {
   final _entryController = TextEditingController();
   final _titleController = TextEditingController();
   final _entryScrollController = ScrollController();
 
   bool _showTopFade = false;
+  bool _wasRecordingOrTranscribing = false;
 
   @override
   void initState() {
@@ -123,9 +130,29 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     );
   }
 
+  void _syncEntryFromRecording() {
+    final recordingVM = context.read<RecordingViewModel>();
+    if (_entryController.text != recordingVM.displayText) {
+      _entryController.text = recordingVM.displayText;
+      _entryController.selection = TextSelection.collapsed(
+        offset: _entryController.text.length,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(reflectControllerProvider);
+    final recordingVM = context.watch<RecordingViewModel>();
+    final busy = recordingVM.isRecording || recordingVM.isTranscribing;
+    if (busy) {
+      _syncEntryFromRecording();
+      _wasRecordingOrTranscribing = true;
+    } else if (_wasRecordingOrTranscribing) {
+      _syncEntryFromRecording();
+      _wasRecordingOrTranscribing = false;
+    }
+
     ref.listen<ReflectState>(
       reflectControllerProvider,
       (previous, next) {
@@ -169,27 +196,98 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
   }
 
   Widget _buildBottomBar(BuildContext context, ReflectState state) {
+    final recordingVM = context.watch<RecordingViewModel>();
+    final isRecording = recordingVM.isRecording;
+
+    // When recording: full-width waveform box with stop button inside
+    if (isRecording) {
+      return Material(
+        color: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+          child: Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F3FF),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.black, width: 2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFF2A2A2A),
+                  blurRadius: 0,
+                  offset: Offset(2, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (_, constraints) => Center(
+                      child: recordingWaveform(
+                        recordingVM,
+                        width: constraints.maxWidth,
+                        barColor: _kReflectWaveformColor,
+                      ),
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => recordingVM.stopRecording(),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFE53935),
+                      border: Border.all(color: Colors.black, width: 2),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xFF2A2A2A),
+                          blurRadius: 0,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.stop_rounded, color: Colors.white, size: 24),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // When not recording: mic + End Session as before
     return Material(
       color: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
         child: Row(
-        children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0xFF2A2A2A),
-                    blurRadius: 0,
-                    offset: Offset(2, 2),
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                width: 42,
-                height: 42,
-                child: SvgPicture.asset('assets/cards/mic.svg'),
+          children: [
+            GestureDetector(
+              onTap: () {
+                recordingVM.setSessionText(_entryController.text);
+                recordingVM.startRecording();
+              },
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0xFF2A2A2A),
+                      blurRadius: 0,
+                      offset: Offset(2, 2),
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  width: 42,
+                  height: 42,
+                  child: SvgPicture.asset('assets/cards/mic.svg'),
+                ),
               ),
             ),
             const Spacer(),
@@ -214,7 +312,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                       ),
                     ),
             ),
-        ],
+          ],
         ),
       ),
     );
@@ -386,7 +484,42 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                 ],
                 const SizedBox(height: 12),
                 Expanded(
-                  child: _buildEntryField(),
+                  child: Stack(
+                    children: [
+                      _buildEntryField(),
+                      if (context.watch<RecordingViewModel>().isTranscribing)
+                        Positioned.fill(
+                          child: Container(
+                            color: Colors.white.withOpacity(0.6),
+                            child: Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(
+                                    width: 28,
+                                    height: 28,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.black54,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Processing...',
+                                    style: GoogleFonts.syneMono(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -460,32 +593,16 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          color: Colors.white,
-                          border: Border.all(color: Colors.black, width: 2),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () async {
-                              await ref.read(reflectControllerProvider.notifier).resetForNewReflection();
-                            },
-                            borderRadius: BorderRadius.circular(6),
-                            child: SizedBox(
-                              height: 44,
-                              child: Center(
-                                child: Text(
-                                  'Reflect Again',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                    fontFamily: GoogleFonts.syneMono().fontFamily,
-                                  ),
-                                ),
-                              ),
-                            ),
+                      child: _ShadowButton(
+                        onPressed: () async {
+                          await ref.read(reflectControllerProvider.notifier).resetForNewReflection();
+                        },
+                        child: Text(
+                          'Reflect Again',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            fontFamily: GoogleFonts.syneMono().fontFamily,
                           ),
                         ),
                       ),

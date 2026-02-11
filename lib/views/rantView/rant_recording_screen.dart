@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../viewmodels/rantViewModel/rant_view_model.dart';
 import '../../viewmodels/recording/recording_view_model.dart';
 import '../../widgets/dotted_background.dart';
+import '../../widgets/recording_waveform.dart';
 import '../home_view.dart';
 // import '../shared_widgets/dotted_background.dart';
 
@@ -149,9 +150,10 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                                     right: 60 * scaleW,
                                   ),
                                   child: Center(
-                                    child: simulatedWaveform(
+                                    child: recordingWaveform(
                                       recordingVM,
                                       width: 240 * scaleW,
+                                      barColor: const Color(0xffEF5350),
                                     ),
                                   ),
                                 ),
@@ -443,42 +445,6 @@ class figmaAppBar extends StatelessWidget {
         return 'th';
     }
   }
-}
-
-/// ================= WAVEFORM =================
-Widget simulatedWaveform(
-    RecordingViewModel vm, {
-      required double width,
-    }) {
-  const double barWidth = 2;
-  const double spacing = 1.5;
-
-  final barCount =
-  (width / (barWidth + spacing)).floor().clamp(1, 200);
-
-  return SizedBox(
-    width: width,
-    height: 80,
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(barCount, (i) {
-        final h = vm.waveHeights[i % vm.waveHeights.length];
-        return Padding(
-          padding:
-          const EdgeInsets.symmetric(horizontal: spacing / 2),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 120),
-            width: barWidth,
-            height: h,
-            decoration: BoxDecoration(
-              color: const Color(0xffEF5350),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-        );
-      }),
-    ),
-  );
 }
 
 /// ================= BACKGROUND PAINTER =================
