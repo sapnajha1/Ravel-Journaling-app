@@ -195,6 +195,13 @@ class _HomeTabState extends State<HomeTab> {
     return local[0].toUpperCase() + local.substring(1);
   }
 
+  String _timeBasedGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+
   void _onSwipeEnd(DragEndDetails details) {
     final v = details.primaryVelocity ?? 0;
     if (v.abs() < 200) return;
@@ -227,7 +234,7 @@ class _HomeTabState extends State<HomeTab> {
           top: 16,
           child: _Header(
             dateText: 'Today · ${formatDayMonth(DateTime.now())}',
-            greeting: 'Good Morning, ${_displayName()}!',
+            greeting: '${_timeBasedGreeting()}, ${_displayName()}!',
           ),
         ),
         // Card deck

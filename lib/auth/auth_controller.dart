@@ -34,6 +34,13 @@ class AuthController extends ChangeNotifier {
   /// Current user email for display (e.g. on Home and Profile).
   String? get userEmail => _user?.email;
 
+  /// True if the user has set a display name (full_name in metadata). Used to show ask-name screen after first login.
+  bool get hasChosenDisplayName {
+    if (_user == null) return false;
+    final name = _user!.userMetadata?['full_name']?.toString().trim();
+    return name != null && name.isNotEmpty;
+  }
+
   /// Display name from user metadata (e.g. full_name), or email prefix, or empty.
   String get displayName {
     if (_user == null) return '';

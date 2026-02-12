@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../domain/entities/auth_state.dart';
+import '../screens/ask_name_screen.dart';
 import '../screens/home_screen.dart';
 import 'app_providers.dart';
 import 'screens/login/login_screen.dart';
@@ -42,6 +43,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/ask-name',
+        builder: (context, state) {
+          final authController = ref.read(authControllerProvider);
+          return AskNameScreen(authController: authController);
+        },
+      ),
+      GoRoute(
         path: '/home',
         builder: (context, state) {
           final authController = ref.read(authControllerProvider);
@@ -55,6 +63,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isOnboarding = location.startsWith('/onboarding');
       final isLoginFlow =
           location == '/login' || location == '/magic-link-sent';
+      final hasName = ref.read(authControllerProvider).hasChosenDisplayName;
 
       // Allow "Skip to Login" to go directly to email screen; don't force back to onboarding
       if (!isOnboarded && !isOnboarding && !isLoginFlow) {
@@ -65,8 +74,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/login';
       }
 
-      if (isSignedIn && (isOnboarding || isLoginFlow)) {
+      // Signed in with name already set → go to home (skip ask-name).
+      if (isSignedIn && hasName) {
         return '/home';
+      }
+
+      // Signed in but no name yet → ask-name is required (first time after verification).
+      if (isSignedIn && (isOnboarding || isLoginFlow)) {
+        return '/ask-name';
       }
 
       return null;

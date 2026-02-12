@@ -594,6 +594,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _ShadowButton(
+                        height: 44,
                         onPressed: () async {
                           await ref.read(reflectControllerProvider.notifier).resetForNewReflection();
                         },
@@ -812,46 +813,41 @@ class _TopBar extends StatelessWidget {
 }
 
 class _ShadowButton extends StatelessWidget {
-  const _ShadowButton({required this.onPressed, required this.child});
+  const _ShadowButton({
+    required this.onPressed,
+    required this.child,
+    this.height = 36,
+  });
 
   final VoidCallback? onPressed;
   final Widget child;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(6),
-        border: const Border(
-          right: BorderSide(color: Colors.black, width: 1.5),
-          bottom: BorderSide(color: Colors.black, width: 1.5),
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0xFF2A2A2A),
-            blurRadius: 0,
-            offset: Offset(2, 2),
-          ),
-        ],
+        color: const Color(0xFFFF6E5A),
+        border: Border.all(color: Colors.black, width: 2),
       ),
-      child: ClipRRect(
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(6),
-        child: Material(
-          color: const Color(0xFFFF6E5A),
-          child: InkWell(
-            onTap: onPressed,
-            child: SizedBox(
-              height: 36,
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                child: Center(
-                  child: DefaultTextStyle(
-                    style: TextStyle(
-                      fontFamily: GoogleFonts.syneMono().fontFamily,
-                    ),
-                    child: child,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(6),
+          child: SizedBox(
+            height: height,
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+              child: Center(
+                child: DefaultTextStyle(
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
                   ),
+                  child: child,
                 ),
               ),
             ),

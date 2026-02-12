@@ -61,6 +61,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authAsync = ref.watch(authStateProvider);
+    // While auth is resolving (e.g. returning from magic link), show loading to avoid flashing login form.
+    if (authAsync.isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.backgroundBase,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.backgroundBase,
       body: Stack(
