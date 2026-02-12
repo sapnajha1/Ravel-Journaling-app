@@ -119,8 +119,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   List<_HistorySectionData> _groupEntries(List<JournalEntry> entries) {
+    // Sort all entries by time (most recent first), independent of type
+    final sortedEntries = List<JournalEntry>.from(entries)
+      ..sort((a, b) {
+        final ta = a.createdTimestamp ?? a.entryDate;
+        final tb = b.createdTimestamp ?? b.entryDate;
+        return tb.compareTo(ta);
+      });
+
     final Map<DateTime, List<JournalEntry>> grouped = {};
-    for (final entry in entries) {
+    for (final entry in sortedEntries) {
       final day = DateTime(entry.entryDate.year, entry.entryDate.month,
           entry.entryDate.day);
       grouped.putIfAbsent(day, () => []);
@@ -133,8 +141,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         .map(
           (key) => _HistorySectionData(
             date: key,
-            entries: grouped[key]!
-              ..sort((a, b) => b.entryDate.compareTo(a.entryDate)),
+            entries: grouped[key]!,
           ),
         )
         .toList();
@@ -218,8 +225,9 @@ class _DatePill extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: AppColors.textSecondary,
           fontFamily: GoogleFonts.syneMono().fontFamily,
         ),
       ),

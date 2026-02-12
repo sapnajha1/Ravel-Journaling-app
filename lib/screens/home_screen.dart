@@ -738,7 +738,7 @@ class _CustomBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 58,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(6),
@@ -759,7 +759,6 @@ class _CustomBottomBar extends StatelessWidget {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _NavItem(
             icon: Icons.home_rounded,
@@ -803,6 +802,7 @@ class _NavItem extends StatelessWidget {
     const active = Color(0xFFFF6E5A);
     const inactive = Colors.black87;
     return Expanded(
+      flex: selected ? 2 : 1,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
@@ -817,16 +817,16 @@ class _NavItem extends StatelessWidget {
                       ),
                       constraints: BoxConstraints(
                         maxWidth: constraints.maxWidth,
-                        maxHeight: 48,
+                        maxHeight: 42,
                       ),
                       decoration: BoxDecoration(
                         color: active,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                         boxShadow: const [
                           BoxShadow(
                             color: Color(0x33000000),
-                            blurRadius: 8,
-                            offset: Offset(0, 4),
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
                           ),
                         ],
                       ),
@@ -836,7 +836,7 @@ class _NavItem extends StatelessWidget {
                         children: [
                           Icon(icon, size: 18, color: AppColors.textPrimary),
                           if (label.isNotEmpty) ...[
-                            const SizedBox(width: 4),
+                            const SizedBox(width: 8),
                             Flexible(
                               child: Text(
                                 label,
@@ -845,7 +845,7 @@ class _NavItem extends StatelessWidget {
                                 style: TextStyle(
                                   color: AppColors.textPrimary,
                                   fontWeight: FontWeight.w400,
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontFamily: GoogleFonts.syneMono().fontFamily,
                                 ),
                               ),
