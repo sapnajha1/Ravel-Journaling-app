@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:journal_app/config/supabase_config.dart';
 import 'package:manual_speech_to_text/manual_speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -33,10 +34,6 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
   String? lastError;
   String liveText = '';
   String finalText = '';
-
-  /// Base text at the moment a listening session starts. Interim results
-  /// are layered on top of this.
-  String _baseTextAtSessionStart = '';
 
   /// When true, [stopRecording] / [pauseRecording] skip the backend
   /// punctuation refinement so text appears immediately (e.g. reflect/history).
@@ -123,9 +120,6 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
     try {
       isPaused = false;
       isRecording = true;
-      _baseTextAtSessionStart = finalText.isNotEmpty
-          ? finalText
-          : textController.text; // preserve any typed text
       liveText = '';
       _resetWaveform();
       notifyListeners();
@@ -202,24 +196,40 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
     try {
       final supabase = Supabase.instance.client;
+      debugPrint(
+        '[punctuate-transcript] Calling Edge Function at ${SupabaseConfig.supabaseUrl}/functions/v1/punctuate-transcript, transcript length: ${raw.length}',
+      );
       final response = await supabase.functions.invoke(
         'punctuate-transcript',
         body: {'transcript': raw},
       );
+
+      debugPrint(
+        '[punctuate-transcript] Response status: ${response.status}, data type: ${response.data.runtimeType}',
+      );
+      if (response.data != null) {
+        debugPrint('[punctuate-transcript] Response data: ${response.data}');
+      }
 
       final data = response.data;
       if (data is Map<String, dynamic>) {
         final refined = (data['text'] as String?)?.trim();
         if (refined != null && refined.isNotEmpty && refined != raw) {
           finalText = refined;
+          debugPrint('[punctuate-transcript] Refined text applied (length: ${refined.length})');
+        } else {
+          debugPrint('[punctuate-transcript] No change or empty refined text');
         }
       } else {
-        // Unexpected response shape – surface a hint so you can debug.
+        debugPrint(
+          '[punctuate-transcript] Unexpected response shape: ${data.runtimeType}',
+        );
         lastError =
             'Punctuation refine: unexpected response type ${data.runtimeType}';
       }
-    } catch (e) {
-      // On any error we keep the original text and just surface the error.
+    } catch (e, stack) {
+      debugPrint('[punctuate-transcript] Error: $e');
+      debugPrint('[punctuate-transcript] Stack: $stack');
       lastError = 'Punctuation refine failed: $e';
     } finally {
       liveText = '';

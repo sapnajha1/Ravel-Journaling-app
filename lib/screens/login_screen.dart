@@ -112,19 +112,19 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       debugPrint('Login error: $e\n$st');
     } finally {
-      if (!mounted) return;
-  setState(() {
-    _isLoading = false;
-  });
-
-  // 🔐 cooldown before allowing another attempt
-  Future.delayed(const Duration(minutes: 1), () {
-    if (mounted) {
-      setState(() {
-        _isSendingLink = false;
-      });
-    }
-  });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        // 🔐 cooldown before allowing another attempt
+        Future.delayed(const Duration(minutes: 1), () {
+          if (mounted) {
+            setState(() {
+              _isSendingLink = false;
+            });
+          }
+        });
+      }
     }
   }
 

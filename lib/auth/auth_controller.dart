@@ -76,8 +76,7 @@ class AuthController extends ChangeNotifier {
     final newSession = state.session;
     final newUser = newSession?.user;
 
-    if (state.event == AuthChangeEvent.signedOut ||
-        state.event == AuthChangeEvent.userDeleted) {
+    if (state.event == AuthChangeEvent.signedOut) {
       _session = null;
       _user = null;
     } else {
@@ -119,6 +118,7 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   void dispose() {
     _authSubscription?.cancel();
     super.dispose();

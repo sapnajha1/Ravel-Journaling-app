@@ -706,7 +706,7 @@ class _HistoryEntryDetailScreenState
                                 if (recordingVM.isTranscribing)
                                   Positioned.fill(
                                     child: Container(
-                                      color: Colors.white.withOpacity(0.6),
+                                      color: Colors.white.withValues(alpha: 0.6),
                                       child: Center(
                                         child: Column(
                                           mainAxisSize: MainAxisSize.min,

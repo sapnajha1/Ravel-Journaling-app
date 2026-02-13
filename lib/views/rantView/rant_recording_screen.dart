@@ -9,7 +9,6 @@ import '../../viewmodels/rantViewModel/rant_view_model.dart';
 import '../../viewmodels/recording/recording_view_model.dart';
 import '../../widgets/dotted_background.dart';
 import '../../widgets/recording_waveform.dart';
-import '../home_view.dart';
 // import '../shared_widgets/dotted_background.dart';
 
 
@@ -98,17 +97,11 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
 
     return PopScope(
       canPop: true,
-
-        onPopInvoked: (didPop) {
-          if (_navigated) return ; // agar already navigate kiya, pop ko ignore karo
-          if (didPop) {
-            context.read<RecordingViewModel>().stopRecording();
-          }
-
-      // onPopInvoked: (didPop) {
-      //   if (didPop) {
-      //     context.read<RecordingViewModel>().stopRecording();
-      //   }
+      onPopInvokedWithResult: (didPop, result) {
+        if (_navigated) return;
+        if (didPop) {
+          context.read<RecordingViewModel>().stopRecording();
+        }
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -123,7 +116,7 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                   child: Column(
                   children: [
                     /// APP BAR – at top like reflect screen (no gap)
-                    figmaAppBar(
+                    FigmaAppBar(
                       entryDate: DateTime.now(),
                       onBack: () => Navigator.of(context).pop(),
                     ),
@@ -195,7 +188,7 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                                         if (recordingVM.isTranscribing)
                                           Positioned.fill(
                                             child: Container(
-                                              color: Colors.white.withOpacity(0.6),
+                                              color: Colors.white.withValues(alpha: 0.6),
                                               child: Center(
                                                 child: Column(
                                                   mainAxisSize: MainAxisSize.min,
@@ -306,7 +299,6 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
 
                     GestureDetector(
                       onTap: () async {
-                        final recordingVM = context.read<RecordingViewModel>();
                         final rantVM = context.read<RantViewModel>();
 
                         // End ranting (does not save; content passed to AI screen so "Let it Go" = never stored)
@@ -358,8 +350,8 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
 }
 
 
-class figmaAppBar extends StatelessWidget {
-  const figmaAppBar({
+class FigmaAppBar extends StatelessWidget {
+  const FigmaAppBar({
     required this.entryDate,
     required this.onBack,
     super.key,
@@ -448,6 +440,7 @@ class figmaAppBar extends StatelessWidget {
 }
 
 /// ================= BACKGROUND PAINTER =================
+// ignore: unused_element
 class _DottedBackgroundPainter extends CustomPainter {
   const _DottedBackgroundPainter({
     required this.dotColor,

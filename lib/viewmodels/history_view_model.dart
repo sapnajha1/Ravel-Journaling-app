@@ -54,6 +54,7 @@ class HistoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // ignore: unnecessary_non_null_assertion - _userId guarded by null check above
       _entries = await _repository.fetchHistoryEntries(_userId!);
     } catch (_) {
       _errorMessage = 'Unable to load history right now.';
@@ -76,6 +77,7 @@ class HistoryViewModel extends ChangeNotifier {
     _isOffline = isOffline;
     notifyListeners();
     if (!isOffline && _userId != null) {
+      // ignore: unnecessary_non_null_assertion - _userId guarded by condition
       await _repository.syncPending(_userId!);
       await refresh();
     }

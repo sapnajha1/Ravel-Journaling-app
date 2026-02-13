@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -151,7 +152,9 @@ class JournalRepository {
       final unsynced = localEntries.where((entry) => !entry.isSynced).toList();
       final merged = [...remoteEntries, ...unsynced];
       return _sortEntries(merged);
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('[JournalRepository] Fetch remote failed: $e');
+      debugPrint('[JournalRepository] Stack: $st');
       return _sortEntries(localEntries);
     }
   }
@@ -199,8 +202,10 @@ class JournalRepository {
       final remoteId = response['id']?.toString();
       final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
       await _box.put(entry.localId, synced.toJson());
-    } catch (_) {
+    } catch (e, st) {
       // Keep entry as unsynced for later retry.
+      debugPrint('[JournalRepository] Sync failed: $e');
+      debugPrint('[JournalRepository] Stack: $st');
     }
   }
 

@@ -24,7 +24,7 @@ class HistoryCard extends StatelessWidget {
     return Stack(
       fit: StackFit.passthrough,
       children: [
-        if (backgroundColor.opacity > 0)
+        if (backgroundColor.a > 0)
           Positioned.fill(
             child: ColoredBox(color: backgroundColor),
           ),

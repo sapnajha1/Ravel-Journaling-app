@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../config/supabase_config.dart';
 import '../../../design_system/app_colors.dart';
 import '../../../design_system/app_spacing.dart';
-import '../../../design_system/app_text_styles.dart';
-import '../../../config/supabase_config.dart';
 import '../../state/auth_notifier.dart';
 import '../../widgets/app_text.dart';
 
@@ -28,13 +27,13 @@ class MagicLinkSentScreen extends ConsumerWidget {
               AppText(
                 'To continue, please check and click\n'
                 'the link sent to $email',
-                style: AppTextStyles.bodySmall,
+                style: AppTextStyle.bodySmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.large),
               AppText(
                 "Didn't receive the email?",
-                style: AppTextStyles.bodySmall,
+                style: AppTextStyle.bodySmall,
                 color: AppColors.textSecondary,
                 textAlign: TextAlign.center,
               ),
@@ -48,7 +47,7 @@ class MagicLinkSentScreen extends ConsumerWidget {
                 },
                 child: AppText(
                   'Resend Email',
-                  style: AppTextStyles.bodySmall,
+                  style: AppTextStyle.bodySmall,
                   color: AppColors.primaryBase,
                 ),
               ),

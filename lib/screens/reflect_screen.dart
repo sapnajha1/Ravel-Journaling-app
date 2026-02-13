@@ -170,7 +170,8 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         final shouldPop = await _onBackPressed();
-        if (shouldPop && mounted) Navigator.of(context).pop();
+        if (!context.mounted) return;
+        if (shouldPop) Navigator.of(context).pop();
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -326,7 +327,8 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
           dateText: 'Today · ${_dateLabel()}',
           onBack: () async {
             final shouldPop = await _onBackPressed();
-            if (shouldPop && mounted) Navigator.of(context).pop();
+            if (!context.mounted) return;
+            if (shouldPop) Navigator.of(context).pop();
           },
         ),
         const SizedBox(height: 12),
@@ -490,7 +492,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                       if (context.watch<RecordingViewModel>().isTranscribing)
                         Positioned.fill(
                           child: Container(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             child: Center(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,

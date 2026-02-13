@@ -641,16 +641,6 @@ class _ScribbleScreenState extends ConsumerState<ScribbleScreen> {
             );
           }).toList(),
         ),
-        const SizedBox(width: 8),
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.grey.shade600, width: 0.5),
-          ),
-        ),
         const SizedBox(width: 12),
         Expanded(
           child: SliderTheme(
@@ -730,12 +720,12 @@ class _ToolIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color? iconColor = selected ? Colors.white : null;
+    final Color? iconTint = selected ? (selectedColor ?? Colors.white) : null;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 42,
-        height: 42,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
           color: _bgBlack,
           shape: BoxShape.circle,
@@ -744,11 +734,11 @@ class _ToolIcon extends StatelessWidget {
         child: Center(
           child: SvgPicture.asset(
             asset,
-            width: 40,
-            height: 40,
+            width: 38,
+            height: 38,
             fit: BoxFit.contain,
-            colorFilter: iconColor != null
-                ? ColorFilter.mode(iconColor, BlendMode.srcIn)
+            colorFilter: iconTint != null
+                ? ColorFilter.mode(iconTint, BlendMode.srcIn)
                 : null,
           ),
         ),
@@ -762,6 +752,7 @@ class _OutlineButton extends StatelessWidget {
     required this.onPressed,
     required this.label,
     this.fontSize = 14,
+    // ignore: unused_element_parameter
     this.borderColor,
   });
 

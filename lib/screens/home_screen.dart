@@ -90,10 +90,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openCard(_JournalCardType type) {
+  void _openCard(JournalCardType type) {
     Widget screen;
     switch (type) {
-      case _JournalCardType.rant:
+      case JournalCardType.rant:
         final recordingVM = RecordingViewModel(context);
         screen = MultiProvider(
           providers: [
@@ -108,10 +108,10 @@ class _HomeScreenState extends State<HomeScreen> {
           child: const RantRecordingScreen(),
         );
         break;
-      case _JournalCardType.scribble:
+      case JournalCardType.scribble:
         screen = const ScribbleScreen();
         break;
-      case _JournalCardType.reflect:
+      case JournalCardType.reflect:
         final reflectRecordingVM = RecordingViewModel(context);
         screen = ChangeNotifierProvider.value(
           value: reflectRecordingVM,
@@ -125,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-enum _JournalCardType { rant, scribble, reflect }
+enum JournalCardType { rant, scribble, reflect }
 
 class _JournalCardData {
   const _JournalCardData({
@@ -135,7 +135,7 @@ class _JournalCardData {
     required this.buttonText,
   });
 
-  final _JournalCardType type;
+  final JournalCardType type;
   final String title;
   final String description;
   final String buttonText;
@@ -151,7 +151,7 @@ class HomeTab extends StatefulWidget {
 
   final String userEmail;
   final String displayName;
-  final void Function(_JournalCardType) onOpenCard;
+  final void Function(JournalCardType) onOpenCard;
 
   @override
   State<HomeTab> createState() => _HomeTabState();
@@ -160,20 +160,20 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   final List<_JournalCardData> _cards = const [
     _JournalCardData(
-      type: _JournalCardType.rant,
+      type: JournalCardType.rant,
       title: 'Rant',
       description:
           'Get it off your chest, feel lighter in 2 minutes',
       buttonText: 'Let It Out Now',
     ),
     _JournalCardData(
-      type: _JournalCardType.scribble,
+      type: JournalCardType.scribble,
       title: 'Scribble',
       description: "Express feelings you don't have names for",
       buttonText: 'Start Creating',
     ),
     _JournalCardData(
-      type: _JournalCardType.reflect,
+      type: JournalCardType.reflect,
       title: 'Reflect',
       description: 'Turn messy thoughts into clear next steps',
       buttonText: 'Start Reflecting',
@@ -250,9 +250,6 @@ class _HomeTabState extends State<HomeTab> {
               final centerX = (w - cardW) / 2;
               final centerY = (h - cardH) / 2;
 
-              final backLeft = (_frontIndex + 1) % 3;
-              final backRight = (_frontIndex + 2) % 3;
-
               return _CardDeckStack(
                 width: w,
                 height: h,
@@ -305,7 +302,7 @@ class _CardDeckStack extends StatelessWidget {
   final int swipeDirection;
   final void Function(DragEndDetails) onSwipeEnd;
   final void Function(int) onCardTap;
-  final void Function(_JournalCardType) onButtonPressed;
+  final void Function(JournalCardType) onButtonPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -477,6 +474,8 @@ class _DeckCard extends StatelessWidget {
   }
 }
 
+// Used by deck layout; may be referenced when card animations are enabled.
+// ignore: unused_element, unused_element_parameter
 class _AnimatedDeckCard extends StatelessWidget {
   const _AnimatedDeckCard({
     super.key,
@@ -553,22 +552,22 @@ class _CardVisual extends StatelessWidget {
 
   String _cardSvg() {
     switch (data.type) {
-      case _JournalCardType.rant:
+      case JournalCardType.rant:
         return 'assets/cards/card_rant.svg';
-      case _JournalCardType.scribble:
+      case JournalCardType.scribble:
         return 'assets/cards/card_reflect.svg';
-      case _JournalCardType.reflect:
+      case JournalCardType.reflect:
         return 'assets/cards/card_scribble.svg';
     }
   }
 
   String _iconSvg() {
     switch (data.type) {
-      case _JournalCardType.rant:
+      case JournalCardType.rant:
         return 'assets/cards/cloud-storm-svgrepo-com 1.svg';
-      case _JournalCardType.scribble:
+      case JournalCardType.scribble:
         return 'assets/cards/scribble-svgrepo-com 1.svg';
-      case _JournalCardType.reflect:
+      case JournalCardType.reflect:
         return 'assets/cards/mirror-3.svg';
     }
   }

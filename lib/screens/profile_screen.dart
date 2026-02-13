@@ -33,10 +33,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
+  // ignore: unused_element
   void _openEditName() {
     setState(() => _isEditingName = true);
   }
 
+  // ignore: unused_element
   Future<void> _showDeleteAccountDialog() async {
     final confirmed = await showDialog<_DeleteAccountResult>(
       context: context,
@@ -514,6 +516,7 @@ void showDeleteRantDialog(BuildContext context) {
 
                             final rantVM = context.read<RantViewModel>();
                             await rantVM.deleteCurrentRant();
+                            if (!context.mounted) return;
 
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
@@ -522,6 +525,7 @@ void showDeleteRantDialog(BuildContext context) {
                               (route) => false,
                             );
 
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Account Deleted'),
