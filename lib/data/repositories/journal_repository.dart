@@ -63,6 +63,30 @@ class JournalRepository {
     return entry;
   }
 
+  /// Saves a scribble entry. [content] is the base64-encoded PNG image data.
+  Future<JournalEntry> saveScribbleEntry({
+    required String userId,
+    required String content,
+    DateTime? entryDate,
+  }) async {
+    final localId = '${userId}_${DateTime.now().microsecondsSinceEpoch}';
+    final entry = JournalEntry(
+      localId: localId,
+      userId: userId,
+      entryType: 'scribble',
+      content: content,
+      entryDate: entryDate ?? DateTime.now(),
+      isSynced: false,
+    );
+    await _box.put(localId, entry.toJson());
+
+    final isOnline = await _isOnline();
+    if (isOnline) {
+      await _syncEntry(entry);
+    }
+    return entry;
+  }
+
   Future<void> syncPending(String userId) async {
     final isOnline = await _isOnline();
     if (!isOnline) return;

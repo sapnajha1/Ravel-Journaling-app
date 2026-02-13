@@ -141,7 +141,7 @@ class _AskNameScreenState extends State<AskNameScreen> {
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.black, width: 2),
+                        border: Border.all(color: Colors.black, width: 3),
                         boxShadow: const [
                           BoxShadow(
                             color: Color(0xFF2A2A2A),
@@ -152,28 +152,28 @@ class _AskNameScreenState extends State<AskNameScreen> {
                       ),
                       child: Material(
                         color: AppColors.primaryBase,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                         child: InkWell(
                           onTap: _isLoading ? null : _proceed,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             child: Center(
                               child: _isLoading
                                   ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
+                                      width: 22,
+                                      height: 18,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
                                       ),
                                     )
                                   : Text(
                                       'Proceed',
                                       style: GoogleFonts.syneMono(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
+                                        fontWeight: FontWeight.w400,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
                             ),
