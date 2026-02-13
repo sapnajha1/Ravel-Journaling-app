@@ -27,6 +27,10 @@ If you already have this function in Supabase and only want to fix the 404:
    ```bash
    supabase functions deploy punctuate-transcript
    ```
+   If the app gets **401 Unauthorized** when calling this function (common with Supabase’s ES256 JWT signing), redeploy with:
+   ```bash
+   supabase functions deploy punctuate-transcript --no-verify-jwt
+   ```
 
 ## Request / response
 

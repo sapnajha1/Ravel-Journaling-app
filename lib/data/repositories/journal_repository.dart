@@ -204,7 +204,9 @@ class JournalRepository {
       await _box.put(entry.localId, synced.toJson());
     } catch (e, st) {
       // Keep entry as unsynced for later retry.
-      debugPrint('[JournalRepository] Sync failed: $e');
+      debugPrint(
+        '[JournalRepository] Sync failed (entry_type=${entry.entryType}): $e',
+      );
       debugPrint('[JournalRepository] Stack: $st');
     }
   }

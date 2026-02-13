@@ -211,6 +211,16 @@ class RecordingViewModel extends ChangeNotifier with WidgetsBindingObserver {
         debugPrint('[punctuate-transcript] Response data: ${response.data}');
       }
 
+      if (response.status != 200) {
+        final msg =
+            'Edge function returned ${response.status}. '
+            'Deploy it to this project: supabase functions deploy punctuate-transcript '
+            'and set GEMINI_API_KEY. Body: ${response.data}';
+        debugPrint('[punctuate-transcript] $msg');
+        lastError = msg;
+        return;
+      }
+
       final data = response.data;
       if (data is Map<String, dynamic>) {
         final refined = (data['text'] as String?)?.trim();
