@@ -1,4 +1,4 @@
-import '../../data/repositories/onboarding_repository.dart';
+import '../repositories/onboarding_repository.dart';
 
 class CompleteOnboarding {
   const CompleteOnboarding(this._repository);

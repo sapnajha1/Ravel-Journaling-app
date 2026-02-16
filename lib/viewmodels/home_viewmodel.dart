@@ -1,7 +1,5 @@
-import 'package:journal_app/journal_mode.dart';
-import 'package:provider/provider.dart';
-import 'package:journal_app/journal_mode.dart';
 import 'package:flutter/foundation.dart';
+import 'package:journal_app/journal_mode.dart';
 
 class HomeViewModel extends ChangeNotifier {
   JournalMode selectMode = JournalMode.rant;

@@ -7,7 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/local/local_store.dart';
 import '../data/repositories/journal_repository.dart';
-import '../viewmodels/home_viewmodel.dart';
 import '../viewmodels/rantViewModel/rant_view_model.dart';
 import '../viewmodels/recording/recording_view_model.dart';
 
@@ -16,9 +15,7 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<HomeViewModel>();
     final size = MediaQuery.of(context).size;
-    final recordingVM = RecordingViewModel(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFE9CC),

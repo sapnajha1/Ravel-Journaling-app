@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../config/supabase_config.dart';
 import '../../../design_system/app_colors.dart';
 import '../../../design_system/app_spacing.dart';
-import '../../../design_system/app_text_styles.dart';
 import '../../state/auth_notifier.dart';
 import '../../widgets/app_input_field.dart';
 import '../../widgets/app_text.dart';
@@ -82,13 +81,13 @@ class _LoginMagicLinkScreenState
               const SizedBox(height: AppSpacing.large),
               AppText(
                 'Login to Journal',
-                style: AppTextStyles.headlineSmall,
+                style: AppTextStyle.headlineSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.small),
               AppInputField(
                 controller: _emailController,
-                hintText: 'Enter your email',
+                label: 'Enter your email',
                 keyboardType: TextInputType.emailAddress,
                 onChanged: (_) {
                   if (_errorMessage != null) {
@@ -100,7 +99,7 @@ class _LoginMagicLinkScreenState
               if (_errorMessage != null) ...[
                 AppText(
                   _errorMessage!,
-                  style: AppTextStyles.bodySmall,
+                  style: AppTextStyle.bodySmall,
                   color: AppColors.errorBase,
                   textAlign: TextAlign.center,
                 ),

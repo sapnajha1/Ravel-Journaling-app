@@ -63,14 +63,27 @@ class JournalEntry {
         'created_timestamp': createdTimestamp?.toIso8601String(),
       };
 
-  Map<String, dynamic> toRemoteInsert() => {
-        'user_id': userId,
-        'entry_type': entryType,
-        'prompt_id': promptId,
-        'title': title,
-        'content': content,
-        'entry_date': _dateOnly(entryDate),
-      };
+  /// Only include prompt_id if it's a valid UUID. Supabase journal_entries.prompt_id
+  /// is often UUID; the local fallback "default-reflection" is not a UUID and must not be sent.
+  static bool _isValidUuid(String? value) {
+    if (value == null || value.isEmpty) return false;
+    const pattern = r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
+    return RegExp(pattern).hasMatch(value);
+  }
+
+  Map<String, dynamic> toRemoteInsert() {
+    final map = <String, dynamic>{
+      'user_id': userId,
+      'entry_type': entryType,
+      'title': title,
+      'content': content,
+      'entry_date': _dateOnly(entryDate),
+    };
+    if (promptId != null && _isValidUuid(promptId)) {
+      map['prompt_id'] = promptId;
+    }
+    return map;
+  }
 
   String _dateOnly(DateTime value) {
     final year = value.year.toString().padLeft(4, '0');

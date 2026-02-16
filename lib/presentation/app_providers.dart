@@ -4,16 +4,18 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import '../auth/auth_controller.dart';
 import '../config/supabase_config.dart';
 import '../data/local/local_store.dart';
-import '../data/repositories/auth_repository.dart';
 import '../data/repositories/onboarding_repository.dart';
+import '../data/repositories/supabase_auth_repository.dart';
 import '../domain/entities/auth_state.dart';
+import '../domain/repositories/auth_repository.dart' as domain_auth;
+import '../domain/repositories/onboarding_repository.dart' as domain_onboarding;
 import '../domain/usecases/complete_onboarding.dart';
 import '../domain/usecases/get_onboarding_status.dart';
 import '../domain/usecases/send_magic_link.dart';
 
 // Riverpod is already in the app; we reuse it for scalable state + DI.
-final authRepositoryProvider = Provider<AuthRepository>(
-  (ref) => AuthRepository(supabase.Supabase.instance.client),
+final authRepositoryProvider = Provider<domain_auth.AuthRepository>(
+  (ref) => SupabaseAuthRepository(supabase.Supabase.instance.client),
 );
 
 final sendMagicLinkProvider = Provider<SendMagicLink>(
@@ -21,10 +23,11 @@ final sendMagicLinkProvider = Provider<SendMagicLink>(
 );
 
 final authStateProvider = StreamProvider<AuthState>(
-  (ref) => ref.read(authRepositoryProvider).authStateChanges(),
+  (ref) => ref.read(authRepositoryProvider).watchAuthState(),
 );
 
-final onboardingRepositoryProvider = Provider<OnboardingRepository>(
+final onboardingRepositoryProvider =
+    Provider<domain_onboarding.OnboardingRepository>(
   (ref) => OnboardingRepository(LocalStore.appSettingsBox()),
 );
 
@@ -46,7 +49,7 @@ class OnboardingController extends StateNotifier<bool> {
   })  : _getOnboardingStatus = getOnboardingStatus,
         _completeOnboarding = completeOnboarding,
         super(false) {
-    state = _getOnboardingStatus();
+    _getOnboardingStatus().then((value) => state = value);
   }
 
   final GetOnboardingStatus _getOnboardingStatus;

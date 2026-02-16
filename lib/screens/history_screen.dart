@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -119,8 +122,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   List<_HistorySectionData> _groupEntries(List<JournalEntry> entries) {
+    // Sort all entries by time (most recent first), independent of type
+    final sortedEntries = List<JournalEntry>.from(entries)
+      ..sort((a, b) {
+        final ta = a.createdTimestamp ?? a.entryDate;
+        final tb = b.createdTimestamp ?? b.entryDate;
+        return tb.compareTo(ta);
+      });
+
     final Map<DateTime, List<JournalEntry>> grouped = {};
-    for (final entry in entries) {
+    for (final entry in sortedEntries) {
       final day = DateTime(entry.entryDate.year, entry.entryDate.month,
           entry.entryDate.day);
       grouped.putIfAbsent(day, () => []);
@@ -133,8 +144,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         .map(
           (key) => _HistorySectionData(
             date: key,
-            entries: grouped[key]!
-              ..sort((a, b) => b.entryDate.compareTo(a.entryDate)),
+            entries: grouped[key]!,
           ),
         )
         .toList();
@@ -218,8 +228,9 @@ class _DatePill extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: AppColors.textSecondary,
           fontFamily: GoogleFonts.syneMono().fontFamily,
         ),
       ),
@@ -289,17 +300,20 @@ class _HistoryEntryCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            Text(
-              entry.content,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.4,
-                fontWeight: FontWeight.normal,
-                fontFamily: GoogleFonts.syneMono().fontFamily,
+            if (entry.entryType == 'scribble')
+              _ScribblePreview(contentBase64: entry.content)
+            else
+              Text(
+                entry.content,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.4,
+                  fontWeight: FontWeight.normal,
+                  fontFamily: GoogleFonts.syneMono().fontFamily,
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -360,6 +374,47 @@ class _HistoryEntryCard extends StatelessWidget {
   }
 }
 
+class _ScribblePreview extends StatelessWidget {
+  const _ScribblePreview({required this.contentBase64});
+
+  final String contentBase64;
+
+  @override
+  Widget build(BuildContext context) {
+    Uint8List? imageBytes;
+    try {
+      if (contentBase64.isNotEmpty) {
+        final decoded = base64Decode(contentBase64);
+        if (decoded.isNotEmpty) {
+          imageBytes = Uint8List.fromList(decoded);
+        }
+      }
+    } catch (_) {
+      // Not valid base64 or not an image
+    }
+    if (imageBytes == null) {
+      return Text(
+        'Drawing',
+        style: TextStyle(
+          fontSize: 14,
+          height: 1.4,
+          fontWeight: FontWeight.normal,
+          fontFamily: GoogleFonts.syneMono().fontFamily,
+        ),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: Image.memory(
+        imageBytes,
+        height: 56,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+}
+
 class HistoryEntryDetailScreen extends ConsumerStatefulWidget {
   const HistoryEntryDetailScreen({
     super.key,
@@ -387,7 +442,9 @@ class _HistoryEntryDetailScreenState
   @override
   void initState() {
     super.initState();
-    _contentController = TextEditingController(text: widget.entry.content);
+    _contentController = TextEditingController(
+      text: widget.entry.entryType == 'scribble' ? '' : widget.entry.content,
+    );
   }
 
   @override
@@ -501,8 +558,76 @@ class _HistoryEntryDetailScreenState
     }
   }
 
+  Widget _buildScribbleDetail(BuildContext context) {
+    Uint8List? imageBytes;
+    try {
+      final decoded = base64Decode(widget.entry.content);
+      if (decoded.isNotEmpty) {
+        imageBytes = Uint8List.fromList(decoded);
+      }
+    } catch (_) {
+      // Content may not be base64 (e.g. legacy or corrupt)
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            const Positioned.fill(child: DottedBackground()),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _HistoryDetailTopBar(
+                    dateText: _todayOrDate(widget.entry.entryDate),
+                    onBack: () => Navigator.of(context).pop(),
+                    onDelete: _confirmDelete,
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: imageBytes != null
+                          ? Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  color: Colors.white,
+                                  child: Image.memory(
+                                    imageBytes,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                'Unable to load scribble',
+                                style: TextStyle(
+                                  fontFamily: GoogleFonts.syneMono().fontFamily,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.entry.entryType == 'scribble') {
+      return _buildScribbleDetail(context);
+    }
+
     final isReflection = widget.entry.entryType == 'reflection';
     final String? promptOrTitleText = isReflection
         ? (widget.entry.promptId != null
@@ -581,7 +706,7 @@ class _HistoryEntryDetailScreenState
                                 if (recordingVM.isTranscribing)
                                   Positioned.fill(
                                     child: Container(
-                                      color: Colors.white.withOpacity(0.6),
+                                      color: Colors.white.withValues(alpha: 0.6),
                                       child: Center(
                                         child: Column(
                                           mainAxisSize: MainAxisSize.min,

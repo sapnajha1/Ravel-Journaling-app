@@ -10,12 +10,12 @@ class SupabaseConfig {
 
   static const String supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://ipptzbihuzbgriixerld.supabase.co',
+    defaultValue: 'https://zvdkkwlpjjcqqlyiwnol.supabase.co',
   );
 
   static const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwcHR6YmlodXpiZ3JpaXhlcmxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2Nzc2NDEsImV4cCI6MjA4NTI1MzY0MX0.vqZDZmHnOmoQFcd7ezLE7Pkc1nJFzAZYXQMjkMlDayw',
+    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2ZGtrd2xwampjcXFseWl3bm9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4Nzk2NTEsImV4cCI6MjA4NjQ1NTY1MX0.tT5Vvk_hwzZg2TRANMFs9Y5KWDvWVSE4R2XXVPLvMIs',
   );
 
   /// Deep link used for magic link callback. Must match the redirect URL

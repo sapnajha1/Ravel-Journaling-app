@@ -46,6 +46,7 @@ class _AnimatedCardState extends State<AnimatedCard>
   void _onTap() async {
     await _controller.forward();
     await _controller.reverse();
+    if (!mounted) return;
 
     // Notify Provider
     final vm = context.read<HomeViewModel>();

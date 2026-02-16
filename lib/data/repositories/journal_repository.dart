@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -50,6 +51,30 @@ class JournalRepository {
       userId: userId,
       entryType: 'rant',
       title: title?.trim().isEmpty == true ? null : title?.trim(),
+      content: content,
+      entryDate: entryDate ?? DateTime.now(),
+      isSynced: false,
+    );
+    await _box.put(localId, entry.toJson());
+
+    final isOnline = await _isOnline();
+    if (isOnline) {
+      await _syncEntry(entry);
+    }
+    return entry;
+  }
+
+  /// Saves a scribble entry. [content] is the base64-encoded PNG image data.
+  Future<JournalEntry> saveScribbleEntry({
+    required String userId,
+    required String content,
+    DateTime? entryDate,
+  }) async {
+    final localId = '${userId}_${DateTime.now().microsecondsSinceEpoch}';
+    final entry = JournalEntry(
+      localId: localId,
+      userId: userId,
+      entryType: 'scribble',
       content: content,
       entryDate: entryDate ?? DateTime.now(),
       isSynced: false,
@@ -127,7 +152,9 @@ class JournalRepository {
       final unsynced = localEntries.where((entry) => !entry.isSynced).toList();
       final merged = [...remoteEntries, ...unsynced];
       return _sortEntries(merged);
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('[JournalRepository] Fetch remote failed: $e');
+      debugPrint('[JournalRepository] Stack: $st');
       return _sortEntries(localEntries);
     }
   }
@@ -175,8 +202,12 @@ class JournalRepository {
       final remoteId = response['id']?.toString();
       final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
       await _box.put(entry.localId, synced.toJson());
-    } catch (_) {
+    } catch (e, st) {
       // Keep entry as unsynced for later retry.
+      debugPrint(
+        '[JournalRepository] Sync failed (entry_type=${entry.entryType}): $e',
+      );
+      debugPrint('[JournalRepository] Stack: $st');
     }
   }
 

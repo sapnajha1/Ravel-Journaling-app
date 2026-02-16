@@ -27,7 +27,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required SendMagicLink sendMagicLink,
   })  : _watchAuthState = watchAuthState,
         _sendMagicLink = sendMagicLink,
-        super(AuthState.signedOut) {
+        super(AuthState.unauthenticated()) {
     _subscription = _watchAuthState().listen((event) {
       state = event;
     });
@@ -38,7 +38,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   StreamSubscription<AuthState>? _subscription;
 
   Future<void> sendMagicLink(String email, String redirectUrl) async {
-    await _sendMagicLink(email, redirectUrl);
+    await _sendMagicLink(email: email, redirectUrl: redirectUrl);
   }
 
   @override

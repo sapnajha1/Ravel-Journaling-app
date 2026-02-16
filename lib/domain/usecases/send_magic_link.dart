@@ -1,4 +1,4 @@
-import '../../data/repositories/auth_repository.dart';
+import '../repositories/auth_repository.dart';
 
 class SendMagicLink {
   const SendMagicLink(this._repository);
@@ -9,9 +9,6 @@ class SendMagicLink {
     required String email,
     required String redirectUrl,
   }) {
-    return _repository.sendMagicLink(
-      email: email,
-      redirectUrl: redirectUrl,
-    );
+    return _repository.sendMagicLink(email, redirectUrl);
   }
 }

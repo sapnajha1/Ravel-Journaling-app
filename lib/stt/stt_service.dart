@@ -68,13 +68,15 @@ class SttService {
     }
 
     await _speechToText.listen(
-      onResult: (stt.SpeechRecognitionResult result) {
+      onResult: (result) {
         onResult(result.recognizedWords, result.finalResult);
       },
-      listenMode: stt.ListenMode.dictation,
-      partialResults: true,
-      cancelOnError: true,
       localeId: localeId ?? _localeId,
+      listenOptions: stt.SpeechListenOptions(
+        listenMode: stt.ListenMode.dictation,
+        partialResults: true,
+        cancelOnError: true,
+      ),
     );
 
     // Expose initial status upwards.

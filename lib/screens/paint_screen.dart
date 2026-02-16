@@ -21,7 +21,7 @@ import 'package:path_provider/path_provider.dart';
 /// Note: This file is self-contained. Add `flutter_painter` and
 /// `path_provider` to your `pubspec.yaml` if not already present.
 class PaintScreen extends StatefulWidget {
-  const PaintScreen({Key? key}) : super(key: key);
+  const PaintScreen({super.key});
 
   @override
   State<PaintScreen> createState() => _PaintScreenState();
@@ -162,7 +162,7 @@ class _PaintScreenState extends State<PaintScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black87.withOpacity(0.6),
+        color: Colors.black87.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

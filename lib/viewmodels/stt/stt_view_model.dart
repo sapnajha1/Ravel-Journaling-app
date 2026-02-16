@@ -81,7 +81,7 @@ class SttViewModel extends ChangeNotifier {
   void _onSttResult(String recognizedWords, bool isFinal) {
     // `recognizedWords` is the full transcript for this session so far.
     // We combine it with the base text that existed before the session started.
-    final combined = (_baseTextAtSessionStart + ' ' + recognizedWords).trim();
+    final combined = '$_baseTextAtSessionStart $recognizedWords'.trim();
     textController.text = combined;
     textController.selection = TextSelection.collapsed(offset: textController.text.length);
 
