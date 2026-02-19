@@ -6,9 +6,12 @@ import 'package:provider/provider.dart';
 
 import '../design_system/app_colors.dart';
 import '../features/reflect/reflect_controller.dart';
+import '../utils/date_formatters.dart';
 import '../viewmodels/recording/recording_view_model.dart';
 import '../widgets/dotted_background.dart';
 import '../widgets/recording_waveform.dart';
+import '../widgets/reflect_widgets.dart';
+import '../widgets/shared_buttons.dart';
 
 class ReflectScreen extends ConsumerStatefulWidget {
   const ReflectScreen({super.key});
@@ -54,7 +57,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     if (content.isNotEmpty) {
       final confirm = await showDialog<bool>(
         context: context,
-        builder: (ctx) => _ReflectAlert(
+        builder: (ctx) => ReflectAlertDialog(
           title: 'Change Prompt',
           message:
               'Changing prompt will clear the current reflection to provide space for new reflection',
@@ -95,7 +98,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     if (content.isEmpty) {
       final choice = await showDialog<String>(
         context: context,
-        builder: (ctx) => _ReflectAlert(
+        builder: (ctx) => ReflectAlertDialog(
           title: 'Changed Minds?',
           message:
               'Sometimes words don\'t come right away. Take your time to reflect or try later',
@@ -110,7 +113,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     }
     final choice = await showDialog<String>(
       context: context,
-      builder: (ctx) => _ReflectAlert(
+      builder: (ctx) => ReflectAlertDialog(
         title: 'Finished Reflecting?',
         message:
             'Save using End Session or leave without saving.',
@@ -292,7 +295,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
               ),
             ),
             const Spacer(),
-            _ShadowButton(
+            ShadowButton(
               onPressed: state.isSaving ? null : _endSession,
               child: state.isSaving
                   ? const SizedBox(
@@ -323,8 +326,8 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _TopBar(
-          dateText: 'Today · ${_dateLabel()}',
+        ReflectTopBar(
+          dateText: 'Today · ${formatDayMonth(DateTime.now())}',
           onBack: () async {
             final shouldPop = await _onBackPressed();
             if (!context.mounted) return;
@@ -534,7 +537,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
   Widget _buildSaved(BuildContext context) {
     return Column(
       children: [
-        _TopBar(
+        ReflectTopBar(
           dateText: 'Reflect - Save',
           onBack: () => Navigator.of(context).pop(),
         ),
@@ -595,7 +598,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _ShadowButton(
+                      child: ShadowButton(
                         height: 44,
                         onPressed: () async {
                           await ref.read(reflectControllerProvider.notifier).resetForNewReflection();
@@ -649,253 +652,6 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
 
   void _clearPrompt() {
     ref.read(reflectControllerProvider.notifier).clearPrompt();
-  }
-
-  String _dateLabel() {
-    final now = DateTime.now();
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return '${now.day} ${months[now.month - 1]}';
-  }
-}
-
-class _ReflectAlert extends StatelessWidget {
-  const _ReflectAlert({
-    required this.title,
-    required this.message,
-    required this.primaryLabel,
-    required this.secondaryLabel,
-    required this.onPrimary,
-    required this.onSecondary,
-  });
-
-  final String title;
-  final String message;
-  final String primaryLabel;
-  final String secondaryLabel;
-  final VoidCallback onPrimary;
-  final VoidCallback onSecondary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.black, width: 2),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFFFF6E5A),
-                fontFamily: GoogleFonts.syneMono().fontFamily,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.4,
-                color: Colors.black87,
-                fontFamily: GoogleFonts.syneMono().fontFamily,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: _WhiteOutlineButton(
-                    onPressed: onSecondary,
-                    child: Text(
-                      secondaryLabel,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        fontFamily: GoogleFonts.syneMono().fontFamily,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ShadowButton(
-                    onPressed: onPrimary,
-                    child: Text(
-                      primaryLabel,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        fontFamily: GoogleFonts.syneMono().fontFamily,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TopBar extends StatelessWidget {
-  const _TopBar({required this.dateText, required this.onBack});
-
-  final String dateText;
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: const Border(
-          left: BorderSide(color: Colors.black, width: 2),
-          right: BorderSide(color: Colors.black, width: 2),
-          bottom: BorderSide(color: Colors.black, width: 2),
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 0,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: onBack,
-            icon: const Icon(Icons.arrow_back_ios_new),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          const Spacer(),
-          Text(
-            dateText,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              fontFamily: GoogleFonts.syneMono().fontFamily,
-            ),
-          ),
-          const Spacer(),
-          const SizedBox(width: 24),
-        ],
-      ),
-    );
-  }
-}
-
-class _ShadowButton extends StatelessWidget {
-  const _ShadowButton({
-    required this.onPressed,
-    required this.child,
-    this.height = 36,
-  });
-
-  final VoidCallback? onPressed;
-  final Widget child;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        color: const Color(0xFFFF6E5A),
-        border: Border.all(color: Colors.black, width: 2),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(6),
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(6),
-          child: SizedBox(
-            height: height,
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              child: Center(
-                child: DefaultTextStyle(
-                  style: TextStyle(
-                    fontFamily: GoogleFonts.syneMono().fontFamily,
-                  ),
-                  child: child,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _WhiteOutlineButton extends StatelessWidget {
-  const _WhiteOutlineButton({required this.onPressed, required this.child});
-
-  final VoidCallback? onPressed;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.black, width: 2),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(6),
-          child: SizedBox(
-            height: 36,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              child: Center(
-                child: DefaultTextStyle(
-                  style: TextStyle(
-                    fontFamily: GoogleFonts.syneMono().fontFamily,
-                  ),
-                  child: child,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 

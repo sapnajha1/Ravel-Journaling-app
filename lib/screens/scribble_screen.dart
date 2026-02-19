@@ -10,7 +10,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../design_system/app_colors.dart';
 import '../features/scribble/scribble_controller.dart';
+import '../utils/date_formatters.dart';
 import '../widgets/dotted_background.dart';
+import '../widgets/scribble_widgets.dart';
 
 class ScribbleScreen extends ConsumerStatefulWidget {
   const ScribbleScreen({super.key});
@@ -108,61 +110,9 @@ class _ScribbleScreenState extends ConsumerState<ScribbleScreen> {
   Future<void> _clearCanvas() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.primaryBase, width: 2),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Clear Canvas',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: GoogleFonts.syneMono().fontFamily,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Starting from clean slate will lose the current scribbling',
-                style: TextStyle(
-                  fontSize: 16,
-                  height: 1.4,
-                  fontFamily: GoogleFonts.syneMono().fontFamily,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: _OutlineButton(
-                      onPressed: () => Navigator.of(ctx).pop(true),
-                      label: 'Clear',
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _CoralButton(
-                      onPressed: () => Navigator.of(ctx).pop(false),
-                      label: 'Keep Scribbling',
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      builder: (ctx) => ClearCanvasDialog(
+        onClear: () => Navigator.of(ctx).pop(true),
+        onKeep: () => Navigator.of(ctx).pop(false),
       ),
     );
     if (confirm == true && mounted) {
@@ -212,15 +162,6 @@ class _ScribbleScreenState extends ConsumerState<ScribbleScreen> {
         );
       }
     }
-  }
-
-  String _dateLabel() {
-    final now = DateTime.now();
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return '${now.day} ${months[now.month - 1]}';
   }
 
   @override
@@ -457,16 +398,7 @@ class _ScribbleScreenState extends ConsumerState<ScribbleScreen> {
           ),
           const Spacer(),
           Text(
-            'Today',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              fontFamily: GoogleFonts.syneMono().fontFamily,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          Text(
-            ' · ${_dateLabel()}',
+            'Today · ${formatDayMonth(DateTime.now())}',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -667,170 +599,38 @@ class _ScribbleScreenState extends ConsumerState<ScribbleScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _ToolIcon(
+        ScribbleToolIcon(
           asset: 'assets/cards/pen.svg',
           selected: _penSelected,
           selectedColor: _penSelected ? _selectedColor : null,
           onTap: _togglePen,
         ),
         const SizedBox(width: 12),
-        _ToolIcon(
+        ScribbleToolIcon(
           asset: 'assets/cards/eraser.svg',
           selected: _isEraser,
           selectedColor: const Color(0xFFFFB74D),
           onTap: _selectEraser,
         ),
         const SizedBox(width: 28),
-        _ToolIcon(
+        ScribbleToolIcon(
           asset: 'assets/cards/undo.svg',
           selected: false,
           onTap: _undo,
         ),
         const SizedBox(width: 12),
-        _ToolIcon(
+        ScribbleToolIcon(
           asset: 'assets/cards/redo.svg',
           selected: false,
           onTap: _redo,
         ),
         const SizedBox(width: 12),
-        _ToolIcon(
+        ScribbleToolIcon(
           asset: 'assets/cards/broom.svg',
           selected: false,
           onTap: _clearCanvas,
         ),
       ],
-    );
-  }
-}
-
-class _ToolIcon extends StatelessWidget {
-  const _ToolIcon({
-    required this.asset,
-    required this.selected,
-    required this.onTap,
-    this.selectedColor,
-  });
-
-  final String asset;
-  final bool selected;
-  final VoidCallback onTap;
-  final Color? selectedColor;
-
-  static const Color _bgBlack = Color(0xFF201B18);
-
-  @override
-  Widget build(BuildContext context) {
-    final Color? iconTint = selected ? (selectedColor ?? Colors.white) : null;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: _bgBlack,
-          shape: BoxShape.circle,
-          border: Border.all(color: _bgBlack, width: 0.5),
-        ),
-        child: Center(
-          child: SvgPicture.asset(
-            asset,
-            width: 38,
-            height: 38,
-            fit: BoxFit.contain,
-            colorFilter: iconTint != null
-                ? ColorFilter.mode(iconTint, BlendMode.srcIn)
-                : null,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _OutlineButton extends StatelessWidget {
-  const _OutlineButton({
-    required this.onPressed,
-    required this.label,
-    this.fontSize = 14,
-    // ignore: unused_element_parameter
-    this.borderColor,
-  });
-
-  final VoidCallback onPressed;
-  final String label;
-  final double fontSize;
-  final Color? borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final border = borderColor ?? AppColors.textPrimary;
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(6),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: border, width: 2),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w700,
-                fontFamily: GoogleFonts.syneMono().fontFamily,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CoralButton extends StatelessWidget {
-  const _CoralButton({
-    required this.onPressed,
-    required this.label,
-    this.fontSize = 14,
-  });
-
-  final VoidCallback onPressed;
-  final String label;
-  final double fontSize;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.primaryBase,
-      borderRadius: BorderRadius.circular(6),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: AppColors.primaryDark, width: 2),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w700,
-                fontFamily: GoogleFonts.syneMono().fontFamily,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
