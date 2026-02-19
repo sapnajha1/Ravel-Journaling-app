@@ -6,6 +6,9 @@ import 'package:provider/provider.dart';
 
 import '../design_system/app_colors.dart';
 import '../features/reflect/reflect_controller.dart';
+import '../screens/entry_analysis_loading_screen.dart';
+import '../screens/entry_analysis_screen.dart';
+import '../services/entry_analysis_service.dart';
 import '../utils/date_formatters.dart';
 import '../viewmodels/recording/recording_view_model.dart';
 import '../widgets/dotted_background.dart';
@@ -87,10 +90,30 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
           content: content,
           title: title,
         );
-    if (saved) {
-      _entryController.clear();
-      _titleController.clear();
-    }
+    if (!saved) return;
+
+    _entryController.clear();
+    _titleController.clear();
+
+    if (!mounted) return;
+
+    // Navigate to loading screen immediately, then replace with analysis screen
+    // once the AI call completes.
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const EntryAnalysisLoadingScreen()),
+    );
+
+    final analysis = await EntryAnalysisService().analyzeEntry(content, 'reflection');
+
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => EntryAnalysisScreen(
+          analysis: analysis,
+          entryType: 'reflection',
+        ),
+      ),
+    );
   }
 
   Future<bool> _onBackPressed() async {

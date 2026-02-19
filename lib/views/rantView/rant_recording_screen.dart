@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:journal_app/views/rantView/rant_ai_output_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../screens/entry_analysis_loading_screen.dart';
+import '../../screens/entry_analysis_screen.dart';
+import '../../services/entry_analysis_service.dart';
 import '../../viewmodels/rantViewModel/rant_view_model.dart';
 import '../../viewmodels/recording/recording_view_model.dart';
 import '../../widgets/dotted_background.dart';
 import '../../widgets/recording_waveform.dart';
-// import '../shared_widgets/dotted_background.dart';
 
 
 class RantRecordingScreen extends StatefulWidget {
@@ -301,19 +303,42 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                       onTap: () async {
                         final rantVM = context.read<RantViewModel>();
 
-                        // End ranting (does not save; content passed to AI screen so "Let it Go" = never stored)
+                        // Get content and stop recording (does not save yet)
                         final content = await rantVM.endRanting(context);
 
                         // Mark as navigated so PopScope/lifecycle doesn't interfere
                         _navigated = true;
 
+                        if (content == null || content.trim().isEmpty) return;
                         if (!context.mounted) return;
+
+                        // Save the rant entry immediately
+                        final userId = Supabase.instance.client.auth.currentUser?.id;
+                        if (userId != null) {
+                          await rantVM.journalRepository.saveRantEntry(
+                            userId: userId,
+                            content: content.trim(),
+                          );
+                        }
+
+                        if (!context.mounted) return;
+
+                        // Navigate to loading screen, then replace with analysis screen
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => AIscreen(
-                              savedEntry: null,
-                              rantContent: content,
-                              journalRepository: rantVM.journalRepository,
+                            builder: (_) => const EntryAnalysisLoadingScreen(),
+                          ),
+                        );
+
+                        final analysis = await EntryAnalysisService()
+                            .analyzeEntry(content.trim(), 'rant');
+
+                        if (!context.mounted) return;
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (_) => EntryAnalysisScreen(
+                              analysis: analysis,
+                              entryType: 'rant',
                             ),
                           ),
                         );
