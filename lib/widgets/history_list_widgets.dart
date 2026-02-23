@@ -142,18 +142,27 @@ class HistoryEntryCard extends StatelessWidget {
             const SizedBox(height: 10),
             if (entry.entryType == 'scribble')
               ScribblePreview(contentBase64: entry.content)
-            else
+            else ...[
+              // AI-generated title (or first line of content as fallback)
               Text(
-                entry.content,
+                entry.title?.isNotEmpty == true
+                    ? entry.title!
+                    : entry.content,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.4,
-                  fontWeight: FontWeight.normal,
-                  fontFamily: GoogleFonts.syneMono().fontFamily,
+                style: GoogleFonts.gochiHand(
+                  fontSize: 18,
+                  height: 1.3,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textPrimary,
                 ),
               ),
+              // Mood chips (only if analysis was saved)
+              if (entry.moods != null && entry.moods!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                _HistoryMoodChips(moods: entry.moods!),
+              ],
+            ],
           ],
         ),
       ),
@@ -211,6 +220,69 @@ class HistoryEntryCard extends StatelessWidget {
       default:
         return 'assets/cards/reflect_history_bg.svg';
     }
+  }
+}
+
+/// Inline mood chips row for history entry cards.
+/// Shows up to 3 chips; if there are more, shows a "+N" overflow chip.
+class _HistoryMoodChips extends StatelessWidget {
+  const _HistoryMoodChips({required this.moods});
+
+  final List<String> moods;
+
+  static const int _maxVisible = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = moods.take(_maxVisible).toList();
+    final overflow = moods.length - _maxVisible;
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        ...visible.map(
+          (mood) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.textPrimary, width: 1.5),
+            ),
+            child: Text(
+              mood,
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.4,
+                fontWeight: FontWeight.normal,
+                fontFamily: GoogleFonts.syneMono().fontFamily,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ),
+        if (overflow > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                  color: AppColors.textTertiary, width: 1.5),
+            ),
+            child: Text(
+              '+$overflow',
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.4,
+                fontWeight: FontWeight.normal,
+                fontFamily: GoogleFonts.syneMono().fontFamily,
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 

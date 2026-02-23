@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../data/local/local_store.dart';
+import '../../data/models/journal_entry.dart';
 import '../../data/models/prompt.dart';
 import '../../data/repositories/journal_repository.dart';
 import '../../data/repositories/prompt_repository.dart';
@@ -173,7 +174,8 @@ class ReflectController extends StateNotifier<ReflectState> {
     if (loadNewPrompt) await loadPrompt();
   }
 
-  Future<bool> saveEntry({
+  /// Saves the reflection entry and returns the saved [JournalEntry], or null on failure.
+  Future<JournalEntry?> saveEntry({
     required String content,
     String? title,
   }) async {
@@ -182,13 +184,13 @@ class ReflectController extends StateNotifier<ReflectState> {
       state = state.copyWith(
         errorMessage: 'Please sign in to save your reflection.',
       );
-      return false;
+      return null;
     }
     final promptId = state.prompt?.id;
 
     state = state.copyWith(isSaving: true, errorMessage: null);
     try {
-      await _journalRepository.saveReflectionEntry(
+      final entry = await _journalRepository.saveReflectionEntry(
         userId: userId,
         promptId: promptId,
         content: content,
@@ -196,12 +198,12 @@ class ReflectController extends StateNotifier<ReflectState> {
       );
       await refreshPendingCount();
       state = state.copyWith(showSaved: true);
-      return true;
+      return entry;
     } catch (_) {
       state = state.copyWith(
         errorMessage: 'Unable to save your reflection right now.',
       );
-      return false;
+      return null;
     } finally {
       state = state.copyWith(isSaving: false);
     }

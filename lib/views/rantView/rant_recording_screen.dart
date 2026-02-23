@@ -312,14 +312,14 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                         if (content == null || content.trim().isEmpty) return;
                         if (!context.mounted) return;
 
-                        // Save the rant entry immediately
+                        // Save the rant entry immediately and capture returned entry
                         final userId = Supabase.instance.client.auth.currentUser?.id;
-                        if (userId != null) {
-                          await rantVM.journalRepository.saveRantEntry(
-                            userId: userId,
-                            content: content.trim(),
-                          );
-                        }
+                        final savedEntry = userId != null
+                            ? await rantVM.journalRepository.saveRantEntry(
+                                userId: userId,
+                                content: content.trim(),
+                              )
+                            : null;
 
                         if (!context.mounted) return;
 
@@ -332,6 +332,28 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
 
                         final analysis = await EntryAnalysisService()
                             .analyzeEntry(content.trim(), 'rant');
+
+                        // Persist analysis data back to the saved entry so history can show it.
+                        if (savedEntry != null &&
+                            (analysis.title.isNotEmpty || analysis.moods.isNotEmpty)) {
+                          final moodStrings = analysis.moods
+                              .map((m) => m.emoji.isNotEmpty
+                                  ? '${m.emoji} ${m.label}'
+                                  : m.label)
+                              .toList();
+                          final updated = savedEntry.copyWith(
+                            title: analysis.title.isNotEmpty
+                                ? analysis.title
+                                : savedEntry.title,
+                            moods: moodStrings.isNotEmpty ? moodStrings : null,
+                            insight: analysis.insight.isNotEmpty
+                                ? analysis.insight
+                                : null,
+                            topics:
+                                analysis.topics.isNotEmpty ? analysis.topics : null,
+                          );
+                          await rantVM.journalRepository.updateEntry(updated);
+                        }
 
                         if (!context.mounted) return;
                         Navigator.of(context).pushReplacement(

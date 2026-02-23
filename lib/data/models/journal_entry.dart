@@ -10,6 +10,9 @@ class JournalEntry {
     this.isSynced = false,
     this.remoteId,
     this.createdTimestamp,
+    this.moods,
+    this.insight,
+    this.topics,
   });
 
   final String localId;
@@ -23,6 +26,12 @@ class JournalEntry {
   final String? remoteId;
   /// Creation time from database (e.g. created_at / created_timestamp). Used for display on history card.
   final DateTime? createdTimestamp;
+  /// AI-generated mood strings in "emoji label" format, e.g. ["😊 Happy", "😤 Frustrated"].
+  final List<String>? moods;
+  /// AI-generated insight text.
+  final String? insight;
+  /// AI-generated topic tags.
+  final List<String>? topics;
 
   JournalEntry copyWith({
     String? localId,
@@ -35,6 +44,9 @@ class JournalEntry {
     bool? isSynced,
     String? remoteId,
     DateTime? createdTimestamp,
+    List<String>? moods,
+    String? insight,
+    List<String>? topics,
   }) {
     return JournalEntry(
       localId: localId ?? this.localId,
@@ -47,6 +59,9 @@ class JournalEntry {
       isSynced: isSynced ?? this.isSynced,
       remoteId: remoteId ?? this.remoteId,
       createdTimestamp: createdTimestamp ?? this.createdTimestamp,
+      moods: moods ?? this.moods,
+      insight: insight ?? this.insight,
+      topics: topics ?? this.topics,
     );
   }
 
@@ -61,6 +76,9 @@ class JournalEntry {
         'is_synced': isSynced,
         'remote_id': remoteId,
         'created_timestamp': createdTimestamp?.toIso8601String(),
+        'moods': moods?.join('||'),
+        'insight': insight,
+        'topics': topics?.join('||'),
       };
 
   /// Only include prompt_id if it's a valid UUID. Supabase journal_entries.prompt_id
@@ -97,6 +115,13 @@ class JournalEntry {
     return DateTime.tryParse(value.toString());
   }
 
+  static List<String>? _splitPipeSeparated(dynamic value) {
+    if (value == null) return null;
+    final str = value.toString();
+    if (str.isEmpty) return null;
+    return str.split('||').where((s) => s.isNotEmpty).toList();
+  }
+
   factory JournalEntry.fromJson(Map<dynamic, dynamic> json) {
     return JournalEntry(
       localId: (json['local_id'] ?? '').toString(),
@@ -111,6 +136,9 @@ class JournalEntry {
       remoteId: json['remote_id']?.toString(),
       createdTimestamp: _parseTimestamp(
           json['created_timestamp'] ?? json['created_at'] ?? json['createdTimestamp']),
+      moods: _splitPipeSeparated(json['moods']),
+      insight: json['insight']?.toString(),
+      topics: _splitPipeSeparated(json['topics']),
     );
   }
 
@@ -129,6 +157,9 @@ class JournalEntry {
       remoteId: remoteId,
       createdTimestamp: _parseTimestamp(
           json['created_at'] ?? json['created_timestamp'] ?? json['createdTimestamp']),
+      moods: _splitPipeSeparated(json['moods']),
+      insight: json['insight']?.toString(),
+      topics: _splitPipeSeparated(json['topics']),
     );
   }
 }

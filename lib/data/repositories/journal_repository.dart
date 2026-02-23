@@ -126,11 +126,15 @@ class JournalRepository {
   Future<void> _updateRemoteEntry(JournalEntry entry) async {
     final remoteId = entry.remoteId;
     if (remoteId == null) return;
-    await _client.from('journal_entries').update({
+    final payload = <String, dynamic>{
       'content': entry.content,
       'title': entry.title,
       'entry_date': _dateOnly(entry.entryDate),
-    }).match({'id': remoteId});
+    };
+    if (entry.moods != null) payload['moods'] = entry.moods!.join('||');
+    if (entry.insight != null) payload['insight'] = entry.insight;
+    if (entry.topics != null) payload['topics'] = entry.topics!.join('||');
+    await _client.from('journal_entries').update(payload).match({'id': remoteId});
   }
 
   String _dateOnly(DateTime value) {
@@ -149,9 +153,17 @@ class JournalRepository {
 
     try {
       final remoteEntries = await _fetchRemoteEntries(userId);
-      final unsynced = localEntries.where((entry) => !entry.isSynced).toList();
-      final merged = [...remoteEntries, ...unsynced];
-      return _sortEntries(merged);
+      // Prefer the local version of each entry (which has moods/insight/topics saved
+      // to Hive) over the remote version, which may not have those columns yet.
+      final localByRemoteId = {
+        for (final e in localEntries)
+          if (e.remoteId != null) e.remoteId!: e,
+      };
+      final merged = remoteEntries
+          .map((r) => localByRemoteId[r.remoteId] ?? r)
+          .toList();
+      final unsynced = localEntries.where((e) => !e.isSynced).toList();
+      return _sortEntries([...merged, ...unsynced]);
     } catch (e, st) {
       debugPrint('[JournalRepository] Fetch remote failed: $e');
       debugPrint('[JournalRepository] Stack: $st');

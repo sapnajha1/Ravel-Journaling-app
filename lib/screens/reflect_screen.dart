@@ -86,11 +86,11 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     final title = currentState.prompt == null
         ? (_titleController.text.trim().isEmpty ? null : _titleController.text.trim())
         : null;
-    final saved = await ref.read(reflectControllerProvider.notifier).saveEntry(
+    final savedEntry = await ref.read(reflectControllerProvider.notifier).saveEntry(
           content: content,
           title: title,
         );
-    if (!saved) return;
+    if (savedEntry == null) return;
 
     _entryController.clear();
     _titleController.clear();
@@ -104,6 +104,20 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     );
 
     final analysis = await EntryAnalysisService().analyzeEntry(content, 'reflection');
+
+    // Persist analysis data back to the saved entry so history can show it.
+    if (analysis.title.isNotEmpty || analysis.moods.isNotEmpty) {
+      final moodStrings = analysis.moods
+          .map((m) => m.emoji.isNotEmpty ? '${m.emoji} ${m.label}' : m.label)
+          .toList();
+      final updated = savedEntry.copyWith(
+        title: analysis.title.isNotEmpty ? analysis.title : savedEntry.title,
+        moods: moodStrings.isNotEmpty ? moodStrings : null,
+        insight: analysis.insight.isNotEmpty ? analysis.insight : null,
+        topics: analysis.topics.isNotEmpty ? analysis.topics : null,
+      );
+      await ref.read(journalRepositoryProvider).updateEntry(updated);
+    }
 
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
