@@ -16,6 +16,13 @@ import '../widgets/recording_waveform.dart';
 import '../widgets/reflect_widgets.dart';
 import '../widgets/shared_buttons.dart';
 
+/// A completed turn: user's locked text + the AI question that followed.
+class _DeepDiveTurn {
+  final String userText;
+  final String aiQuestion;
+  const _DeepDiveTurn({required this.userText, required this.aiQuestion});
+}
+
 class ReflectScreen extends ConsumerStatefulWidget {
   const ReflectScreen({super.key});
 
@@ -29,7 +36,12 @@ const Color _kReflectWaveformColor = Color(0xFFE6DDFF);
 class _ReflectScreenState extends ConsumerState<ReflectScreen> {
   final _entryController = TextEditingController();
   final _titleController = TextEditingController();
-  final _entryScrollController = ScrollController();
+  final _scrollController = ScrollController();
+
+  // Deep dive state
+  List<_DeepDiveTurn> _deepDiveTurns = [];
+  bool _isLoadingFollowUp = false;
+  List<TextEditingController> _followUpControllers = [];
 
   bool _showTopFade = false;
   bool _wasRecordingOrTranscribing = false;
@@ -37,22 +49,54 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
   @override
   void initState() {
     super.initState();
-    _entryScrollController.addListener(_onScroll);
+    _scrollController.addListener(_onScroll);
+    _entryController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _entryController.dispose();
     _titleController.dispose();
-    _entryScrollController.dispose();
+    _scrollController.dispose();
+    for (final c in _followUpControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
   void _onScroll() {
-    final shouldShow = _entryScrollController.offset > 6;
+    final shouldShow = _scrollController.offset > 6;
     if (shouldShow != _showTopFade) {
       setState(() => _showTopFade = shouldShow);
     }
+  }
+
+  /// Returns the currently active text controller
+  /// (last follow-up controller, or the initial entry controller).
+  TextEditingController get _activeController =>
+      _followUpControllers.isNotEmpty ? _followUpControllers.last : _entryController;
+
+  /// Builds the full accumulated content from all turns + current active text.
+  String _buildAccumulatedContent() {
+    final buf = StringBuffer();
+    if (_deepDiveTurns.isEmpty) {
+      buf.write(_activeController.text.trim());
+    } else {
+      // First turn: initial entry text is in _deepDiveTurns[0].userText
+      // (locked when Go Deeper was first tapped)
+      buf.write(_deepDiveTurns[0].userText);
+      for (int i = 0; i < _deepDiveTurns.length; i++) {
+        buf.write('\n\n[Follow-up: ${_deepDiveTurns[i].aiQuestion}]');
+        if (i + 1 < _deepDiveTurns.length) {
+          buf.write('\n${_deepDiveTurns[i + 1].userText}');
+        } else {
+          // Active input for the latest follow-up
+          final activeText = _activeController.text.trim();
+          if (activeText.isNotEmpty) buf.write('\n$activeText');
+        }
+      }
+    }
+    return buf.toString();
   }
 
   Future<void> _changePrompt() async {
@@ -72,13 +116,74 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       );
       if (confirm != true || !mounted) return;
       _entryController.clear();
+      setState(() {
+        _deepDiveTurns = [];
+        for (final c in _followUpControllers) c.dispose();
+        _followUpControllers = [];
+      });
     }
     await ref.read(reflectControllerProvider.notifier).changePrompt();
   }
 
+  Future<void> _goDeeper() async {
+    final currentText = _activeController.text.trim();
+    if (currentText.isEmpty) return;
+
+    final accumulated = _buildAccumulatedContent();
+
+    setState(() => _isLoadingFollowUp = true);
+
+    final aiQuestion = await EntryAnalysisService().generateFollowUp(accumulated);
+
+    if (!mounted) return;
+
+    final newController = TextEditingController();
+    newController.addListener(() => setState(() {}));
+
+    setState(() {
+      // For the first go deeper, lock the initial entry text
+      if (_deepDiveTurns.isEmpty) {
+        _deepDiveTurns.add(_DeepDiveTurn(
+          userText: _entryController.text.trim(),
+          aiQuestion: aiQuestion,
+        ));
+      } else {
+        // Lock the previous follow-up response
+        final prevText = _followUpControllers.last.text.trim();
+        // Replace last turn with its locked response, then add new AI question
+        // We track turns differently: each turn = (userText, aiQuestion)
+        // After first go deeper: turns[0] = (initialEntry, aiQ1)
+        // After second: turns[1] = (followUpResp1, aiQ2)
+        _deepDiveTurns.add(_DeepDiveTurn(
+          userText: prevText,
+          aiQuestion: aiQuestion,
+        ));
+      }
+      _followUpControllers.add(newController);
+      _isLoadingFollowUp = false;
+    });
+
+    // Scroll to bottom and auto-focus new field
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOut,
+        );
+      }
+      newController.selection = TextSelection.fromPosition(
+        TextPosition(offset: newController.text.length),
+      );
+    });
+  }
+
   Future<void> _endSession() async {
-    final content = _entryController.text.trim();
-    if (content.isEmpty) {
+    final finalContent = _deepDiveTurns.isEmpty
+        ? _entryController.text.trim()
+        : _buildAccumulatedContent();
+
+    if (finalContent.isEmpty) {
       _showSnack('Add reflection');
       return;
     }
@@ -87,25 +192,27 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
         ? (_titleController.text.trim().isEmpty ? null : _titleController.text.trim())
         : null;
     final savedEntry = await ref.read(reflectControllerProvider.notifier).saveEntry(
-          content: content,
+          content: finalContent,
           title: title,
         );
     if (savedEntry == null) return;
 
     _entryController.clear();
     _titleController.clear();
+    setState(() {
+      _deepDiveTurns = [];
+      for (final c in _followUpControllers) c.dispose();
+      _followUpControllers = [];
+    });
 
     if (!mounted) return;
 
-    // Navigate to loading screen immediately, then replace with analysis screen
-    // once the AI call completes.
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const EntryAnalysisLoadingScreen()),
     );
 
-    final analysis = await EntryAnalysisService().analyzeEntry(content, 'reflection');
+    final analysis = await EntryAnalysisService().analyzeEntry(finalContent, 'reflection');
 
-    // Persist analysis data back to the saved entry so history can show it.
     if (analysis.title.isNotEmpty || analysis.moods.isNotEmpty) {
       final moodStrings = analysis.moods
           .map((m) => m.emoji.isNotEmpty ? '${m.emoji} ${m.label}' : m.label)
@@ -152,8 +259,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       context: context,
       builder: (ctx) => ReflectAlertDialog(
         title: 'Finished Reflecting?',
-        message:
-            'Save using End Session or leave without saving.',
+        message: 'Save using End Session or leave without saving.',
         primaryLabel: 'Stay',
         secondaryLabel: 'Discard',
         onPrimary: () => Navigator.of(ctx).pop('Stay'),
@@ -172,11 +278,10 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
 
   void _syncEntryFromRecording() {
     final recordingVM = context.read<RecordingViewModel>();
-    if (_entryController.text != recordingVM.displayText) {
-      _entryController.text = recordingVM.displayText;
-      _entryController.selection = TextSelection.collapsed(
-        offset: _entryController.text.length,
-      );
+    final active = _activeController;
+    if (active.text != recordingVM.displayText) {
+      active.text = recordingVM.displayText;
+      active.selection = TextSelection.collapsed(offset: active.text.length);
     }
   }
 
@@ -301,36 +406,72 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       );
     }
 
-    // When not recording: mic + End Session as before
+    // While fetching AI follow-up question
+    if (_isLoadingFollowUp) {
+      return Material(
+        color: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+          child: Row(
+            children: [
+              _micButton(recordingVM),
+              const Spacer(),
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black54),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final activeText = _activeController.text.trim();
+    final hasActiveText = activeText.isNotEmpty;
+    // Submit is available if the active field has text, OR the user has already
+    // locked at least one turn (they've committed content and must always be
+    // able to exit without being forced to answer a follow-up).
+    final canSubmit = hasActiveText || _deepDiveTurns.isNotEmpty;
+
+    if (!canSubmit) {
+      // Nothing written yet at all — show mic only
+      return Material(
+        color: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+          child: Row(children: [_micButton(recordingVM)]),
+        ),
+      );
+    }
+
+    // Has submittable content: mic + (Go Deeper if active text) + Submit Journal
     return Material(
       color: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
         child: Row(
           children: [
-            GestureDetector(
-              onTap: () {
-                recordingVM.setSessionText(_entryController.text);
-                recordingVM.startRecording();
-              },
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0xFF2A2A2A),
-                      blurRadius: 0,
-                      offset: Offset(2, 2),
-                    ),
-                  ],
-                ),
-                child: SizedBox(
-                  width: 42,
-                  height: 42,
-                  child: SvgPicture.asset('assets/cards/mic.svg'),
+            _micButton(recordingVM),
+            const SizedBox(width: 10),
+            if (hasActiveText) ...[
+              WhiteOutlineButton(
+                onPressed: state.isSaving ? null : _goDeeper,
+                child: Text(
+                  'Go Deeper',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: 8),
+            ],
             const Spacer(),
             ShadowButton(
               onPressed: state.isSaving ? null : _endSession,
@@ -340,12 +481,11 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.black),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
                       ),
                     )
                   : Text(
-                      'End Session',
+                      'Submit Journal',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
@@ -354,6 +494,32 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _micButton(RecordingViewModel recordingVM) {
+    return GestureDetector(
+      onTap: () {
+        recordingVM.setSessionText(_activeController.text);
+        recordingVM.startRecording();
+      },
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0xFF2A2A2A),
+              blurRadius: 0,
+              offset: Offset(2, 2),
+            ),
+          ],
+        ),
+        child: SizedBox(
+          width: 42,
+          height: 42,
+          child: SvgPicture.asset('assets/cards/mic.svg'),
         ),
       ),
     );
@@ -380,8 +546,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
               children: [
                 if (state.isOffline || state.pendingSyncCount > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     margin: const EdgeInsets.only(bottom: 10),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF7F0),
@@ -399,136 +564,12 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
                       ),
                     ),
                   ),
-                if (state.prompt != null) ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          state.prompt!.text,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.textPrimary,
-                            fontFamily: GoogleFonts.syneMono().fontFamily,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: _clearPrompt,
-                        behavior: HitTestBehavior.opaque,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.close,
-                            size: 24,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: state.isLoading ? null : _changePrompt,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/cards/change_prompt.svg',
-                          width: 14,
-                          height: 14,
-                          colorFilter: state.isLoading
-                              ? const ColorFilter.mode(
-                                  Colors.black54,
-                                  BlendMode.srcIn,
-                                )
-                              : const ColorFilter.mode(
-                                  Color(0xFFFF6E5A),
-                                  BlendMode.srcIn,
-                                ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          state.isLoading ? 'Loading prompt...' : 'Change Prompt',
-                          style: TextStyle(
-                            color: state.isLoading
-                                ? Colors.black54
-                                : const Color(0xFFFF6E5A),
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            fontFamily: GoogleFonts.syneMono().fontFamily,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ] else ...[
-                  TextField(
-                    controller: _titleController,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textPrimary,
-                      fontFamily: GoogleFonts.syneMono().fontFamily,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Add a title...',
-                      hintStyle: TextStyle(
-                        fontSize: 20,
-                        color: Colors.grey[600],
-                        fontFamily: GoogleFonts.syneMono().fontFamily,
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      filled: false,
-                      contentPadding: EdgeInsets.zero,
-                      isDense: true,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: state.isLoading ? null : _changePrompt,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/cards/change_prompt.svg',
-                          width: 14,
-                          height: 14,
-                          colorFilter: state.isLoading
-                              ? const ColorFilter.mode(
-                                  Colors.black54,
-                                  BlendMode.srcIn,
-                                )
-                              : const ColorFilter.mode(
-                                  Color(0xFFFF6E5A),
-                                  BlendMode.srcIn,
-                                ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          state.isLoading ? 'Loading prompt...' : 'Add a Prompt',
-                          style: TextStyle(
-                            color: state.isLoading
-                                ? Colors.black54
-                                : const Color(0xFFFF6E5A),
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            fontFamily: GoogleFonts.syneMono().fontFamily,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                _buildPromptArea(state),
                 const SizedBox(height: 12),
                 Expanded(
                   child: Stack(
                     children: [
-                      _buildEntryField(),
+                      _buildConversationScroll(state),
                       if (context.watch<RecordingViewModel>().isTranscribing)
                         Positioned.fill(
                           child: Container(
@@ -568,6 +609,265 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPromptArea(ReflectState state) {
+    if (state.prompt != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  state.prompt!.text,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textPrimary,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _clearPrompt,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(Icons.close, size: 24, color: AppColors.textPrimary),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: state.isLoading ? null : _changePrompt,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'assets/cards/change_prompt.svg',
+                  width: 14,
+                  height: 14,
+                  colorFilter: state.isLoading
+                      ? const ColorFilter.mode(Colors.black54, BlendMode.srcIn)
+                      : const ColorFilter.mode(Color(0xFFFF6E5A), BlendMode.srcIn),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  state.isLoading ? 'Loading prompt...' : 'Change Prompt',
+                  style: TextStyle(
+                    color: state.isLoading ? Colors.black54 : const Color(0xFFFF6E5A),
+                    fontSize: 16,
+                    fontWeight: FontWeight.normal,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _titleController,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textPrimary,
+              fontFamily: GoogleFonts.syneMono().fontFamily,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Add a title...',
+              hintStyle: TextStyle(
+                fontSize: 20,
+                color: Colors.grey[600],
+                fontFamily: GoogleFonts.syneMono().fontFamily,
+              ),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              filled: false,
+              contentPadding: EdgeInsets.zero,
+              isDense: true,
+            ),
+          ),
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: state.isLoading ? null : _changePrompt,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'assets/cards/change_prompt.svg',
+                  width: 14,
+                  height: 14,
+                  colorFilter: state.isLoading
+                      ? const ColorFilter.mode(Colors.black54, BlendMode.srcIn)
+                      : const ColorFilter.mode(Color(0xFFFF6E5A), BlendMode.srcIn),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  state.isLoading ? 'Loading prompt...' : 'Add a Prompt',
+                  style: TextStyle(
+                    color: state.isLoading ? Colors.black54 : const Color(0xFFFF6E5A),
+                    fontSize: 16,
+                    fontWeight: FontWeight.normal,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+  /// Builds the scrollable conversation column with initial entry + deep dive turns.
+  Widget _buildConversationScroll(ReflectState state) {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // If no deep dive yet, show the regular editable entry field
+          if (_deepDiveTurns.isEmpty) _buildEntryField(controller: _entryController, autofocus: false),
+
+          // Completed turns: locked user text → dot separator → AI question
+          for (int i = 0; i < _deepDiveTurns.length; i++) ...[
+            // First turn: initial user entry (locked)
+            if (i == 0)
+              _buildLockedText(_deepDiveTurns[0].userText),
+            // Subsequent turns: follow-up response (locked)
+            if (i > 0)
+              _buildLockedText(_deepDiveTurns[i].userText),
+
+            const SizedBox(height: 10),
+            _buildDotSeparator(),
+            const SizedBox(height: 8),
+
+            // AI question
+            Text(
+              _deepDiveTurns[i].aiQuestion,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textPrimary,
+                fontFamily: GoogleFonts.syneMono().fontFamily,
+              ),
+            ),
+            const SizedBox(height: 6),
+
+            // Active follow-up input (only for the last turn)
+            if (i == _deepDiveTurns.length - 1)
+              _buildEntryField(
+                controller: _followUpControllers[i],
+                autofocus: true,
+                hintText: 'write...',
+              ),
+          ],
+
+          // Loading indicator while fetching next AI question
+          if (_isLoadingFollowUp) ...[
+            const SizedBox(height: 16),
+            _buildDotSeparator(),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.black38),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'thinking...',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black38,
+                    fontFamily: GoogleFonts.syneMono().fontFamily,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // Bottom padding so content clears the bottom bar
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLockedText(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.gochiHand(
+        fontSize: 20,
+        height: 1.5,
+        fontWeight: FontWeight.w400,
+        color: AppColors.textPrimary,
+      ),
+    );
+  }
+
+  Widget _buildDotSeparator() {
+    return Row(
+      children: List.generate(
+        12,
+        (i) => Padding(
+          padding: const EdgeInsets.only(right: 5),
+          child: Container(
+            width: 3,
+            height: 3,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.black.withValues(alpha: 0.22),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEntryField({
+    required TextEditingController controller,
+    bool autofocus = false,
+    String hintText = 'Start typing here...',
+  }) {
+    return TextField(
+      controller: controller,
+      autofocus: autofocus,
+      maxLines: null,
+      style: GoogleFonts.gochiHand(
+        fontSize: 20,
+        height: 1.5,
+        fontWeight: FontWeight.w400,
+      ),
+      decoration: InputDecoration(
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        filled: true,
+        fillColor: Colors.transparent,
+        hintText: hintText,
+        hintStyle: GoogleFonts.gochiHand(
+          fontSize: 20,
+          height: 1.5,
+          fontWeight: FontWeight.w400,
+        ),
+        contentPadding: EdgeInsets.zero,
+      ),
     );
   }
 
@@ -660,35 +960,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     );
   }
 
-  Widget _buildEntryField() {
-    return TextField(
-      controller: _entryController,
-      maxLines: null,
-      expands: true,
-      style: GoogleFonts.gochiHand(
-        fontSize: 20,
-        height: 1.5,
-        fontWeight: FontWeight.w400,
-      ),
-      decoration: InputDecoration(
-        border: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        focusedBorder: InputBorder.none,
-        filled: true,
-        fillColor: Colors.transparent,
-        hintText: 'Start typing here...',
-        hintStyle: GoogleFonts.gochiHand(
-          fontSize: 20,
-          height: 1.5,
-          fontWeight: FontWeight.w400,
-        ),
-        contentPadding: EdgeInsets.zero,
-      ),
-    );
-  }
-
   void _clearPrompt() {
     ref.read(reflectControllerProvider.notifier).clearPrompt();
   }
 }
-

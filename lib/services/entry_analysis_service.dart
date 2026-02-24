@@ -35,6 +35,42 @@ const Map<String, String> _moodEmojiMap = {
 String _emojiForMood(String label) => _moodEmojiMap[label] ?? '';
 
 class EntryAnalysisService {
+  /// Calls the `generate-followup` Supabase Edge Function and returns a
+  /// follow-up question string. Falls back to a default prompt on any error.
+  Future<String> generateFollowUp(String content) async {
+    try {
+      final supabase = Supabase.instance.client;
+      debugPrint('[generate-followup] Invoking Edge Function');
+
+      final response = await supabase.functions.invoke(
+        'generate-followup',
+        body: {'content': content},
+      );
+
+      debugPrint('[generate-followup] Status: ${response.status}');
+
+      if (response.status != 200) {
+        debugPrint('[generate-followup] Non-200 response: ${response.data}');
+        return "What else is on your mind?";
+      }
+
+      final data = response.data;
+      if (data is! Map<String, dynamic>) {
+        return "What else is on your mind?";
+      }
+
+      final followUp = data['followUp'];
+      if (followUp is! String || followUp.trim().isEmpty) {
+        return "What else is on your mind?";
+      }
+
+      return followUp.trim();
+    } catch (e, stack) {
+      debugPrint('[generate-followup] Error: $e\n$stack');
+      return "What else is on your mind?";
+    }
+  }
+
   /// Calls the `analyze-entry` Supabase Edge Function and returns an
   /// [EntryAnalysis]. Returns [EntryAnalysis.fallback()] on any error so the
   /// caller always receives a usable object.

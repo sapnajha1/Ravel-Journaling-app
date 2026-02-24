@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reflect — Go Deeper Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Syne+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FFF9F3;
+      --coral: #FF6E5A;
+      --purple: #9B7FD9;
+      --text: #1A1A1A;
+      --border: #1A1A1A;
+      --dot-bg: rgba(26,26,26,0.06);
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Syne Mono', monospace;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px 16px 120px;
+    }
+
+    /* Dotted background pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(26,26,26,0.12) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .screen {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 390px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* Top bar */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0 8px;
+    }
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      box-shadow: 2px 2px 0 #2A2A2A;
+      flex-shrink: 0;
+    }
+    .date-label {
+      font-family: 'Syne Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    /* Prompt area */
+    .prompt-section { margin-top: 12px; }
+    .prompt-text {
+      font-family: 'Syne Mono', monospace;
+      font-size: 20px;
+      line-height: 1.4;
+      color: var(--text);
+    }
+    .change-prompt {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      color: var(--coral);
+      font-size: 16px;
+      cursor: pointer;
+      font-family: 'Syne Mono', monospace;
+    }
+    .change-prompt svg { width: 14px; height: 14px; fill: var(--coral); }
+
+    /* Conversation area */
+    .conversation { margin-top: 16px; display: flex; flex-direction: column; gap: 0; }
+
+    /* User entry — GochiHand */
+    .user-entry {
+      font-family: 'Gochi Hand', cursive;
+      font-size: 20px;
+      line-height: 1.5;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+      resize: none;
+      min-height: 60px;
+    }
+    .user-entry.locked {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* Dot separator */
+    .dot-separator {
+      display: flex;
+      gap: 5px;
+      margin: 10px 0 8px;
+      opacity: 0.25;
+    }
+    .dot-separator span {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--text);
+      display: inline-block;
+    }
+
+    /* AI question */
+    .ai-question {
+      font-family: 'Syne Mono', monospace;
+      font-size: 18px;
+      line-height: 1.4;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    /* Loading indicator */
+    .loading-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+    }
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0,0,0,0.15);
+      border-top-color: rgba(0,0,0,0.4);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-family: 'Syne Mono', monospace;
+      font-size: 14px;
+      color: rgba(0,0,0,0.38);
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 390px;
+      background: var(--bg);
+      padding: 8px 16px 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      z-index: 10;
+    }
+
+    .mic-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 2px 2px 0 #2A2A2A;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .spacer { flex: 1; }
+
+    .btn {
+      padding: 10px 16px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-family: 'Syne Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--text);
+      box-shadow: none;
+    }
+    .btn-primary {
+      background: var(--coral);
+      color: var(--text);
+      box-shadow: 2px 2px 0 #2A2A2A;
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .hidden { display: none !important; }
+
+    /* State label (prototype helper) */
+    .state-label {
+      font-family: 'Syne Mono', monospace;
+      font-size: 11px;
+      color: var(--purple);
+      background: rgba(155,127,217,0.1);
+      border: 1px solid var(--purple);
+      border-radius: 4px;
+      padding: 2px 8px;
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body>
+
+<div class="state-label" id="stateLabel">State: empty input</div>
+
+<div class="screen">
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="back-btn">←</div>
+    <span class="date-label">Today · 24 Feb</span>
+  </div>
+
+  <!-- Prompt -->
+  <div class="prompt-section">
+    <p class="prompt-text">What's one thing that went differently than expected today?</p>
+    <div class="change-prompt">
+      <svg viewBox="0 0 16 16"><path d="M13.5 2.5a1 1 0 0 0-1.41 0L5 9.59V11h1.41l7.09-7.09a1 1 0 0 0 0-1.41zM3 13h10v1H3z"/></svg>
+      Change Prompt
+    </div>
+  </div>
+
+  <!-- Conversation -->
+  <div class="conversation" id="conversation">
+    <!-- Initial entry textarea -->
+    <textarea
+      class="user-entry"
+      id="initialEntry"
+      placeholder="Start typing here..."
+      oninput="onActiveInput()"
+      rows="5"
+    ></textarea>
+
+    <!-- Deep dive turns injected here by JS -->
+    <div id="turnsContainer"></div>
+
+    <!-- Loading row (hidden by default) -->
+    <div class="loading-row hidden" id="loadingRow">
+      <div class="spinner"></div>
+      <span class="loading-text">thinking...</span>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar" id="bottomBar">
+  <div class="mic-btn">🎙️</div>
+  <div class="spacer"></div>
+  <!-- Buttons injected by JS -->
+  <button class="btn btn-outline hidden" id="goDeeperBtn" onclick="goDeeper()">Go Deeper</button>
+  <button class="btn btn-primary hidden" id="submitBtn" onclick="submitJournal()">Submit Journal</button>
+  <div class="loading-row hidden" id="bottomLoading" style="margin:0">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<script>
+  // ── State ────────────────────────────────────────────────────────────────────
+  let turns = []; // [{ userText, aiQuestion }]
+  let isLoading = false;
+
+  // Simulated AI questions (rotate through these for demo)
+  const fakeAiQuestions = [
+    "It sounds like that caught you off guard. What did that moment reveal about what you were hoping for?",
+    "That's worth sitting with. How did you respond in that moment, and how do you feel about that response now?",
+    "It seems like this touched something deeper. What belief or expectation was shaken by this?",
+  ];
+  let questionIndex = 0;
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  function getActiveTextarea() {
+    const turnsContainer = document.getElementById('turnsContainer');
+    const textareas = turnsContainer.querySelectorAll('textarea.user-entry:not(.locked)');
+    if (textareas.length > 0) return textareas[textareas.length - 1];
+    return document.getElementById('initialEntry');
+  }
+
+  function updateState() {
+    const active = getActiveTextarea();
+    const hasActiveText = active && active.value.trim().length > 0;
+    // Submit is available if: active input has text (first entry), OR any turn
+    // has already been locked (user went deeper at least once — they've committed
+    // content and should always be able to exit).
+    const canSubmit = hasActiveText || turns.length > 0;
+    const canGoDeeper = hasActiveText && !isLoading;
+
+    const goBtn = document.getElementById('goDeeperBtn');
+    const subBtn = document.getElementById('submitBtn');
+    const bottomLoad = document.getElementById('bottomLoading');
+    const label = document.getElementById('stateLabel');
+
+    if (isLoading) {
+      goBtn.classList.add('hidden');
+      // Keep submit visible during loading — user can bail if they want
+      subBtn.classList.remove('hidden');
+      bottomLoad.classList.remove('hidden');
+      label.textContent = 'State: loading AI…';
+    } else {
+      bottomLoad.classList.add('hidden');
+
+      // Go Deeper: only when active field has text
+      canGoDeeper ? goBtn.classList.remove('hidden') : goBtn.classList.add('hidden');
+      // Submit Journal: always once there's something to submit
+      canSubmit ? subBtn.classList.remove('hidden') : subBtn.classList.add('hidden');
+
+      label.textContent = turns.length === 0
+        ? (hasActiveText ? 'State: text entered' : 'State: empty input')
+        : `State: round ${turns.length + 1}${hasActiveText ? '' : ' (awaiting response)'}`;
+    }
+  }
+
+  function onActiveInput() { updateState(); }
+
+  // Auto-resize textarea
+  function autoResize(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+
+  document.getElementById('initialEntry').addEventListener('input', function() {
+    autoResize(this);
+    onActiveInput();
+  });
+
+  // ── Go Deeper ────────────────────────────────────────────────────────────────
+  async function goDeeper() {
+    const active = getActiveTextarea();
+    const text = active.value.trim();
+    if (!text || isLoading) return;
+
+    // Lock the current textarea
+    active.classList.add('locked');
+    active.style.height = 'auto';
+    active.style.height = active.scrollHeight + 'px';
+
+    isLoading = true;
+    document.getElementById('loadingRow').classList.remove('hidden');
+    updateState();
+
+    // Simulate network delay (0.8–1.5s)
+    await delay(800 + Math.random() * 700);
+
+    const aiQuestion = fakeAiQuestions[questionIndex % fakeAiQuestions.length];
+    questionIndex++;
+
+    turns.push({ userText: text, aiQuestion });
+
+    // Hide loading row
+    document.getElementById('loadingRow').classList.add('hidden');
+    isLoading = false;
+
+    // Inject new AI question + follow-up input into turnsContainer
+    const turnsContainer = document.getElementById('turnsContainer');
+
+    const dotRow = document.createElement('div');
+    dotRow.className = 'dot-separator';
+    for (let i = 0; i < 12; i++) {
+      const dot = document.createElement('span');
+      dotRow.appendChild(dot);
+    }
+
+    const aiEl = document.createElement('p');
+    aiEl.className = 'ai-question';
+    aiEl.textContent = aiQuestion;
+
+    const newTa = document.createElement('textarea');
+    newTa.className = 'user-entry';
+    newTa.placeholder = 'write...';
+    newTa.rows = 4;
+    newTa.addEventListener('input', function() {
+      autoResize(this);
+      onActiveInput();
+    });
+
+    turnsContainer.appendChild(dotRow);
+    turnsContainer.appendChild(aiEl);
+    turnsContainer.appendChild(newTa);
+
+    // Move loading row to end
+    turnsContainer.appendChild(document.getElementById('loadingRow'));
+
+    // Scroll to bottom and focus
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    setTimeout(() => newTa.focus(), 300);
+
+    updateState();
+  }
+
+  // ── Submit ───────────────────────────────────────────────────────────────────
+  function submitJournal() {
+    const active = getActiveTextarea();
+    const parts = [];
+
+    if (turns.length === 0) {
+      parts.push(active.value.trim());
+    } else {
+      // Build accumulated content
+      const initialEntry = document.getElementById('initialEntry').value.trim();
+      parts.push(initialEntry || turns[0].userText);
+      turns.forEach((turn, i) => {
+        parts.push(`\n[Follow-up: ${turn.aiQuestion}]`);
+        if (i < turns.length - 1) {
+          parts.push(turns[i + 1].userText);
+        } else {
+          const activeText = active.value.trim();
+          if (activeText) parts.push(activeText);
+        }
+      });
+    }
+
+    const finalContent = parts.join('\n');
+    alert('✅ Submitting to analysis!\n\n--- Final content ---\n' + finalContent);
+  }
+
+  function delay(ms) { return new Promise(res => setTimeout(res, ms)); }
+
+  // Init
+  updateState();
+</script>
+</body>
+</html>
