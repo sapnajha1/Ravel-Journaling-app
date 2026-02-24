@@ -3,14 +3,18 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../services/encryption_service.dart';
 import '../models/journal_entry.dart';
 
 class JournalRepository {
-  JournalRepository(this._client, this._box, this._connectivity);
+  JournalRepository(this._client, this._box, this._connectivity,
+      [EncryptionService? encryptionService])
+      : _encryption = encryptionService ?? EncryptionService(_client);
 
   final SupabaseClient _client;
   final Box<dynamic> _box;
   final Connectivity _connectivity;
+  final EncryptionService _encryption;
 
   Future<JournalEntry> saveReflectionEntry({
     required String userId,
@@ -126,9 +130,14 @@ class JournalRepository {
   Future<void> _updateRemoteEntry(JournalEntry entry) async {
     final remoteId = entry.remoteId;
     if (remoteId == null) return;
+    final key = await _encryption.getOrCreateKey(entry.userId);
+    final encryptedContent = await _encryption.encrypt(entry.content, key);
+    final encryptedTitle = entry.title != null && entry.title!.isNotEmpty
+        ? await _encryption.encrypt(entry.title!, key)
+        : entry.title;
     await _client.from('journal_entries').update({
-      'content': entry.content,
-      'title': entry.title,
+      'content': encryptedContent,
+      'title': encryptedTitle,
       'entry_date': _dateOnly(entry.entryDate),
     }).match({'id': remoteId});
   }
@@ -181,10 +190,21 @@ class JournalRepository {
         .select('id, user_id, entry_type, prompt_id, title, content, entry_date, created_at')
         .eq('user_id', userId)
         .order('entry_date', ascending: false);
-    return (response as List<dynamic>)
-        .whereType<Map<String, dynamic>>()
-        .map(JournalEntry.fromRemoteJson)
-        .toList();
+    final key = await _encryption.getOrCreateKey(userId);
+    final entries = <JournalEntry>[];
+    for (final raw in (response as List<dynamic>).whereType<Map<String, dynamic>>()) {
+      final content = (raw['content'] ?? '').toString();
+      final title = raw['title']?.toString();
+      final decryptedContent = await _encryption.decrypt(content, key);
+      final decryptedTitle = title != null && title.isNotEmpty
+          ? await _encryption.decrypt(title, key)
+          : title;
+      final decryptedRaw = Map<String, dynamic>.from(raw)
+        ..['content'] = decryptedContent
+        ..['title'] = decryptedTitle;
+      entries.add(JournalEntry.fromRemoteJson(decryptedRaw));
+    }
+    return entries;
   }
 
   List<JournalEntry> _sortEntries(List<JournalEntry> entries) {
@@ -194,9 +214,17 @@ class JournalRepository {
 
   Future<void> _syncEntry(JournalEntry entry) async {
     try {
+      final key = await _encryption.getOrCreateKey(entry.userId);
+      final remoteData = entry.toRemoteInsert();
+      remoteData['content'] = await _encryption.encrypt(
+        remoteData['content'] as String? ?? '', key);
+      final title = remoteData['title'] as String?;
+      if (title != null && title.isNotEmpty) {
+        remoteData['title'] = await _encryption.encrypt(title, key);
+      }
       final response = await _client
           .from('journal_entries')
-          .insert(entry.toRemoteInsert())
+          .insert(remoteData)
           .select('id')
           .single();
       final remoteId = response['id']?.toString();
