@@ -1,4 +1,3 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,11 +5,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/journal_entry.dart';
 
 class JournalRepository {
-  JournalRepository(this._client, this._box, this._connectivity);
+  JournalRepository(this._client, this._box);
 
   final SupabaseClient _client;
   final Box<dynamic> _box;
-  final Connectivity _connectivity;
 
   Future<JournalEntry> saveReflectionEntry({
     required String userId,
@@ -30,13 +28,12 @@ class JournalRepository {
       entryDate: entryDate ?? DateTime.now(),
       isSynced: false,
     );
-    await _box.put(localId, entry.toJson());
 
-    final isOnline = await _isOnline();
-    if (isOnline) {
-      await _syncEntry(entry);
-    }
-    return entry;
+    // INSERT directly to Supabase and get remoteId back.
+    final remoteId = await _insertRemote(entry);
+    final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+    await _box.put(localId, synced.toJson());
+    return synced;
   }
 
   Future<JournalEntry> saveRantEntry({
@@ -55,13 +52,11 @@ class JournalRepository {
       entryDate: entryDate ?? DateTime.now(),
       isSynced: false,
     );
-    await _box.put(localId, entry.toJson());
 
-    final isOnline = await _isOnline();
-    if (isOnline) {
-      await _syncEntry(entry);
-    }
-    return entry;
+    final remoteId = await _insertRemote(entry);
+    final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+    await _box.put(localId, synced.toJson());
+    return synced;
   }
 
   /// Saves a scribble entry. [content] is the base64-encoded PNG image data.
@@ -79,47 +74,51 @@ class JournalRepository {
       entryDate: entryDate ?? DateTime.now(),
       isSynced: false,
     );
-    await _box.put(localId, entry.toJson());
 
-    final isOnline = await _isOnline();
-    if (isOnline) {
-      await _syncEntry(entry);
-    }
-    return entry;
-  }
-
-  Future<void> syncPending(String userId) async {
-    final isOnline = await _isOnline();
-    if (!isOnline) return;
-
-    final entries = _box.values
-        .whereType<Map>()
-        .map((data) => JournalEntry.fromJson(data))
-        .where((entry) => entry.userId == userId && !entry.isSynced)
-        .toList();
-
-    for (final entry in entries) {
-      await _syncEntry(entry);
-    }
+    final remoteId = await _insertRemote(entry);
+    final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+    await _box.put(localId, synced.toJson());
+    return synced;
   }
 
   Future<void> updateEntry(JournalEntry entry) async {
     await _box.put(entry.localId, entry.toJson());
-    final isOnline = await _isOnline();
-    if (isOnline && entry.remoteId != null) {
+    if (entry.remoteId != null) {
       await _updateRemoteEntry(entry);
     }
   }
 
   Future<void> deleteEntry(JournalEntry entry) async {
     await _box.delete(entry.localId);
-    final isOnline = await _isOnline();
     final remoteId = entry.remoteId;
-    if (isOnline && remoteId != null) {
+    if (remoteId != null) {
       await _client
           .from('journal_entries')
           .delete()
           .match({'id': remoteId});
+    }
+  }
+
+  Future<List<JournalEntry>> fetchHistoryEntries(String userId) async {
+    try {
+      final remoteEntries = await _fetchRemoteEntries(userId);
+      // Prefer local Hive version when available (it may have moods/insight/topics
+      // that haven't been persisted to the remote yet via updateEntry).
+      final localByRemoteId = {
+        for (final e in _localEntriesForUser(userId))
+          if (e.remoteId != null) e.remoteId!: e,
+      };
+      final merged = remoteEntries
+          .map((r) => localByRemoteId[r.remoteId] ?? r)
+          .toList();
+      // Dedup by localId as a safety guard.
+      final seen = <String>{};
+      return _sortEntries(merged.where((e) => seen.add(e.localId)).toList());
+    } catch (e, st) {
+      debugPrint('[JournalRepository] Fetch remote failed: $e');
+      debugPrint('[JournalRepository] Stack: $st');
+      // Fall back to local Hive cache on error.
+      return _sortEntries(_localEntriesForUser(userId));
     }
   }
 
@@ -137,6 +136,21 @@ class JournalRepository {
     await _client.from('journal_entries').update(payload).match({'id': remoteId});
   }
 
+  Future<String?> _insertRemote(JournalEntry entry) async {
+    try {
+      final response = await _client
+          .from('journal_entries')
+          .insert(entry.toRemoteInsert())
+          .select('id')
+          .single();
+      return response['id']?.toString();
+    } catch (e, st) {
+      debugPrint('[JournalRepository] Insert failed (${entry.entryType}): $e');
+      debugPrint('[JournalRepository] Stack: $st');
+      rethrow;
+    }
+  }
+
   String _dateOnly(DateTime value) {
     final year = value.year.toString().padLeft(4, '0');
     final month = value.month.toString().padLeft(2, '0');
@@ -144,39 +158,19 @@ class JournalRepository {
     return '$year-$month-$day';
   }
 
-  Future<List<JournalEntry>> fetchHistoryEntries(String userId) async {
-    final localEntries = _localEntriesForUser(userId);
-    final isOnline = await _isOnline();
-    if (!isOnline) {
-      return _sortEntries(localEntries);
-    }
-
-    try {
-      final remoteEntries = await _fetchRemoteEntries(userId);
-      // Prefer the local version of each entry (which has moods/insight/topics saved
-      // to Hive) over the remote version, which may not have those columns yet.
-      final localByRemoteId = {
-        for (final e in localEntries)
-          if (e.remoteId != null) e.remoteId!: e,
-      };
-      final merged = remoteEntries
-          .map((r) => localByRemoteId[r.remoteId] ?? r)
-          .toList();
-      final unsynced = localEntries.where((e) => !e.isSynced).toList();
-      return _sortEntries([...merged, ...unsynced]);
-    } catch (e, st) {
-      debugPrint('[JournalRepository] Fetch remote failed: $e');
-      debugPrint('[JournalRepository] Stack: $st');
-      return _sortEntries(localEntries);
-    }
-  }
-
-  int pendingCount(String userId) {
-    return _box.values
-        .whereType<Map>()
-        .map((data) => JournalEntry.fromJson(data))
-        .where((entry) => entry.userId == userId && !entry.isSynced)
-        .length;
+  Future<List<JournalEntry>> _fetchRemoteEntries(String userId) async {
+    final response = await _client
+        .from('journal_entries')
+        .select(
+          'id, user_id, entry_type, prompt_id, title, content, entry_date, '
+          'created_at, moods, insight, topics',
+        )
+        .eq('user_id', userId)
+        .order('entry_date', ascending: false);
+    return (response as List<dynamic>)
+        .whereType<Map<String, dynamic>>()
+        .map(JournalEntry.fromRemoteJson)
+        .toList();
   }
 
   List<JournalEntry> _localEntriesForUser(String userId) {
@@ -187,44 +181,8 @@ class JournalRepository {
         .toList();
   }
 
-  Future<List<JournalEntry>> _fetchRemoteEntries(String userId) async {
-    final response = await _client
-        .from('journal_entries')
-        .select('id, user_id, entry_type, prompt_id, title, content, entry_date, created_at')
-        .eq('user_id', userId)
-        .order('entry_date', ascending: false);
-    return (response as List<dynamic>)
-        .whereType<Map<String, dynamic>>()
-        .map(JournalEntry.fromRemoteJson)
-        .toList();
-  }
-
   List<JournalEntry> _sortEntries(List<JournalEntry> entries) {
     entries.sort((a, b) => b.entryDate.compareTo(a.entryDate));
     return entries;
-  }
-
-  Future<void> _syncEntry(JournalEntry entry) async {
-    try {
-      final response = await _client
-          .from('journal_entries')
-          .insert(entry.toRemoteInsert())
-          .select('id')
-          .single();
-      final remoteId = response['id']?.toString();
-      final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
-      await _box.put(entry.localId, synced.toJson());
-    } catch (e, st) {
-      // Keep entry as unsynced for later retry.
-      debugPrint(
-        '[JournalRepository] Sync failed (entry_type=${entry.entryType}): $e',
-      );
-      debugPrint('[JournalRepository] Stack: $st');
-    }
-  }
-
-  Future<bool> _isOnline() async {
-    final result = await _connectivity.checkConnectivity();
-    return !result.contains(ConnectivityResult.none);
   }
 }

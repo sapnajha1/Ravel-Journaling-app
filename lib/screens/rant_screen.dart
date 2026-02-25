@@ -1,4 +1,3 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,7 +16,6 @@ class RantScreen extends StatelessWidget {
     final journalRepository = JournalRepository(
       Supabase.instance.client,
       LocalStore.journalBox(),
-      Connectivity(),
     );
     return MultiProvider(
       providers: [

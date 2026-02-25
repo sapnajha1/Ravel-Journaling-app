@@ -1,4 +1,3 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:journal_app/views/rantView/rant_recording_screen.dart';
@@ -86,7 +85,6 @@ class HomeView extends StatelessWidget {
                               final journalRepository = JournalRepository(
                                 Supabase.instance.client,
                                 LocalStore.journalBox(),
-                                Connectivity(),
                               );
                               return MultiProvider(
                                 providers: [

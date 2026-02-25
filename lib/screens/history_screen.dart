@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 import '../data/models/journal_entry.dart';
@@ -60,7 +61,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildBody(BuildContext context, HistoryViewModel vm) {
     if (vm.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Lottie.asset('assets/book_loader.json', width: 80, height: 80),
+      );
     }
 
     if (vm.errorMessage != null) {

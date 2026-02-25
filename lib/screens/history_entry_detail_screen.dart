@@ -6,11 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../data/models/entry_analysis.dart';
 import '../data/models/journal_entry.dart';
 import '../data/repositories/journal_repository.dart';
 import '../design_system/app_colors.dart';
-import '../services/entry_analysis_service.dart';
 import '../utils/date_formatters.dart';
 import '../widgets/dotted_background.dart';
 
@@ -128,57 +126,53 @@ class _ScribbleDetailView extends StatelessWidget {
 // Layout: title → mood chips → ENTRY divider → content → WHAT WE NOTICED divider → insight + topics
 // ---------------------------------------------------------------------------
 
-class _TextDetailView extends StatefulWidget {
+class _TextDetailView extends StatelessWidget {
   const _TextDetailView({required this.entry, required this.journalRepository});
 
   final JournalEntry entry;
   final JournalRepository journalRepository;
 
-  @override
-  State<_TextDetailView> createState() => _TextDetailViewState();
-}
-
-class _TextDetailViewState extends State<_TextDetailView> {
-  // When moods are not already stored, we fetch analysis lazily on first build.
-  Future<EntryAnalysis>? _analysisFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.entry.moods == null) {
-      _analysisFuture = EntryAnalysisService()
-          .analyzeEntry(widget.entry.content, widget.entry.entryType);
-    }
-  }
-
-  Future<void> _confirmDelete() async {
-    final typeLabel = widget.entry.entryType == 'reflection' ? 'Reflection' : 'Rant';
+  Future<void> _confirmDelete(BuildContext context) async {
+    final typeLabel = entry.entryType == 'reflection' ? 'Reflection' : 'Rant';
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => _DeleteConfirmDialog(
+      builder: (ctx) => _DeleteConfirmDialog(
         title: 'Delete $typeLabel',
         typeLower: typeLabel.toLowerCase(),
-        dateLabel: formatFullDate(widget.entry.entryDate),
+        dateLabel: formatFullDate(entry.entryDate),
       ),
     );
-    if (confirmed != true || !mounted) return;
+    if (confirmed != true || !context.mounted) return;
     try {
-      await widget.journalRepository.deleteEntry(widget.entry);
-      if (!mounted) return;
+      await journalRepository.deleteEntry(entry);
+      if (!context.mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete: $e')));
     }
   }
 
-  bool get _isRant => widget.entry.entryType == 'rant';
+  bool get _isRant => entry.entryType == 'rant';
   Color get _accentColor => _isRant ? AppColors.releaseBase : AppColors.purpleBase;
   Color get _accentLightColor => _isRant ? AppColors.releaseLight : AppColors.purpleLight;
 
   @override
   Widget build(BuildContext context) {
-    final entry = widget.entry;
+    Widget? moodChipsWidget;
+    if (entry.moods != null && entry.moods!.isNotEmpty) {
+      moodChipsWidget = _MoodChipsRow(moods: entry.moods!);
+    }
+
+    Widget? analysisWidget;
+    if (entry.insight?.isNotEmpty == true || entry.topics?.isNotEmpty == true) {
+      analysisWidget = _FlatAnalysisBody(
+        insight: entry.insight,
+        topics: entry.topics,
+        accentColor: _accentColor,
+        accentLightColor: _accentLightColor,
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -194,78 +188,15 @@ class _TextDetailViewState extends State<_TextDetailView> {
                   _HistoryDetailTopBar(
                     dateText: formatDetailDateLabel(entry.entryDate),
                     onBack: () => Navigator.of(context).pop(),
-                    onDelete: _confirmDelete,
+                    onDelete: () => _confirmDelete(context),
                   ),
                   const SizedBox(height: 12),
                   Expanded(
-                    child: entry.moods != null
-                        // Analysis already saved — render everything synchronously.
-                        ? _buildScrollContent(
-                            context,
-                            moodChipsWidget: _MoodChipsRow(moods: entry.moods!),
-                            analysisWidget: (entry.insight?.isNotEmpty == true ||
-                                    entry.topics?.isNotEmpty == true)
-                                ? _FlatAnalysisBody(
-                                    insight: entry.insight,
-                                    topics: entry.topics,
-                                    accentColor: _accentColor,
-                                    accentLightColor: _accentLightColor,
-                                  )
-                                : null,
-                          )
-                        // No saved analysis — fetch lazily and drive both chips + body.
-                        : FutureBuilder<EntryAnalysis>(
-                            future: _analysisFuture,
-                            builder: (context, snapshot) {
-                              final analysis = snapshot.data;
-                              final isLoading =
-                                  snapshot.connectionState == ConnectionState.waiting;
-
-                              Widget? chipsWidget;
-                              if (isLoading) {
-                                chipsWidget = Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(_accentColor),
-                                    ),
-                                  ),
-                                );
-                              } else if (analysis != null && analysis.moods.isNotEmpty) {
-                                final moodStrings = analysis.moods
-                                    .map((m) => m.emoji.isNotEmpty
-                                        ? '${m.emoji} ${m.label}'
-                                        : m.label)
-                                    .toList();
-                                chipsWidget = _MoodChipsRow(moods: moodStrings);
-                              }
-
-                              Widget? analysisWidget;
-                              if (analysis != null &&
-                                  (analysis.insight.isNotEmpty ||
-                                      analysis.topics.isNotEmpty)) {
-                                analysisWidget = _FlatAnalysisBody(
-                                  insight: analysis.insight.isNotEmpty
-                                      ? analysis.insight
-                                      : null,
-                                  topics: analysis.topics.isNotEmpty
-                                      ? analysis.topics
-                                      : null,
-                                  accentColor: _accentColor,
-                                  accentLightColor: _accentLightColor,
-                                );
-                              }
-
-                              return _buildScrollContent(
-                                context,
-                                moodChipsWidget: chipsWidget,
-                                analysisWidget: analysisWidget,
-                              );
-                            },
-                          ),
+                    child: _buildScrollContent(
+                      context,
+                      moodChipsWidget: moodChipsWidget,
+                      analysisWidget: analysisWidget,
+                    ),
                   ),
                 ],
               ),
@@ -281,7 +212,6 @@ class _TextDetailViewState extends State<_TextDetailView> {
     Widget? moodChipsWidget,
     Widget? analysisWidget,
   }) {
-    final entry = widget.entry;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),

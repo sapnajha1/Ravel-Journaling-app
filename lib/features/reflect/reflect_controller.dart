@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,36 +12,28 @@ class ReflectState {
   const ReflectState({
     this.isLoading = false,
     this.isSaving = false,
-    this.isOffline = false,
     this.showSaved = false,
-    this.pendingSyncCount = 0,
     this.prompt,
     this.errorMessage,
   });
 
   final bool isLoading;
   final bool isSaving;
-  final bool isOffline;
   final bool showSaved;
-  final int pendingSyncCount;
   final Prompt? prompt;
   final String? errorMessage;
 
   ReflectState copyWith({
     bool? isLoading,
     bool? isSaving,
-    bool? isOffline,
     bool? showSaved,
-    int? pendingSyncCount,
     Prompt? prompt,
     String? errorMessage,
   }) {
     return ReflectState(
       isLoading: isLoading ?? this.isLoading,
       isSaving: isSaving ?? this.isSaving,
-      isOffline: isOffline ?? this.isOffline,
       showSaved: showSaved ?? this.showSaved,
-      pendingSyncCount: pendingSyncCount ?? this.pendingSyncCount,
       prompt: prompt ?? this.prompt,
       errorMessage: errorMessage,
     );
@@ -54,8 +43,6 @@ class ReflectState {
 final supabaseClientProvider = Provider<SupabaseClient>(
   (ref) => Supabase.instance.client,
 );
-
-final connectivityProvider = Provider<Connectivity>((ref) => Connectivity());
 
 final promptBoxProvider = Provider<Box<dynamic>>(
   (ref) => LocalStore.promptBox(),
@@ -76,7 +63,6 @@ final journalRepositoryProvider = Provider<JournalRepository>((ref) {
   return JournalRepository(
     ref.read(supabaseClientProvider),
     ref.read(journalBoxProvider),
-    ref.read(connectivityProvider),
   );
 });
 
@@ -85,37 +71,21 @@ final reflectControllerProvider =
   (ref) => ReflectController(
     ref.read(promptRepositoryProvider),
     ref.read(journalRepositoryProvider),
-    ref.read(connectivityProvider),
   ),
 );
 
 class ReflectController extends StateNotifier<ReflectState> {
-  ReflectController(this._promptRepository, this._journalRepository,
-      this._connectivity)
+  ReflectController(this._promptRepository, this._journalRepository)
       : super(const ReflectState()) {
-    _subscription = _connectivity.onConnectivityChanged.listen(
-      (result) => _handleConnectivityChange(result),
-    );
     _init();
   }
 
   final PromptRepository _promptRepository;
   final JournalRepository _journalRepository;
-  final Connectivity _connectivity;
-
-  StreamSubscription<List<ConnectivityResult>>? _subscription;
 
   Future<void> _init() async {
-    await _refreshConnectivity();
     await loadPrompt();
-    await refreshPendingCount();
     _warmPromptCache();
-  }
-
-  Future<void> _refreshConnectivity() async {
-    final result = await _connectivity.checkConnectivity();
-    final isOffline = result.contains(ConnectivityResult.none);
-    state = state.copyWith(isOffline: isOffline);
   }
 
   Future<void> loadPrompt() async {
@@ -160,9 +130,7 @@ class ReflectController extends StateNotifier<ReflectState> {
     state = ReflectState(
       isLoading: state.isLoading,
       isSaving: state.isSaving,
-      isOffline: state.isOffline,
       showSaved: state.showSaved,
-      pendingSyncCount: state.pendingSyncCount,
       prompt: null,
       errorMessage: state.errorMessage,
     );
@@ -196,8 +164,6 @@ class ReflectController extends StateNotifier<ReflectState> {
         content: content,
         title: title,
       );
-      await refreshPendingCount();
-      state = state.copyWith(showSaved: true);
       return entry;
     } catch (_) {
       state = state.copyWith(
@@ -207,32 +173,5 @@ class ReflectController extends StateNotifier<ReflectState> {
     } finally {
       state = state.copyWith(isSaving: false);
     }
-  }
-
-  Future<void> refreshPendingCount() async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return;
-    final count = _journalRepository.pendingCount(userId);
-    state = state.copyWith(pendingSyncCount: count);
-  }
-
-  Future<void> _handleConnectivityChange(
-    List<ConnectivityResult> result,
-  ) async {
-    final isOffline = result.contains(ConnectivityResult.none);
-    state = state.copyWith(isOffline: isOffline);
-    if (!isOffline) {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-      if (userId != null) {
-        await _journalRepository.syncPending(userId);
-        await refreshPendingCount();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
   }
 }

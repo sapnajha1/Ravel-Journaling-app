@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
+import '../data/local/local_store.dart';
 import '../design_system/app_colors.dart';
 import '../features/reflect/reflect_controller.dart';
 import '../screens/entry_analysis_loading_screen.dart';
 import '../screens/entry_analysis_screen.dart';
+import '../screens/entry_completion_screen.dart';
 import '../services/entry_analysis_service.dart';
 import '../utils/date_formatters.dart';
 import '../viewmodels/recording/recording_view_model.dart';
@@ -102,19 +107,6 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
   Future<void> _changePrompt() async {
     final content = _entryController.text.trim();
     if (content.isNotEmpty) {
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => ReflectAlertDialog(
-          title: 'Change Prompt',
-          message:
-              'Changing prompt will clear the current reflection to provide space for new reflection',
-          primaryLabel: 'Confirm',
-          secondaryLabel: 'Cancel',
-          onPrimary: () => Navigator.of(ctx).pop(true),
-          onSecondary: () => Navigator.of(ctx).pop(false),
-        ),
-      );
-      if (confirm != true || !mounted) return;
       _entryController.clear();
       setState(() {
         _deepDiveTurns = [];
@@ -176,6 +168,16 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
         TextPosition(offset: newController.text.length),
       );
     });
+    // Second scroll after keyboard animation finishes (~300ms) so the active
+    // field is never hidden behind the keyboard.
+    Timer(const Duration(milliseconds: 350), () {
+      if (!mounted || !_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   Future<void> _endSession() async {
@@ -197,16 +199,48 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
         );
     if (savedEntry == null) return;
 
-    _entryController.clear();
-    _titleController.clear();
-    setState(() {
-      _deepDiveTurns = [];
-      for (final c in _followUpControllers) c.dispose();
-      _followUpControllers = [];
-    });
-
     if (!mounted) return;
 
+    void clearJournalState() {
+      _entryController.clear();
+      _titleController.clear();
+      setState(() {
+        _deepDiveTurns = [];
+        for (final c in _followUpControllers) c.dispose();
+        _followUpControllers = [];
+      });
+    }
+
+    final preference = LocalStore.appSettingsBox()
+        .get(LocalStore.analysisPreferenceKey, defaultValue: LocalStore.analysisPreferenceAlways)
+        as String;
+
+    if (preference == LocalStore.analysisPreferenceNever) {
+      clearJournalState();
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const EntryCompletionScreen()),
+      );
+      return;
+    }
+
+    if (preference == LocalStore.analysisPreferenceAsk) {
+      // Show sheet while content is still visible, clear only after user decides.
+      final shouldAnalyze = await _showAnalysisBottomSheet();
+      clearJournalState();
+      if (!mounted) return;
+      if (shouldAnalyze != true) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const EntryCompletionScreen()),
+        );
+        return;
+      }
+    } else {
+      // 'always' — clear before navigating away.
+      clearJournalState();
+    }
+
+    if (!mounted) return;
+    // 'always' or user confirmed analysis from bottom sheet
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const EntryAnalysisLoadingScreen()),
     );
@@ -237,37 +271,74 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     );
   }
 
-  Future<bool> _onBackPressed() async {
-    final content = _entryController.text.trim();
-    if (content.isEmpty) {
-      final choice = await showDialog<String>(
-        context: context,
-        builder: (ctx) => ReflectAlertDialog(
-          title: 'Changed Minds?',
-          message:
-              'Sometimes words don\'t come right away. Take your time to reflect or try later',
-          primaryLabel: 'Stay',
-          secondaryLabel: 'Discard',
-          onPrimary: () => Navigator.of(ctx).pop('Stay'),
-          onSecondary: () => Navigator.of(ctx).pop('Discard'),
-        ),
-      );
-      if (choice == 'Discard') return true;
-      return false;
-    }
-    final choice = await showDialog<String>(
+  Future<bool?> _showAnalysisBottomSheet() {
+    return showModalBottomSheet<bool>(
       context: context,
-      builder: (ctx) => ReflectAlertDialog(
-        title: 'Finished Reflecting?',
-        message: 'Save using End Session or leave without saving.',
-        primaryLabel: 'Stay',
-        secondaryLabel: 'Discard',
-        onPrimary: () => Navigator.of(ctx).pop('Stay'),
-        onSecondary: () => Navigator.of(ctx).pop('Discard'),
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Let Journal analyze mood, find insights and frequent topics in your reflection',
+              style: GoogleFonts.syneMono(
+                fontSize: 15,
+                height: 1.6,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: WhiteOutlineButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: Text(
+                      'Don\'t analyze',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                        fontFamily: GoogleFonts.syneMono().fontFamily,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ShadowButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: Text(
+                      'Analyze entry',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        fontFamily: GoogleFonts.syneMono().fontFamily,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
-    if (choice == 'Discard') return true;
-    return false;
   }
 
   void _showSnack(String message) {
@@ -311,12 +382,13 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
     );
 
     return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final shouldPop = await _onBackPressed();
-        if (!context.mounted) return;
-        if (shouldPop) Navigator.of(context).pop();
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        final hasContent = _entryController.text.trim().isNotEmpty ||
+            _deepDiveTurns.isNotEmpty;
+        if (didPop && hasContent) {
+          _showSnack('Reflection discarded');
+        }
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -327,16 +399,12 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 14),
-                child: state.showSaved
-                    ? _buildSaved(context)
-                    : _buildEditor(context, state),
+                child: _buildEditor(context, state),
               ),
             ),
           ],
         ),
-        bottomSheet: state.showSaved
-            ? null
-            : _buildBottomBar(context, state),
+        bottomSheet: _buildBottomBar(context, state),
       ),
     );
   }
@@ -416,14 +484,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
             children: [
               _micButton(recordingVM),
               const Spacer(),
-              const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black54),
-                ),
-              ),
+              Lottie.asset('assets/book_loader.json', width: 32, height: 32),
               const SizedBox(width: 8),
             ],
           ),
@@ -476,14 +537,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
             ShadowButton(
               onPressed: state.isSaving ? null : _endSession,
               child: state.isSaving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                      ),
-                    )
+                  ? Lottie.asset('assets/book_loader.json', width: 24, height: 24)
                   : Text(
                       'Submit Journal',
                       style: TextStyle(
@@ -531,10 +585,11 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       children: [
         ReflectTopBar(
           dateText: 'Today · ${formatDayMonth(DateTime.now())}',
-          onBack: () async {
-            final shouldPop = await _onBackPressed();
-            if (!context.mounted) return;
-            if (shouldPop) Navigator.of(context).pop();
+          onBack: () {
+            final hasContent = _entryController.text.trim().isNotEmpty ||
+                _deepDiveTurns.isNotEmpty;
+            if (hasContent) _showSnack('Reflection discarded');
+            Navigator.of(context).pop();
           },
         ),
         const SizedBox(height: 12),
@@ -544,59 +599,21 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (state.isOffline || state.pendingSyncCount > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFF7F0),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.black, width: 1),
-                    ),
-                    child: Text(
-                      state.isOffline
-                          ? 'Offline mode • ${state.pendingSyncCount} unsynced'
-                          : '${state.pendingSyncCount} unsynced • syncing soon',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: GoogleFonts.syneMono().fontFamily,
-                      ),
-                    ),
-                  ),
                 _buildPromptArea(state),
                 const SizedBox(height: 12),
                 Expanded(
                   child: Stack(
                     children: [
                       _buildConversationScroll(state),
-                      if (context.watch<RecordingViewModel>().isTranscribing)
+                        if (context.watch<RecordingViewModel>().isTranscribing)
                         Positioned.fill(
                           child: Container(
                             color: Colors.white.withValues(alpha: 0.6),
                             child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const SizedBox(
-                                    width: 28,
-                                    height: 28,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.black54,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'Processing...',
-                                    style: GoogleFonts.syneMono(
-                                      fontSize: 14,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
+                              child: Lottie.asset(
+                                'assets/book_loader.json',
+                                width: 80,
+                                height: 80,
                               ),
                             ),
                           ),
@@ -778,28 +795,8 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
           if (_isLoadingFollowUp) ...[
             const SizedBox(height: 16),
             _buildDotSeparator(),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.black38),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'thinking...',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black38,
-                    fontFamily: GoogleFonts.syneMono().fontFamily,
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: 8),
+            Lottie.asset('assets/book_loader.json', width: 48, height: 48),
           ],
 
           // Bottom padding so content clears the bottom bar
@@ -868,95 +865,6 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
         ),
         contentPadding: EdgeInsets.zero,
       ),
-    );
-  }
-
-  Widget _buildSaved(BuildContext context) {
-    return Column(
-      children: [
-        ReflectTopBar(
-          dateText: 'Reflect - Save',
-          onBack: () => Navigator.of(context).pop(),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                const Spacer(),
-                SvgPicture.asset(
-                  'assets/reflect-completion.svg',
-                  width: 72,
-                  height: 72,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'YOU showed up for yourself today. That takes courage. Keep it up.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w400,
-                    fontFamily: GoogleFonts.syneMono().fontFamily,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const Spacer(),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          color: Colors.white,
-                          border: Border.all(color: Colors.black, width: 2),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => Navigator.of(context).pop(),
-                            borderRadius: BorderRadius.circular(6),
-                            child: SizedBox(
-                              height: 44,
-                              child: Center(
-                                child: Text(
-                                  'Go to Home',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                    fontFamily: GoogleFonts.syneMono().fontFamily,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ShadowButton(
-                        height: 44,
-                        onPressed: () async {
-                          await ref.read(reflectControllerProvider.notifier).resetForNewReflection();
-                        },
-                        child: Text(
-                          'Reflect Again',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                            fontFamily: GoogleFonts.syneMono().fontFamily,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 

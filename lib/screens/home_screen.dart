@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,6 +13,7 @@ import '../viewmodels/recording/recording_view_model.dart';
 import '../views/rantView/rant_recording_screen.dart';
 import '../widgets/dotted_background.dart';
 import '../widgets/home_bottom_bar.dart';
+import 'analysis_permission_screen.dart';
 import 'history_screen.dart';
 import 'home_tab.dart';
 import 'profile_screen.dart';
@@ -32,18 +32,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   static int _savedTabIndex = 0;
   late int _selectedIndex;
-  late final Connectivity _connectivity;
   late final JournalRepository _journalRepository;
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = _savedTabIndex;
-    _connectivity = Connectivity();
     _journalRepository = JournalRepository(
       Supabase.instance.client,
       LocalStore.journalBox(),
-      _connectivity,
     );
   }
 
@@ -60,7 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ? ChangeNotifierProvider(
                 create: (_) => HistoryViewModel(
                   repository: _journalRepository,
-                  connectivity: _connectivity,
                   userId: widget.authController.user?.id,
                 ),
                 child: HistoryScreen(journalRepository: _journalRepository),
@@ -110,11 +106,17 @@ class _HomeScreenState extends State<HomeScreen> {
         screen = const ScribbleScreen();
         break;
       case JournalCardType.reflect:
-        final reflectRecordingVM = RecordingViewModel(context);
-        screen = ChangeNotifierProvider.value(
-          value: reflectRecordingVM,
-          child: const ReflectScreen(),
-        );
+        final permissionShown = LocalStore.appSettingsBox()
+            .get(LocalStore.analysisPermissionShownKey, defaultValue: false) as bool;
+        if (!permissionShown) {
+          screen = const AnalysisPermissionScreen();
+        } else {
+          final reflectRecordingVM = RecordingViewModel(context);
+          screen = ChangeNotifierProvider.value(
+            value: reflectRecordingVM,
+            child: const ReflectScreen(),
+          );
+        }
         break;
     }
     Navigator.of(context).push(

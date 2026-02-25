@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../auth/auth_controller.dart';
 import '../data/local/local_store.dart';
+import '../design_system/app_colors.dart';
 import 'profile_dialogs.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,11 +19,16 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isEditingName = false;
   late TextEditingController _nameController;
+  late String _analysisPreference;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.authController.displayName);
+    _analysisPreference = LocalStore.appSettingsBox().get(
+          LocalStore.analysisPreferenceKey,
+          defaultValue: LocalStore.analysisPreferenceAlways,
+        ) as String;
   }
 
   @override
@@ -34,6 +40,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ignore: unused_element
   void _openEditName() {
     setState(() => _isEditingName = true);
+  }
+
+  Future<void> _saveAnalysisPreference(String value) async {
+    await LocalStore.appSettingsBox().put(LocalStore.analysisPreferenceKey, value);
+    setState(() => _analysisPreference = value);
   }
 
   // ignore: unused_element
@@ -161,19 +172,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                   colors: [
-                    Color(0x00201B18), // transparent left
-                    Color(0xFF201B18), // solid center
-                    Color(0x00201B18), // transparent right
+                    Color(0x00201B18),
+                    Color(0xFF201B18),
+                    Color(0x00201B18),
                   ],
                   stops: [0.0, 0.5, 1.0],
                 ),
               ),
             ),
 
+            const SizedBox(height: 24),
+            Text(
+              'Analysis Permission',
+              style: GoogleFonts.syneMono(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                height: 1.7,
+                color: const Color(0xFF52443F),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _AnalysisRadioOption(
+              label: 'Analyze my reflection everytime',
+              value: LocalStore.analysisPreferenceAlways,
+              groupValue: _analysisPreference,
+              onChanged: _saveAnalysisPreference,
+            ),
+            const SizedBox(height: 8),
+            _AnalysisRadioOption(
+              label: 'Ask me everytime',
+              value: LocalStore.analysisPreferenceAsk,
+              groupValue: _analysisPreference,
+              onChanged: _saveAnalysisPreference,
+            ),
+            const SizedBox(height: 8),
+            _AnalysisRadioOption(
+              label: 'Don\'t analyze my reflection',
+              value: LocalStore.analysisPreferenceNever,
+              groupValue: _analysisPreference,
+              onChanged: _saveAnalysisPreference,
+            ),
 
 
-
-
+            const SizedBox(height: 24),
+            Container(
+              width: double.infinity,
+              height: 1,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Color(0x00201B18),
+                    Color(0xFF201B18),
+                    Color(0x00201B18),
+                  ],
+                  stops: [0.0, 0.5, 1.0],
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
             GestureDetector(
               onTap: () => showLogoutDialog(context, authController),
@@ -303,6 +360,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnalysisRadioOption extends StatelessWidget {
+  const _AnalysisRadioOption({
+    required this.label,
+    required this.value,
+    required this.groupValue,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String value;
+  final String groupValue;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = value == groupValue;
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: Radio<String>(
+              value: value,
+              groupValue: groupValue,
+              onChanged: (v) {
+                if (v != null) onChanged(v);
+              },
+              activeColor: AppColors.purpleBase,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: GoogleFonts.syneMono(
+              fontSize: 15,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: const Color(0xFF201B18),
+            ),
           ),
         ],
       ),

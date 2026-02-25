@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 import '../widgets/dotted_background.dart';
 
@@ -7,13 +8,17 @@ class EntryAnalysisLoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned.fill(child: DottedBackground()),
+            const Positioned.fill(child: DottedBackground()),
             Center(
-              child: CircularProgressIndicator(),
+              child: Lottie.asset(
+                'assets/book_loader.json',
+                width: 120,
+                height: 120,
+              ),
             ),
           ],
         ),
