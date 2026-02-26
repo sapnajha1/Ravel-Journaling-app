@@ -65,25 +65,38 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           location == '/login' || location == '/magic-link-sent';
       final hasName = ref.read(authControllerProvider).hasChosenDisplayName;
 
+      print('🚀 [ROUTER DEBUG] Redirect check:');
+      print('🚀 [ROUTER DEBUG] - Current location: $location');
+      print('🚀 [ROUTER DEBUG] - isSignedIn: $isSignedIn');
+      print('🚀 [ROUTER DEBUG] - isOnboarded: $isOnboarded');
+      print('🚀 [ROUTER DEBUG] - isOnboarding: $isOnboarding');
+      print('🚀 [ROUTER DEBUG] - isLoginFlow: $isLoginFlow');
+      print('🚀 [ROUTER DEBUG] - hasName: $hasName');
+
       // Allow "Skip to Login" to go directly to email screen; don't force back to onboarding
       if (!isOnboarded && !isOnboarding && !isLoginFlow) {
+        print('🚀 [ROUTER DEBUG] Redirecting to onboarding/welcome');
         return '/onboarding/welcome';
       }
 
       if (isOnboarded && !isSignedIn && !isLoginFlow) {
+        print('🚀 [ROUTER DEBUG] Redirecting to login');
         return '/login';
       }
 
       // Signed in with name already set → go to home (skip ask-name).
       if (isSignedIn && hasName) {
+        print('🚀 [ROUTER DEBUG] Redirecting to home');
         return '/home';
       }
 
       // Signed in but no name yet → ask-name is required (first time after verification).
       if (isSignedIn && (isOnboarding || isLoginFlow)) {
+        print('🚀 [ROUTER DEBUG] Redirecting to ask-name');
         return '/ask-name';
       }
 
+      print('🚀 [ROUTER DEBUG] No redirect needed');
       return null;
     },
   );
