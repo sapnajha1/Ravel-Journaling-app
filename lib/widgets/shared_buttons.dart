@@ -3,6 +3,50 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../design_system/app_colors.dart';
 
+/// Reusable two-button row for bottom sheets and dialogs.
+/// Secondary (outline) on the left, primary (coral) on the right.
+class BottomSheetActionButtons extends StatelessWidget {
+  const BottomSheetActionButtons({
+    super.key,
+    required this.secondaryLabel,
+    required this.secondaryOnPressed,
+    required this.primaryLabel,
+    required this.primaryOnPressed,
+  });
+
+  final String secondaryLabel;
+  final VoidCallback secondaryOnPressed;
+  final String primaryLabel;
+  final VoidCallback primaryOnPressed;
+
+  static TextStyle _buttonTextStyle(FontWeight weight) => TextStyle(
+        fontWeight: weight,
+        color: AppColors.textPrimary,
+        fontFamily: GoogleFonts.syneMono().fontFamily,
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: WhiteOutlineButton(
+            onPressed: secondaryOnPressed,
+            child: Text(secondaryLabel, style: _buttonTextStyle(FontWeight.w600)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ShadowButton(
+            onPressed: primaryOnPressed,
+            child: Text(primaryLabel, style: _buttonTextStyle(FontWeight.w700)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Coral primary button with border and shadow (reflect, history).
 class ShadowButton extends StatelessWidget {
   const ShadowButton({

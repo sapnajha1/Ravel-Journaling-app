@@ -35,11 +35,19 @@ class JournalRepository {
       isSynced: false,
     );
 
-    // INSERT directly to Supabase and get remoteId back.
-    final remoteId = await _insertRemote(entry);
-    final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
-    await _box.put(localId, synced.toJson());
-    return synced;
+    // Write draft to Hive first so the entry is never lost, even if remote fails.
+    await _box.put(localId, entry.toJson());
+
+    try {
+      final remoteId = await _insertRemote(entry);
+      final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+      await _box.put(localId, synced.toJson());
+      return synced;
+    } catch (_) {
+      // Entry is already in Hive as isSynced:false. Return the local draft so
+      // callers can proceed (e.g. show analysis). Sync will be retried later.
+      return entry;
+    }
   }
 
   Future<JournalEntry> saveRantEntry({
@@ -59,10 +67,16 @@ class JournalRepository {
       isSynced: false,
     );
 
-    final remoteId = await _insertRemote(entry);
-    final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
-    await _box.put(localId, synced.toJson());
-    return synced;
+    await _box.put(localId, entry.toJson());
+
+    try {
+      final remoteId = await _insertRemote(entry);
+      final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+      await _box.put(localId, synced.toJson());
+      return synced;
+    } catch (_) {
+      return entry;
+    }
   }
 
   /// Saves a scribble entry. [content] is the base64-encoded PNG image data.
@@ -81,10 +95,16 @@ class JournalRepository {
       isSynced: false,
     );
 
-    final remoteId = await _insertRemote(entry);
-    final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
-    await _box.put(localId, synced.toJson());
-    return synced;
+    await _box.put(localId, entry.toJson());
+
+    try {
+      final remoteId = await _insertRemote(entry);
+      final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+      await _box.put(localId, synced.toJson());
+      return synced;
+    } catch (_) {
+      return entry;
+    }
   }
 
   Future<void> updateEntry(JournalEntry entry) async {

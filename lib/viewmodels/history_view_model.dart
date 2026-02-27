@@ -40,7 +40,14 @@ class HistoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _entries = await _repository.fetchHistoryEntries(_userId!);
+      final raw = await _repository.fetchHistoryEntries(_userId!);
+      // Sort once here rather than on every build in the screen.
+      _entries = raw
+        ..sort((a, b) {
+          final ta = a.createdTimestamp ?? a.entryDate;
+          final tb = b.createdTimestamp ?? b.entryDate;
+          return tb.compareTo(ta);
+        });
     } catch (_) {
       _errorMessage = 'Unable to load history right now.';
     } finally {

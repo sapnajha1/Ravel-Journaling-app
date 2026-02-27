@@ -118,15 +118,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   List<HistorySectionData> _groupEntries(List<JournalEntry> entries) {
-    final sortedEntries = List<JournalEntry>.from(entries)
-      ..sort((a, b) {
-        final ta = a.createdTimestamp ?? a.entryDate;
-        final tb = b.createdTimestamp ?? b.entryDate;
-        return tb.compareTo(ta);
-      });
-
+    // Entries are pre-sorted by HistoryViewModel.refresh(); no re-sort needed.
     final Map<DateTime, List<JournalEntry>> grouped = {};
-    for (final entry in sortedEntries) {
+    for (final entry in entries) {
       final day = DateTime(
         entry.entryDate.year,
         entry.entryDate.month,
