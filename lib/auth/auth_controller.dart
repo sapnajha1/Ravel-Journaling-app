@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../services/encryption_service.dart';
+
 /// Centralized auth state for the app.
 ///
 /// - Exposes current session and user
@@ -105,6 +107,7 @@ class AuthController extends ChangeNotifier {
 
   /// Sign out and clear local session.
   Future<void> signOut() async {
+    EncryptionService(Supabase.instance.client).clearCache();
     await Supabase.instance.client.auth.signOut();
     _session = null;
     _user = null;

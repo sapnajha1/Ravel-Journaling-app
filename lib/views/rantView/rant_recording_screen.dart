@@ -37,6 +37,58 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
     super.dispose();
   }
 
+  Future<void> _onDoneRanting() async {
+    final rantVM = context.read<RantViewModel>();
+
+    final content = await rantVM.endRanting(context);
+    _navigated = true;
+
+    if (content == null || content.trim().isEmpty) return;
+    if (!context.mounted) return;
+
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final savedEntry = userId != null
+        ? await rantVM.journalRepository.saveRantEntry(
+            userId: userId,
+            content: content.trim(),
+          )
+        : null;
+
+    if (!context.mounted) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const EntryAnalysisLoadingScreen(),
+      ),
+    );
+
+    final analysis = await EntryAnalysisService().analyzeEntry(content.trim(), 'rant');
+
+    if (savedEntry != null &&
+        (analysis.title.isNotEmpty || analysis.moods.isNotEmpty)) {
+      final moodStrings = analysis.moods
+          .map((m) => m.emoji.isNotEmpty ? '${m.emoji} ${m.label}' : m.label)
+          .toList();
+      final updated = savedEntry.copyWith(
+        title: analysis.title.isNotEmpty ? analysis.title : savedEntry.title,
+        moods: moodStrings.isNotEmpty ? moodStrings : null,
+        insight: analysis.insight.isNotEmpty ? analysis.insight : null,
+        topics: analysis.topics.isNotEmpty ? analysis.topics : null,
+      );
+      await rantVM.journalRepository.updateEntry(updated);
+    }
+
+    if (!context.mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => EntryAnalysisScreen(
+          analysis: analysis,
+          entryType: 'rant',
+        ),
+      ),
+    );
+  }
+
   // @override
   // void didChangeAppLifecycleState(AppLifecycleState state) {
   //   if (state == AppLifecycleState.paused ||
@@ -300,71 +352,7 @@ class _RantRecordingScreenState extends State<RantRecordingScreen> with WidgetsB
                     // ),
 
                     GestureDetector(
-                      onTap: () async {
-                        final rantVM = context.read<RantViewModel>();
-
-                        // Get content and stop recording (does not save yet)
-                        final content = await rantVM.endRanting(context);
-
-                        // Mark as navigated so PopScope/lifecycle doesn't interfere
-                        _navigated = true;
-
-                        if (content == null || content.trim().isEmpty) return;
-                        if (!context.mounted) return;
-
-                        // Save the rant entry immediately and capture returned entry
-                        final userId = Supabase.instance.client.auth.currentUser?.id;
-                        final savedEntry = userId != null
-                            ? await rantVM.journalRepository.saveRantEntry(
-                                userId: userId,
-                                content: content.trim(),
-                              )
-                            : null;
-
-                        if (!context.mounted) return;
-
-                        // Navigate to loading screen, then replace with analysis screen
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const EntryAnalysisLoadingScreen(),
-                          ),
-                        );
-
-                        final analysis = await EntryAnalysisService()
-                            .analyzeEntry(content.trim(), 'rant');
-
-                        // Persist analysis data back to the saved entry so history can show it.
-                        if (savedEntry != null &&
-                            (analysis.title.isNotEmpty || analysis.moods.isNotEmpty)) {
-                          final moodStrings = analysis.moods
-                              .map((m) => m.emoji.isNotEmpty
-                                  ? '${m.emoji} ${m.label}'
-                                  : m.label)
-                              .toList();
-                          final updated = savedEntry.copyWith(
-                            title: analysis.title.isNotEmpty
-                                ? analysis.title
-                                : savedEntry.title,
-                            moods: moodStrings.isNotEmpty ? moodStrings : null,
-                            insight: analysis.insight.isNotEmpty
-                                ? analysis.insight
-                                : null,
-                            topics:
-                                analysis.topics.isNotEmpty ? analysis.topics : null,
-                          );
-                          await rantVM.journalRepository.updateEntry(updated);
-                        }
-
-                        if (!context.mounted) return;
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (_) => EntryAnalysisScreen(
-                              analysis: analysis,
-                              entryType: 'rant',
-                            ),
-                          ),
-                        );
-                      },
+                      onTap: _onDoneRanting,
                       child: Container(
                         decoration: BoxDecoration(
                           boxShadow: const [

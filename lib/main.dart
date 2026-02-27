@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +10,7 @@ import 'design_system/app_theme.dart';
 import 'presentation/app_router.dart';
 
 void main() async {
-  print('🚀 [MAIN] Starting app initialization...');
+  if (kDebugMode) debugPrint('[MAIN] Starting app initialization...');
   WidgetsFlutterBinding.ensureInitialized();
 
   await SystemChrome.setPreferredOrientations([
@@ -17,9 +18,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  print('🚀 [MAIN] Initializing Supabase...');
-  print('🚀 [MAIN] Supabase URL: ${SupabaseConfig.supabaseUrl}');
-  print('🚀 [MAIN] Redirect URL: ${SupabaseConfig.authRedirectUrl}');
+  if (kDebugMode) debugPrint('[MAIN] Initializing Supabase...');
 
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
@@ -31,14 +30,13 @@ void main() async {
     ),
   );
 
-  print('🚀 [MAIN] Supabase initialized successfully');
-  print('🚀 [MAIN] Current session: ${Supabase.instance.client.auth.currentSession != null ? "EXISTS" : "NULL"}');
+  if (kDebugMode) debugPrint('[MAIN] Supabase initialized successfully');
 
-  print('🚀 [MAIN] Initializing LocalStore...');
+  if (kDebugMode) debugPrint('[MAIN] Initializing LocalStore...');
   await LocalStore.init();
-  print('🚀 [MAIN] LocalStore initialized');
+  if (kDebugMode) debugPrint('[MAIN] LocalStore initialized');
 
-  print('🚀 [MAIN] Starting app...');
+  if (kDebugMode) debugPrint('[MAIN] Starting app...');
   runApp(const ProviderScope(child: MyApp()));
 }
 

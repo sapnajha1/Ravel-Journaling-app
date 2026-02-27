@@ -1,14 +1,20 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../services/encryption_service.dart';
 import '../models/journal_entry.dart';
 
 class JournalRepository {
-  JournalRepository(this._client, this._box);
+  JournalRepository(this._client, this._box, this._connectivity,
+      [EncryptionService? encryptionService])
+      : _encryption = encryptionService ?? EncryptionService(_client);
 
   final SupabaseClient _client;
   final Box<dynamic> _box;
+  final Connectivity _connectivity;
+  final EncryptionService _encryption;
 
   Future<JournalEntry> saveReflectionEntry({
     required String userId,
@@ -29,11 +35,19 @@ class JournalRepository {
       isSynced: false,
     );
 
-    // INSERT directly to Supabase and get remoteId back.
-    final remoteId = await _insertRemote(entry);
-    final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
-    await _box.put(localId, synced.toJson());
-    return synced;
+    // Write draft to Hive first so the entry is never lost, even if remote fails.
+    await _box.put(localId, entry.toJson());
+
+    try {
+      final remoteId = await _insertRemote(entry);
+      final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+      await _box.put(localId, synced.toJson());
+      return synced;
+    } catch (_) {
+      // Entry is already in Hive as isSynced:false. Return the local draft so
+      // callers can proceed (e.g. show analysis). Sync will be retried later.
+      return entry;
+    }
   }
 
   Future<JournalEntry> saveRantEntry({
@@ -53,10 +67,16 @@ class JournalRepository {
       isSynced: false,
     );
 
-    final remoteId = await _insertRemote(entry);
-    final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
-    await _box.put(localId, synced.toJson());
-    return synced;
+    await _box.put(localId, entry.toJson());
+
+    try {
+      final remoteId = await _insertRemote(entry);
+      final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+      await _box.put(localId, synced.toJson());
+      return synced;
+    } catch (_) {
+      return entry;
+    }
   }
 
   /// Saves a scribble entry. [content] is the base64-encoded PNG image data.
@@ -75,10 +95,16 @@ class JournalRepository {
       isSynced: false,
     );
 
-    final remoteId = await _insertRemote(entry);
-    final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
-    await _box.put(localId, synced.toJson());
-    return synced;
+    await _box.put(localId, entry.toJson());
+
+    try {
+      final remoteId = await _insertRemote(entry);
+      final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+      await _box.put(localId, synced.toJson());
+      return synced;
+    } catch (_) {
+      return entry;
+    }
   }
 
   Future<void> updateEntry(JournalEntry entry) async {
@@ -125,9 +151,14 @@ class JournalRepository {
   Future<void> _updateRemoteEntry(JournalEntry entry) async {
     final remoteId = entry.remoteId;
     if (remoteId == null) return;
+    final key = await _encryption.getOrCreateKey(entry.userId);
+    final encryptedContent = await _encryption.encrypt(entry.content, key);
+    final encryptedTitle = entry.title != null && entry.title!.isNotEmpty
+        ? await _encryption.encrypt(entry.title!, key)
+        : entry.title;
     final payload = <String, dynamic>{
-      'content': entry.content,
-      'title': entry.title,
+      'content': encryptedContent,
+      'title': encryptedTitle,
       'entry_date': _dateOnly(entry.entryDate),
     };
     if (entry.moods != null) payload['moods'] = entry.moods!.join('||');
@@ -138,9 +169,17 @@ class JournalRepository {
 
   Future<String?> _insertRemote(JournalEntry entry) async {
     try {
+      final key = await _encryption.getOrCreateKey(entry.userId);
+      final remoteData = entry.toRemoteInsert();
+      remoteData['content'] = await _encryption.encrypt(
+        remoteData['content'] as String? ?? '', key);
+      final title = remoteData['title'] as String?;
+      if (title != null && title.isNotEmpty) {
+        remoteData['title'] = await _encryption.encrypt(title, key);
+      }
       final response = await _client
           .from('journal_entries')
-          .insert(entry.toRemoteInsert())
+          .insert(remoteData)
           .select('id')
           .single();
       return response['id']?.toString();
@@ -167,10 +206,21 @@ class JournalRepository {
         )
         .eq('user_id', userId)
         .order('entry_date', ascending: false);
-    return (response as List<dynamic>)
-        .whereType<Map<String, dynamic>>()
-        .map(JournalEntry.fromRemoteJson)
-        .toList();
+    final key = await _encryption.getOrCreateKey(userId);
+    final entries = <JournalEntry>[];
+    for (final raw in (response as List<dynamic>).whereType<Map<String, dynamic>>()) {
+      final content = (raw['content'] ?? '').toString();
+      final title = raw['title']?.toString();
+      final decryptedContent = await _encryption.decrypt(content, key);
+      final decryptedTitle = title != null && title.isNotEmpty
+          ? await _encryption.decrypt(title, key)
+          : title;
+      final decryptedRaw = Map<String, dynamic>.from(raw)
+        ..['content'] = decryptedContent
+        ..['title'] = decryptedTitle;
+      entries.add(JournalEntry.fromRemoteJson(decryptedRaw));
+    }
+    return entries;
   }
 
   List<JournalEntry> _localEntriesForUser(String userId) {
@@ -184,5 +234,37 @@ class JournalRepository {
   List<JournalEntry> _sortEntries(List<JournalEntry> entries) {
     entries.sort((a, b) => b.entryDate.compareTo(a.entryDate));
     return entries;
+  }
+
+  Future<void> _syncEntry(JournalEntry entry) async {
+    try {
+      final key = await _encryption.getOrCreateKey(entry.userId);
+      final remoteData = entry.toRemoteInsert();
+      remoteData['content'] = await _encryption.encrypt(
+        remoteData['content'] as String? ?? '', key);
+      final title = remoteData['title'] as String?;
+      if (title != null && title.isNotEmpty) {
+        remoteData['title'] = await _encryption.encrypt(title, key);
+      }
+      final response = await _client
+          .from('journal_entries')
+          .insert(remoteData)
+          .select('id')
+          .single();
+      final remoteId = response['id']?.toString();
+      final synced = entry.copyWith(isSynced: true, remoteId: remoteId);
+      await _box.put(entry.localId, synced.toJson());
+    } catch (e, st) {
+      // Keep entry as unsynced for later retry.
+      debugPrint(
+        '[JournalRepository] Sync failed (entry_type=${entry.entryType}): $e',
+      );
+      debugPrint('[JournalRepository] Stack: $st');
+    }
+  }
+
+  Future<bool> _isOnline() async {
+    final result = await _connectivity.checkConnectivity();
+    return !result.contains(ConnectivityResult.none);
   }
 }

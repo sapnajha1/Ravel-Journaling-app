@@ -304,36 +304,11 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: WhiteOutlineButton(
-                    onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text(
-                      'Don\'t analyze',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                        fontFamily: GoogleFonts.syneMono().fontFamily,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ShadowButton(
-                    onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text(
-                      'Analyze entry',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        fontFamily: GoogleFonts.syneMono().fontFamily,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            BottomSheetActionButtons(
+              secondaryLabel: "Don't analyze",
+              secondaryOnPressed: () => Navigator.of(ctx).pop(false),
+              primaryLabel: 'Analyze entry',
+              primaryOnPressed: () => Navigator.of(ctx).pop(true),
             ),
           ],
         ),
@@ -585,12 +560,7 @@ class _ReflectScreenState extends ConsumerState<ReflectScreen> {
       children: [
         ReflectTopBar(
           dateText: 'Today · ${formatDayMonth(DateTime.now())}',
-          onBack: () {
-            final hasContent = _entryController.text.trim().isNotEmpty ||
-                _deepDiveTurns.isNotEmpty;
-            if (hasContent) _showSnack('Reflection discarded');
-            Navigator.of(context).pop();
-          },
+          onBack: () => Navigator.of(context).pop(),
         ),
         const SizedBox(height: 12),
         Expanded(

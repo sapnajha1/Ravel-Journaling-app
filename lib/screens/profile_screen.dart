@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../auth/auth_controller.dart';
 import '../data/local/local_store.dart';
 import '../design_system/app_colors.dart';
+import '../services/delete_account_service.dart';
 import 'profile_dialogs.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -47,27 +49,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _analysisPreference = value);
   }
 
-  // ignore: unused_element
   Future<void> _showDeleteAccountDialog() async {
-    final confirmed = await showDialog<DeleteAccountResult>(
-      context: context,
-      barrierColor: Colors.black54,
-      builder: (context) => const DeleteAccountDialog(),
-    );
+    final confirmed = await showDeleteAccountBottomSheet(context);
     if (confirmed == null || !mounted) return;
-    if (confirmed.clearLocalData) {
-      try {
-        LocalStore.journalBox().clear();
-        LocalStore.promptBox().clear();
-      } catch (_) {}
-    }
-    try {
-      await widget.authController.signOut();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign out failed: $e')),
-      );
+
+    // Show loading indicator
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Deleting account...')),
+    );
+
+    final result = await DeleteAccountService().deleteAccount();
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    switch (result) {
+      case DeleteAccountSuccess():
+        if (confirmed.clearLocalData) {
+          try {
+            LocalStore.journalBox().clear();
+            LocalStore.promptBox().clear();
+          } catch (_) {}
+        }
+        try {
+          await widget.authController.signOut();
+        } catch (_) {
+          // User already deleted; signOut may fail. Clear local state anyway.
+        }
+        if (!mounted) return;
+        context.go('/login');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account deleted')),
+        );
+      case DeleteAccountFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not delete account: $message')),
+        );
     }
   }
 
@@ -264,9 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
 
             GestureDetector(
-              onTap: () async {
-                showDeleteRantDialog(context);
-              },
+              onTap: _showDeleteAccountDialog,
               child: SvgPicture.asset(
                 'assets/Frame 182.svg',
                 width: 164,
