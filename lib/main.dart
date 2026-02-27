@@ -9,12 +9,17 @@ import 'design_system/app_theme.dart';
 import 'presentation/app_router.dart';
 
 void main() async {
+  print('🚀 [MAIN] Starting app initialization...');
   WidgetsFlutterBinding.ensureInitialized();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  print('🚀 [MAIN] Initializing Supabase...');
+  print('🚀 [MAIN] Supabase URL: ${SupabaseConfig.supabaseUrl}');
+  print('🚀 [MAIN] Redirect URL: ${SupabaseConfig.authRedirectUrl}');
 
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
@@ -26,8 +31,14 @@ void main() async {
     ),
   );
 
-  await LocalStore.init();
+  print('🚀 [MAIN] Supabase initialized successfully');
+  print('🚀 [MAIN] Current session: ${Supabase.instance.client.auth.currentSession != null ? "EXISTS" : "NULL"}');
 
+  print('🚀 [MAIN] Initializing LocalStore...');
+  await LocalStore.init();
+  print('🚀 [MAIN] LocalStore initialized');
+
+  print('🚀 [MAIN] Starting app...');
   runApp(const ProviderScope(child: MyApp()));
 }
 

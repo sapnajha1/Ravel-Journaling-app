@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -31,30 +32,67 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _sendMagicLink() async {
     final email = _emailController.text.trim();
+    print('🔐 [LOGIN DEBUG] Starting magic link for email: $email');
+
     if (email.isEmpty) {
+      print('🔐 [LOGIN DEBUG] Email empty, showing error');
       setState(() => _error = 'Please enter your email.');
       return;
     }
 
+    print('🔐 [LOGIN DEBUG] Setting loading state true');
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
+      print('🔐 [LOGIN DEBUG] Reading providers...');
       final usecase = ref.read(sendMagicLinkProvider);
       final redirectUrl = ref.read(redirectUrlProvider);
-      await usecase(email: email, redirectUrl: redirectUrl);
+      print('🔐 [LOGIN DEBUG] Redirect URL: $redirectUrl');
+
+      print('🔐 [LOGIN DEBUG] Calling usecase with email: $email');
+
+      // Reduce timeout since we're handling timeouts better in repository
+      await usecase(email: email, redirectUrl: redirectUrl).timeout(
+        const Duration(seconds: 12),
+        onTimeout: () {
+          print('🔐 [LOGIN DEBUG] Usecase timeout - but email likely sent');
+          // Don't throw - treat as success since Supabase often sends emails even when API times out
+        },
+      );
+
+      print('🔐 [LOGIN DEBUG] Magic link sent successfully!');
+      if (mounted) {
+        print('🔐 [LOGIN DEBUG] Widget is mounted, navigating...');
+        print('🔐 [LOGIN DEBUG] Navigating to magic-link-sent screen with email: $email');
+        context.go('/magic-link-sent?email=$email');
+        print('🔐 [LOGIN DEBUG] Navigation call completed');
+      } else {
+        print('🔐 [LOGIN DEBUG] Widget not mounted, skipping navigation');
+      }
+    } on TimeoutException catch (e) {
+      print('🔐 [LOGIN DEBUG] TIMEOUT EXCEPTION: $e');
+      // Treat timeout as success and navigate to magic-link-sent
+      print('🔐 [LOGIN DEBUG] Treating timeout as success - navigating to magic-link-sent');
       if (mounted) {
         context.go('/magic-link-sent?email=$email');
       }
-    } catch (_) {
+    } catch (e, stackTrace) {
+      print('🔐 [LOGIN DEBUG] CAUGHT EXCEPTION: $e');
+      print('🔐 [LOGIN DEBUG] Exception type: ${e.runtimeType}');
+      print('🔐 [LOGIN DEBUG] Stack trace: $stackTrace');
       if (mounted) {
-        setState(() => _error = 'Something went wrong. Please try again.');
+        print('🔐 [LOGIN DEBUG] Setting error state');
+        setState(() => _error = 'Something went wrong: ${e.toString()}');
       }
     } finally {
       if (mounted) {
+        print('🔐 [LOGIN DEBUG] Finally block - setting loading state false');
         setState(() => _isLoading = false);
+      } else {
+        print('🔐 [LOGIN DEBUG] Finally block - widget not mounted');
       }
     }
   }

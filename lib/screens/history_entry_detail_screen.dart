@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../data/models/journal_entry.dart';
 import '../data/repositories/journal_repository.dart';
 import '../design_system/app_colors.dart';
+import '../features/reflect/reflect_controller.dart';
 import '../utils/date_formatters.dart';
 import '../widgets/dotted_background.dart';
 
@@ -122,11 +123,20 @@ class _ScribbleDetailView extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Text detail (Reflect / Rant) — read-only, new layout
-// Layout: title → mood chips → ENTRY divider → content → WHAT WE NOTICED divider → insight + topics
+// Conversation turn data class
 // ---------------------------------------------------------------------------
 
-class _TextDetailView extends StatelessWidget {
+class _ConversationTurn {
+  final String aiQuestion;
+  final String userText;
+  const _ConversationTurn({required this.aiQuestion, required this.userText});
+}
+
+// ---------------------------------------------------------------------------
+// Text detail (Reflect / Rant) — conversation-style read-only layout
+// ---------------------------------------------------------------------------
+
+class _TextDetailView extends ConsumerWidget {
   const _TextDetailView({required this.entry, required this.journalRepository});
 
   final JournalEntry entry;
@@ -157,8 +167,42 @@ class _TextDetailView extends StatelessWidget {
   Color get _accentColor => _isRant ? AppColors.releaseBase : AppColors.purpleBase;
   Color get _accentLightColor => _isRant ? AppColors.releaseLight : AppColors.purpleLight;
 
+  /// Text before first [Follow-up:] marker
+  String get _firstUserText {
+    final idx = entry.content.indexOf('[Follow-up:');
+    if (idx == -1) return entry.content.trim();
+    return entry.content.substring(0, idx).trim();
+  }
+
+  bool get _hasDeepDive => entry.content.contains('[Follow-up:');
+
+  /// Parse [Follow-up: question] pairs from content
+  List<_ConversationTurn> _parseTurns() {
+    final content = entry.content;
+    final regex = RegExp(r'\[Follow-up: (.*?)\]', dotAll: true);
+    final matches = regex.allMatches(content).toList();
+    if (matches.isEmpty) return [];
+
+    final turns = <_ConversationTurn>[];
+    for (int i = 0; i < matches.length; i++) {
+      final aiQuestion = matches[i].group(1)?.trim() ?? '';
+      final start = matches[i].end;
+      final end = i + 1 < matches.length ? matches[i + 1].start : content.length;
+      final userText = content.substring(start, end).trim();
+      turns.add(_ConversationTurn(aiQuestion: aiQuestion, userText: userText));
+    }
+    return turns;
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Fetch prompt text from cache
+    String? promptText;
+    if (entry.promptId != null && entry.entryType == 'reflection') {
+      final promptRepo = ref.read(promptRepositoryProvider);
+      promptText = promptRepo.getPromptById(entry.promptId!)?.text;
+    }
+
     Widget? moodChipsWidget;
     if (entry.moods != null && entry.moods!.isNotEmpty) {
       moodChipsWidget = _MoodChipsRow(moods: entry.moods!);
@@ -173,6 +217,8 @@ class _TextDetailView extends StatelessWidget {
         accentLightColor: _accentLightColor,
       );
     }
+
+    final turns = _hasDeepDive ? _parseTurns() : <_ConversationTurn>[];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -194,6 +240,8 @@ class _TextDetailView extends StatelessWidget {
                   Expanded(
                     child: _buildScrollContent(
                       context,
+                      promptText: promptText,
+                      turns: turns,
                       moodChipsWidget: moodChipsWidget,
                       analysisWidget: analysisWidget,
                     ),
@@ -209,17 +257,30 @@ class _TextDetailView extends StatelessWidget {
 
   Widget _buildScrollContent(
     BuildContext context, {
+    String? promptText,
+    List<_ConversationTurn> turns = const [],
     Widget? moodChipsWidget,
     Widget? analysisWidget,
   }) {
+    final firstText = _hasDeepDive ? _firstUserText : entry.content.trim();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
-          if (entry.title != null && entry.title!.isNotEmpty)
+          // Prompt (read-only, no button)
+          if (promptText != null && promptText.isNotEmpty)
+            Text(
+              promptText,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textPrimary,
+                fontFamily: GoogleFonts.syneMono().fontFamily,
+              ),
+            )
+          else if (entry.title != null && entry.title!.isNotEmpty)
             Text(
               entry.title!,
               style: GoogleFonts.gochiHand(
@@ -228,30 +289,43 @@ class _TextDetailView extends StatelessWidget {
                 color: AppColors.textPrimary,
               ),
             ),
-          // Mood chips (or loading spinner)
+
+          // Mood chips
           if (moodChipsWidget != null) ...[
             const SizedBox(height: 12),
             moodChipsWidget,
           ],
-          const SizedBox(height: 20),
-          // ENTRY divider
-          _PillDivider(
-            label: 'ENTRY',
-            accentColor: _accentColor,
-            accentLightColor: _accentLightColor,
-          ),
-          const SizedBox(height: 16),
-          // Entry content (read-only)
-          SelectableText(
-            entry.content,
-            style: GoogleFonts.gochiHand(
-              fontSize: 20,
-              height: 1.5,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textPrimary,
+
+          const SizedBox(height: 12),
+
+          // Dotted divider
+          _buildDotSeparator(),
+          const SizedBox(height: 10),
+
+          // First user text
+          _buildLockedText(firstText),
+
+          // Deep-dive conversation turns
+          for (final turn in turns) ...[
+            const SizedBox(height: 10),
+            _buildDotSeparator(),
+            const SizedBox(height: 8),
+            // AI question
+            Text(
+              turn.aiQuestion,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textPrimary,
+                fontFamily: GoogleFonts.syneMono().fontFamily,
+              ),
             ),
-          ),
-          // WHAT WE NOTICED section — only if analysis data is available
+            const SizedBox(height: 6),
+            // User response
+            if (turn.userText.isNotEmpty) _buildLockedText(turn.userText),
+          ],
+
+          // Analysis section
           if (analysisWidget != null) ...[
             const SizedBox(height: 24),
             _PillDivider(
@@ -263,8 +337,40 @@ class _TextDetailView extends StatelessWidget {
             const SizedBox(height: 16),
             analysisWidget,
           ],
+
           const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLockedText(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.gochiHand(
+        fontSize: 20,
+        height: 1.5,
+        fontWeight: FontWeight.w400,
+        color: AppColors.textPrimary,
+      ),
+    );
+  }
+
+  Widget _buildDotSeparator() {
+    return Row(
+      children: List.generate(
+        12,
+        (i) => Padding(
+          padding: const EdgeInsets.only(right: 5),
+          child: Container(
+            width: 3,
+            height: 3,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.black.withValues(alpha: 0.22),
+            ),
+          ),
+        ),
       ),
     );
   }
