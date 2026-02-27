@@ -55,6 +55,9 @@ dependencies:
   # Optional: check connectivity for better error messages
   connectivity_plus: ^6.1.1
 
+  # Client-side encryption for journal content
+  cryptography: ^2.9.0
+
   # Local save for reflect prompt/entry
   shared_preferences: ^2.5.4
   flutter_riverpod: ^2.6.1
