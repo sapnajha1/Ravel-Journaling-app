@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../auth/auth_controller.dart';
+import '../design_system/app_colors.dart';
 import '../widgets/dotted_background.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       
-      // backgroundColor: const Color(0xFFFFF9F7),
+      // backgroundColor: AppColors.surfaceVariant,
       body: Stack(
         children: [
           const Positioned.fill(
@@ -56,7 +57,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     fontSize: 24,
                     fontWeight: FontWeight.w400,
                     height: 1.5,
-                    color: const Color(0xFF201B18),
+                    color: AppColors.textPrimary,
                   ),
                 ),
         
@@ -68,7 +69,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
                     height: 1.7,
-                    color: const Color(0xFF52443F),
+                    color: AppColors.textSecondary,
                   ),
                 ),
         
@@ -79,15 +80,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   height: 48,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF9F7),
+                    color: AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                      color: const Color(0xFF201B18),
+                      color: AppColors.textPrimary,
                       width: 2,
                     ),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0xFF201B18),
+                        color: AppColors.textPrimary,
                         offset: Offset(2, 2),
                         blurRadius: 0,
                       ),
@@ -98,7 +99,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     style: GoogleFonts.syneMono(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
-                      color: const Color(0xFF201B18),
+                      color: AppColors.textPrimary,
                     ),
                     decoration: const InputDecoration(
                       border: InputBorder.none,

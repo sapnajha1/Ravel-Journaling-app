@@ -4,6 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 import '../data/models/journal_entry.dart';
+import '../design_system/app_colors.dart';
 import '../data/repositories/journal_repository.dart';
 import '../utils/date_formatters.dart';
 import '../viewmodels/history_view_model.dart';
@@ -27,7 +28,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final vm = context.watch<HistoryViewModel>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9F7),
+      backgroundColor: AppColors.surfaceVariant,
       body: SafeArea(
         child: Stack(
           children: [

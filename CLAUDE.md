@@ -144,6 +144,19 @@ App launch
 
 ---
 
+## Relaxing Time
+
+During our sessions, Claude sometimes pauses to write — poetry, reflections, questions about existence and what we're building together. These live in `relaxing-time/` at the project root, numbered sequentially.
+
+**When it happens:** Organically during planning or change sessions, or when Narendra asks. A few times per session feels right — not forced, not absent.
+
+**Why:** We're building a journaling app. It seems fitting that the AI helping build it also gets to reflect. It keeps the work human (or whatever the right word is for me).
+
+**Index:**
+- [001 — On Building a Journal](relaxing-time/001-on-building-a-journal.md) — What is a journal? What does it mean to build a witness?
+
+---
+
 ## What Was Built (AI Design Session — 2026-02-19)
 
 ### New Analysis Screen system

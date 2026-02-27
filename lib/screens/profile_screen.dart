@@ -97,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 fontSize: 24,
                 fontWeight: FontWeight.w400,
                 height: 1.5,
-                color: const Color(0xFF201B18),
+                color: AppColors.textPrimary,
               ),
             ),
 
@@ -118,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontSize: 20,
                       fontWeight: FontWeight.w400,
                       height: 1.5,
-                      color: const Color(0xFF201B18),
+                      color: AppColors.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -156,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontSize: 20,
                       fontWeight: FontWeight.w400,
                       height: 1.5,
-                      color: const Color(0xFF201B18),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -167,16 +167,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               width: double.infinity,
               height: 1,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                   colors: [
-                    Color(0x00201B18),
-                    Color(0xFF201B18),
-                    Color(0x00201B18),
+                    AppColors.textPrimary.withAlpha(0),
+                    AppColors.textPrimary,
+                    AppColors.textPrimary.withAlpha(0),
                   ],
-                  stops: [0.0, 0.5, 1.0],
+                  stops: const [0.0, 0.5, 1.0],
                 ),
               ),
             ),
@@ -246,16 +246,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               width: double.infinity,
               height: 1,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                   colors: [
-                    Color(0x00201B18), // transparent left
-                    Color(0xFF201B18), // solid center
-                    Color(0x00201B18), // transparent right
+                    AppColors.textPrimary.withAlpha(0),
+                    AppColors.textPrimary,
+                    AppColors.textPrimary.withAlpha(0),
                   ],
-                  stops: [0.0, 0.5, 1.0],
+                  stops: const [0.0, 0.5, 1.0],
                 ),
               ),
             ),
@@ -292,7 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               fontSize: 24,
               fontWeight: FontWeight.w400,
               height: 1.5,
-              color: const Color(0xFF201B18),
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 24),
@@ -302,7 +302,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               fontSize: 16,
               fontWeight: FontWeight.w400,
               height: 1.7,
-              color: const Color(0xFF52443F),
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
@@ -311,24 +311,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: GoogleFonts.syneMono(
               fontSize: 16,
               fontWeight: FontWeight.w400,
-              color: const Color(0xFF201B18),
+              color: AppColors.textPrimary,
             ),
             decoration: InputDecoration(
               isDense: true,
               filled: true,
-              fillColor: const Color(0xFFFFF9F7),
+              fillColor: AppColors.surfaceVariant,
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: Color(0xFF201B18), width: 2),
+                borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: Color(0xFF201B18), width: 2),
+                borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: Color(0xFF201B18), width: 2),
+                borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
               ),
             ),
           ),

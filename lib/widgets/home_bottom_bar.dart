@@ -29,11 +29,6 @@ class HomeBottomBar extends StatelessWidget {
             blurRadius: 0,
             offset: Offset(4, 4),
           ),
-          BoxShadow(
-            color: Color(0x26000000),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
         ],
       ),
       child: Row(
@@ -77,7 +72,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const active = Color(0xFFFF6E5A);
+    final active = AppColors.primaryBase;
     const inactive = Colors.black87;
     return Expanded(
       flex: selected ? 2 : 1,
@@ -100,13 +95,6 @@ class _NavItem extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: active,
                         borderRadius: BorderRadius.circular(6),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x33000000),
-                            blurRadius: 6,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,

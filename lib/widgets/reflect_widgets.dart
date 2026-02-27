@@ -123,9 +123,9 @@ class ReflectTopBar extends StatelessWidget {
         ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x33000000),
+            color: Color(0xFF2A2A2A),
             blurRadius: 0,
-            offset: Offset(0, 2),
+            offset: Offset(0, 3),
           ),
         ],
       ),

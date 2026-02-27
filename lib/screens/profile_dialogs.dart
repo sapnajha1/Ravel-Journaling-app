@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../auth/auth_controller.dart';
+import '../design_system/app_colors.dart';
 import '../viewmodels/rantViewModel/rant_view_model.dart';
 import '../views/home_view.dart';
 
@@ -39,7 +40,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
               style: GoogleFonts.syneMono(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF201B18),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -48,7 +49,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
               style: GoogleFonts.syneMono(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
-                color: const Color(0xFF52443F),
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
@@ -60,7 +61,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                     _keepJournalData
                         ? Icons.check_box
                         : Icons.check_box_outline_blank,
-                    color: const Color(0xFFFF7B6B),
+                    color: AppColors.primaryBase,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -68,7 +69,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                       'Keep my journal data on this device',
                       style: GoogleFonts.syneMono(
                         fontSize: 14,
-                        color: const Color(0xFF201B18),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -82,7 +83,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(
                     'Cancel',
-                    style: GoogleFonts.syneMono(color: const Color(0xFF52443F)),
+                    style: GoogleFonts.syneMono(color: AppColors.textSecondary),
                   ),
                 ),
                 const Spacer(),
@@ -94,7 +95,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                     'Delete',
                     style: GoogleFonts.syneMono(
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFFFF7B6B),
+                      color: AppColors.primaryBase,
                     ),
                   ),
                 ),
@@ -116,7 +117,7 @@ void showLogoutDialog(BuildContext context, AuthController authController) {
         style: GoogleFonts.syneMono(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: const Color(0xFF201B18),
+          color: AppColors.textPrimary,
         ),
       ),
       content: Text(
@@ -125,7 +126,7 @@ void showLogoutDialog(BuildContext context, AuthController authController) {
           fontSize: 16,
           fontWeight: FontWeight.w400,
           height: 1.5,
-          color: const Color(0xFF52443F),
+          color: AppColors.textSecondary,
         ),
       ),
       actions: [
@@ -135,7 +136,7 @@ void showLogoutDialog(BuildContext context, AuthController authController) {
             'Cancel',
             style: GoogleFonts.syneMono(
               fontSize: 16,
-              color: const Color(0xFF52443F),
+              color: AppColors.textSecondary,
             ),
           ),
         ),
@@ -149,7 +150,7 @@ void showLogoutDialog(BuildContext context, AuthController authController) {
             style: GoogleFonts.syneMono(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFFFF7B6B),
+              color: AppColors.primaryBase,
             ),
           ),
         ),
@@ -185,7 +186,7 @@ void showDeleteRantDialog(BuildContext context) {
                   Text(
                     'Delete Account',
                     style: GoogleFonts.syneMono(
-                      color: const Color(0xFFFF7B6B),
+                      color: AppColors.primaryBase,
                       fontSize: 20,
                       fontWeight: FontWeight.w400,
                       height: 1.5,
@@ -275,7 +276,7 @@ class _KeepJournalCheckboxState extends State<KeepJournalCheckbox> {
 
   @override
   Widget build(BuildContext context) {
-    const boxColor = Color(0xFFFF7B6B);
+    const boxColor = AppColors.primaryBase;
     return InkWell(
       onTap: () {
         setState(() {

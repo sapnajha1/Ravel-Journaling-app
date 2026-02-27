@@ -21,7 +21,7 @@ class ShadowButton extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(6),
-        color: const Color(0xFFFF6E5A),
+        color: AppColors.primaryBase,
         border: Border.all(color: Colors.black, width: 2),
       ),
       child: Material(
