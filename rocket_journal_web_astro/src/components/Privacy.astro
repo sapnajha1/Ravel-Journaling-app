@@ -1,0 +1,114 @@
+---
+/* Privacy — Monkkee-style 3-pillar layout with SVG illustrations */
+---
+
+<section class="privacy" id="privacy">
+  <div class="container">
+    <h2 class="priv-title">Your Journal, Your Rules</h2>
+    <p class="priv-subtitle">We believe your private thoughts should stay private. Period.</p>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-illustration">
+          <img src="/icons/secret-private.svg" alt="Secret and private diary illustration" width="180" height="160" />
+        </div>
+        <h3>Secret &amp; Private</h3>
+        <p>Ravel is private-only. There's no social feed, no followers, no way to make entries public. Your journal stays between you and you — just like a paper diary with a lock.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-illustration">
+          <img src="/icons/secure-encrypted.svg" alt="Secure and encrypted shield illustration" width="180" height="160" />
+        </div>
+        <h3>Secure &amp; Encrypted</h3>
+        <p>Every word is encrypted on your device before it ever touches the cloud. AES-256 + end-to-end encryption means even we can't read your thoughts.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-illustration">
+          <img src="/icons/access-internet.svg" alt="Access from any device illustration" width="180" height="160" />
+        </div>
+        <h3>Access Anywhere</h3>
+        <p>Journal on your phone, tablet, or laptop. Your entries sync securely across all your devices — write at home, continue on the go. Works offline too.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .privacy {
+    background: var(--paper-cream);
+    padding: 80px 0;
+    text-align: center;
+  }
+
+  .priv-title {
+    font-family: var(--font-hand);
+    font-size: 40px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .priv-subtitle {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink-soft);
+    max-width: 480px;
+    margin: 12px auto 0;
+    line-height: 1.6;
+  }
+
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 36px;
+    margin-top: 56px;
+    text-align: center;
+  }
+
+  .pillar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 8px;
+  }
+
+  /* Illustration container */
+  .pillar-illustration {
+    width: 180px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    transition: transform 0.3s ease;
+  }
+  .pillar:hover .pillar-illustration {
+    transform: translateY(-6px);
+  }
+  .pillar-illustration img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .pillar h3 {
+    font-family: var(--font-hand);
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .pillar p {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    max-width: 280px;
+  }
+
+  @media (max-width: 768px) {
+    .privacy { padding: 56px 0; }
+    .priv-title { font-size: 32px; }
+    .pillars { grid-template-columns: 1fr; gap: 48px; }
+    .pillar-illustration { width: 150px; height: 130px; }
+  }
+</style>

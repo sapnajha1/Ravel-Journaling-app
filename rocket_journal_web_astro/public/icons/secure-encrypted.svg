@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" fill="none">
+  <!-- Shield shape -->
+  <path d="M100 20 L155 45 V100 Q155 150 100 168 Q45 150 45 100 V45Z" fill="#F2EDE4" stroke="#1B2A4A" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Shield inner glow -->
+  <path d="M100 34 L145 54 V98 Q145 140 100 155 Q55 140 55 98 V54Z" fill="#7D9B76" opacity="0.12"/>
+  <!-- Lock icon inside shield -->
+  <path d="M88 95 V85 a12 12 0 0 1 24 0 V95" fill="none" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="83" y="95" width="34" height="26" rx="4" fill="#E8A838" stroke="#1B2A4A" stroke-width="2.5"/>
+  <!-- Keyhole -->
+  <circle cx="100" cy="105" r="4" fill="#1B2A4A"/>
+  <rect x="98" y="108" width="4" height="7" rx="1.5" fill="#1B2A4A"/>
+  <!-- Encryption sparkles -->
+  <g stroke="#7D9B76" stroke-width="1.8" stroke-linecap="round">
+    <line x1="160" y1="35" x2="160" y2="25"/>
+    <line x1="155" y1="30" x2="165" y2="30"/>
+    <line x1="170" y1="55" x2="170" y2="48"/>
+    <line x1="166.5" y1="51.5" x2="173.5" y2="51.5"/>
+  </g>
+  <g stroke="#E8A838" stroke-width="1.5" stroke-linecap="round">
+    <line x1="35" y1="40" x2="35" y2="32"/>
+    <line x1="31" y1="36" x2="39" y2="36"/>
+  </g>
+  <!-- Binary dots (encryption vibe) -->
+  <g fill="#3D5A80" opacity="0.4">
+    <circle cx="30" cy="70" r="2"/>
+    <circle cx="30" cy="80" r="2"/>
+    <circle cx="37" cy="75" r="2"/>
+    <circle cx="170" cy="85" r="2"/>
+    <circle cx="170" cy="95" r="2"/>
+    <circle cx="163" cy="90" r="2"/>
+  </g>
+  <!-- Checkmark at bottom -->
+  <path d="M90 135 L97 142 L112 127" fill="none" stroke="#7D9B76" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

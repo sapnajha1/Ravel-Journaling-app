@@ -1,0 +1,132 @@
+---
+/* How It Works — 3 steps with section-tinted accents */
+---
+
+<section class="how" id="how-it-works">
+  <div class="container">
+    <h2 class="how-title">How It Works</h2>
+    <p class="how-subtitle">Three simple steps — no setup, no friction.</p>
+
+    <div class="steps">
+      <div class="step step-reflect">
+        <div class="step-top">
+          <span class="step-num" style="background: var(--reflect-light); color: var(--reflect-dark);">1</span>
+          <span class="step-emoji">📖</span>
+        </div>
+        <h3 style="color: var(--reflect-dark);">Open &amp; Choose</h3>
+        <p>Pick Reflect for a guided prompt, or Rant to just let it out.</p>
+      </div>
+
+      <div class="step step-rant">
+        <div class="step-top">
+          <span class="step-num" style="background: var(--rant-light); color: var(--rant-dark);">2</span>
+          <span class="step-emoji">✍️</span>
+        </div>
+        <h3 style="color: var(--rant-dark);">Journal Freely</h3>
+        <p>Type, speak, or mix both. No rules. Entries auto-save as you go.</p>
+      </div>
+
+      <div class="step step-insight">
+        <div class="step-top">
+          <span class="step-num" style="background: var(--insight-light); color: var(--insight);">3</span>
+          <span class="step-emoji">💡</span>
+        </div>
+        <h3 style="color: var(--insight);">Get Insights</h3>
+        <p>AI gently surfaces patterns and themes — like a margin note from a wise friend.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .how { padding: 72px 0; }
+
+  .how-title {
+    font-family: var(--font-hand);
+    font-size: 36px;
+    text-align: center;
+    color: var(--ink);
+  }
+  .how-subtitle {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 44px;
+  }
+
+  .step {
+    background: var(--paper);
+    border: 1.5px solid;
+    border-radius: 8px;
+    padding: 22px;
+    transition: all 0.2s ease;
+  }
+  .step-reflect {
+    border-color: rgba(232, 168, 56, 0.2);
+    box-shadow: 3px 4px 0 rgba(232, 168, 56, 0.2);
+  }
+  .step-reflect:hover {
+    border-color: rgba(232, 168, 56, 0.35);
+    box-shadow: 3px 5px 0 rgba(232, 168, 56, 0.3);
+  }
+  .step-rant {
+    border-color: rgba(61, 90, 128, 0.2);
+    box-shadow: 3px 4px 0 rgba(61, 90, 128, 0.2);
+  }
+  .step-rant:hover {
+    border-color: rgba(61, 90, 128, 0.35);
+    box-shadow: 3px 5px 0 rgba(61, 90, 128, 0.3);
+  }
+  .step-insight {
+    border-color: rgba(125, 155, 118, 0.2);
+    box-shadow: 3px 4px 0 rgba(125, 155, 118, 0.2);
+  }
+  .step-insight:hover {
+    border-color: rgba(125, 155, 118, 0.35);
+    box-shadow: 3px 5px 0 rgba(125, 155, 118, 0.3);
+  }
+
+  .step-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .step-emoji { font-size: 24px; }
+
+  .step h3 {
+    font-family: var(--font-hand);
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  .step p {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 600px) {
+    .how { padding: 48px 0; }
+    .how-title { font-size: 28px; }
+    .steps { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,140 @@
+---
+/* Hero — "Reflect. Rant." headline, trust badges, paper-first */
+---
+
+<section class="hero">
+  <div class="container hero-inner">
+    <!-- Badge -->
+    <span class="hero-badge">✦&nbsp; your thoughts deserve a beautiful home</span>
+
+    <!-- Headline -->
+    <h1 class="hero-headline">Your mind deserves a page of its own. 🌿</h1>
+    <p class="hero-tagline">unfold your mind</p>
+
+    <!-- Subtitle -->
+    <p class="hero-subtitle">
+      A journaling app that meets you where you are.
+      Write when you're thoughtful, speak when you're heated.
+      AI understands your mood — you own every word.
+    </p>
+
+    <!-- CTAs -->
+    <div class="hero-ctas">
+      <a href="#download" class="cta cta-primary">📱&nbsp; Download App — Coming Soon</a>
+      <a href="#how-it-works" class="cta cta-secondary">↓&nbsp; See How It Works</a>
+    </div>
+
+    <!-- Trust badges -->
+    <div class="trust-row">
+      <span class="trust-badge">🔒 Encrypted</span>
+      <span class="trust-badge">📴 Works Offline</span>
+      <span class="trust-badge">✨ AI Insights</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero { padding: 80px 0 64px; }
+  .hero-inner { text-align: center; }
+
+  .hero-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--reflect-dark);
+    background: var(--reflect-light);
+    border: 1px solid var(--reflect-border);
+    border-radius: 20px;
+    padding: 6px 16px;
+  }
+
+  .hero-headline {
+    font-family: var(--font-hand);
+    font-size: 64px;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-top: 28px;
+  }
+
+  .hero-tagline {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    /* color: var(--ink-light); */
+    color: #3a7f5a;
+    margin-top: 4px;
+  }
+
+  .hero-subtitle {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 560px;
+    margin: 24px auto 0;
+  }
+
+  .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 36px;
+  }
+
+  .cta {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 14px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .cta-primary {
+    background: var(--reflect);
+    color: #fff;
+    border: 1.5px solid var(--reflect-dark);
+    box-shadow: 3px 3px 0 var(--reflect-shadow);
+  }
+  .cta-primary:hover {
+    background: var(--reflect-dark);
+    box-shadow: none;
+    transform: translate(2px, 2px);
+  }
+  .cta-secondary {
+    background: var(--paper-cream);
+    color: var(--ink);
+    border: 1.5px solid var(--ink-ghost);
+    box-shadow: 3px 3px 0 rgba(181, 173, 164, 0.28);
+  }
+  .cta-secondary:hover {
+    background: var(--paper-warm);
+    box-shadow: none;
+    transform: translate(2px, 2px);
+  }
+
+  .trust-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 32px;
+  }
+  .trust-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+
+  @media (max-width: 600px) {
+    .hero { padding: 56px 0 48px; }
+    .hero-headline { font-size: 44px; }
+    .hero-tagline { font-size: 11px; }
+    .hero-ctas { flex-direction: column; align-items: center; }
+  }
+</style>

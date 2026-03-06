@@ -1,0 +1,68 @@
+---
+/* CTA — amber gradient, Coming Soon button */
+---
+
+<section class="cta-section" id="download">
+  <div class="container cta-inner">
+    <h2 class="cta-title">Start Your Journal</h2>
+    <p class="cta-desc">Your thoughts are worth keeping. Start reflecting and ranting today.</p>
+    <a href="#" class="cta-btn" onclick="alert('🚀 Ravel is coming soon! Stay tuned.'); return false;">
+      📱&nbsp; Coming Soon — Get Notified
+    </a>
+    <p class="cta-fine">Free · No ads · No data sold</p>
+  </div>
+</section>
+
+<style>
+  .cta-section {
+    background: linear-gradient(135deg, var(--reflect-dark), var(--reflect), var(--reflect-mid));
+    padding: 80px 0;
+    text-align: center;
+  }
+
+  .cta-title {
+    font-family: var(--font-hand);
+    font-size: 48px;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .cta-desc {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: rgba(255,255,255,0.88);
+    max-width: 440px;
+    margin: 12px auto 0;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--reflect-dark);
+    background: #fff;
+    padding: 16px 36px;
+    border-radius: 6px;
+    margin-top: 32px;
+    box-shadow: 3px 4px 0 rgba(196, 138, 40, 0.35);
+    transition: all 0.18s ease;
+    cursor: pointer;
+  }
+  .cta-btn:hover {
+    background: var(--paper-warm);
+    box-shadow: 3px 2px 0 rgba(196, 138, 40, 0.35);
+  }
+
+  .cta-fine {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .cta-section { padding: 56px 0; }
+    .cta-title { font-size: 34px; }
+  }
+</style>

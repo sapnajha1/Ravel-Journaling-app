@@ -1,0 +1,150 @@
+---
+/*  Base layout – loads fonts, sets CSS vars, wraps all pages  */
+interface Props { title: string; description?: string }
+const { title, description = 'Ravel — Your journal, your way. Reflect. Rant. Grow.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <meta name="keywords" content="journal app, journaling, mood tracker, AI journal, voice journal, diary app, mental health, reflection, private journal, offline journal" />
+  <meta name="author" content="NavGurukul" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Ravel — Reflect. Rant. Grow." />
+  <meta property="og:description" content="A journaling app with AI-powered mood insights. Write or speak your thoughts — completely private and offline-first." />
+  <meta property="og:url" content="https://ravel.app" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Ravel — Reflect. Rant. Grow." />
+  <meta name="twitter:description" content="A journaling app with AI-powered mood insights. Write or speak your thoughts." />
+
+  <meta name="theme-color" content="#E8A838" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Google Fonts: GochiHand + Syne Mono + Source Serif 4 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Source+Serif+4:ital,wght@0,300;0,400;1,300;1,400&family=Syne+Mono&display=swap" rel="stylesheet" />
+
+  <title>{title}</title>
+</head>
+<body>
+  <slot />
+</body>
+</html>
+
+<style is:global>
+/* ═══════ v7 Design Tokens ═══════ */
+:root {
+  /* Paper */
+  --paper:       #F2EDE4;
+  --paper-warm:  #EDE7D9;
+  --paper-light: #F7F3EC;
+  --paper-cream: #FAF6EF;
+
+  /* Ink */
+  --ink:       #1B2A4A;
+  --ink-mid:   #3D4F6B;
+  --ink-soft:  #5C6B7A;
+  --ink-light: #8A8279;
+  --ink-faint: #B5ADA4;
+  --ink-ghost: #D5CEC5;
+
+  /* Reflect — Amber */
+  --reflect:        #E8A838;
+  --reflect-dark:   #C48A28;
+  --reflect-mid:    #D4963A;
+  --reflect-light:  #FDF4E0;
+  --reflect-paper:  #FBF5E8;
+  --reflect-shadow: rgba(232, 168, 56, 0.28);
+  --reflect-border: rgba(232, 168, 56, 0.25);
+
+  /* Rant — Navy */
+  --rant:        #3D5A80;
+  --rant-dark:   #2C4460;
+  --rant-mid:    #506B8E;
+  --rant-light:  #E8EDF3;
+  --rant-paper:  #EFF2F7;
+  --rant-shadow: rgba(61, 90, 128, 0.25);
+  --rant-border: rgba(61, 90, 128, 0.20);
+
+  /* Insight — Green */
+  --insight:       #7D9B76;
+  --insight-light: #EDF3EB;
+
+  /* Cover — Brown */
+  --cover:      #8B6F47;
+  --cover-dark: #6B5235;
+
+  /* Fonts */
+  --font-hand:  'Gochi Hand', cursive;
+  --font-mono:  'Syne Mono', monospace;
+  --font-serif: 'Source Serif 4', serif;
+
+  /* Sizes */
+  --max-w: 1140px;
+}
+
+/* ═══════ Reset & Base ═══════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* Ruled-paper background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 27px,
+      rgba(213, 206, 197, 0.3) 27px,
+      transparent 28px
+    );
+  opacity: 0.08;
+}
+/* Margin line */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; bottom: 0; left: 38px;
+  width: 2px;
+  background: rgba(200, 80, 80, 0.03);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* All content above the ruled lines */
+body > * { position: relative; z-index: 1; }
+
+/* ═══════ Utility ═══════ */
+.container {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+@media (max-width: 600px) {
+  .container { padding-inline: 16px; }
+  body::after { left: 18px; }
+}
+</style>

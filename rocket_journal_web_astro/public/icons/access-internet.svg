@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" fill="none">
+  <!-- Cloud shape -->
+  <path d="M50 110 Q30 110 30 90 Q30 72 48 70 Q50 48 75 45 Q95 40 108 55 Q115 42 135 42 Q162 42 162 68 Q178 70 178 88 Q178 110 155 110Z" fill="#F2EDE4" stroke="#1B2A4A" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Cloud inner shadow -->
+  <path d="M55 106 Q38 106 38 90 Q38 76 52 74 Q54 54 76 50 Q92 46 104 58 Q110 48 130 48 Q154 48 154 70 Q168 72 168 86 Q168 106 150 106Z" fill="#3D5A80" opacity="0.06"/>
+  <!-- WiFi / signal arcs -->
+  <g transform="translate(100, 80)">
+    <path d="M-8 8 Q0 0 8 8" fill="none" stroke="#E8A838" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M-16 2 Q0 -12 16 2" fill="none" stroke="#E8A838" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M-24 -4 Q0 -22 24 -4" fill="none" stroke="#E8A838" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="0" cy="14" r="3" fill="#E8A838"/>
+  </g>
+  <!-- Devices below cloud -->
+  <!-- Laptop -->
+  <g transform="translate(40, 125)">
+    <rect x="0" y="0" width="40" height="26" rx="3" fill="#fff" stroke="#1B2A4A" stroke-width="2"/>
+    <rect x="8" y="5" width="24" height="14" rx="1" fill="#3D5A80" opacity="0.15"/>
+    <line x1="-5" y1="28" x2="45" y2="28" stroke="#1B2A4A" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <!-- Phone -->
+  <g transform="translate(107, 128)">
+    <rect x="0" y="0" width="18" height="30" rx="3" fill="#fff" stroke="#1B2A4A" stroke-width="2"/>
+    <rect x="3" y="4" width="12" height="18" rx="1" fill="#7D9B76" opacity="0.15"/>
+    <circle cx="9" cy="26" r="1.5" fill="#1B2A4A"/>
+  </g>
+  <!-- Tablet -->
+  <g transform="translate(140, 125)">
+    <rect x="0" y="0" width="28" height="35" rx="3" fill="#fff" stroke="#1B2A4A" stroke-width="2"/>
+    <rect x="3" y="4" width="22" height="22" rx="1" fill="#E8A838" opacity="0.12"/>
+    <circle cx="14" cy="31" r="1.5" fill="#1B2A4A"/>
+  </g>
+  <!-- Sync arrows -->
+  <g stroke="#7D9B76" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M90 118 L95 125"/>
+    <path d="M110 118 L107 125"/>
+  </g>
+</svg>

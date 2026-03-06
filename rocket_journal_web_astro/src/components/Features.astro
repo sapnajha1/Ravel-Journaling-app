@@ -1,0 +1,1277 @@
+---
+/* Features — Phone mockup layout: Reflect (phone left, text right) + Rant (text left, phone right) */
+---
+
+<section class="features" id="features">
+  <div class="container">
+    <h2 class="section-title">Write. Speak. Discover Patterns.</h2>
+    <p class="section-subtitle">However Your Mind Speaks, There’s a Page for It</p>
+
+    <!-- ═══ ROW 1: Reflect — Phone LEFT, Text RIGHT ═══ -->
+    <div class="feature-row">
+      <div class="phone-wrapper">
+        <div class="phone phone-reflect">
+          <!-- Notch -->
+          <div class="phone-notch"></div>
+          <!-- Status bar -->
+          <div class="phone-status">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">
+              <span class="status-signal">●●●●○</span>
+              <span class="status-battery">🔋</span>
+            </span>
+          </div>
+          <!-- App header -->
+          <div class="app-header app-header-reflect">
+            <span class="app-back">←</span>
+            <span class="app-title-bar">Reflect</span>
+            <span class="app-date">Mar 3</span>
+          </div>
+          <!-- Screen content — animated notebook -->
+          <div class="phone-screen">
+            <div class="reflect-anim" id="reflectAnim">
+              <div class="notebook-page">
+                <div class="ruled-lines">
+                  <div class="ruled-line"></div>
+                  <div class="ruled-line"></div>
+                  <div class="ruled-line"></div>
+                  <div class="ruled-line"></div>
+                  <div class="ruled-line"></div>
+                </div>
+                <!-- Prompt -->
+                <p class="reflect-prompt">What made you smile today?</p>
+                <!-- Writing -->
+                <div class="writing-area">
+                  <p class="write-line line-1">I noticed the morning light</p>
+                  <p class="write-line line-2">hitting the window and felt</p>
+                  <p class="write-line line-3">grateful for the quiet moment</p>
+                  <p class="write-line line-4">before the day began…<span class="cursor">|</span></p>
+                </div>
+                <!-- Pencil -->
+                <div class="pencil">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" stroke="var(--reflect-dark)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <!-- Go Deeper button -->
+              <div class="go-deeper-btn deeper-reflect">
+                <span>✨ Go Deeper</span>
+              </div>
+            </div>
+          </div>
+          <!-- Home indicator -->
+          <div class="phone-home-indicator"></div>
+        </div>
+      </div>
+
+      <div class="feature-text">
+        <span class="feature-badge badge-reflect">REFLECT MODE</span>
+        <h3 class="feature-heading heading-reflect">Reflect</h3>
+        <p class="feature-tagline tagline-reflect">GUIDED · THOUGHTFUL · DEEP</p>
+        <p class="feature-desc">
+          Start each day with a thoughtful prompt designed to help you pause
+          and look inward. Type your answer on a beautiful lined page —
+          it feels like writing in a real journal.
+        </p>
+        <ul class="feature-bullets">
+          <li><span class="bullet-icon">✍️</span> Daily reflective prompts</li>
+          <li><span class="bullet-icon">✨</span> Tap "Go Deeper" for AI follow-ups</li>
+          <li><span class="bullet-icon">📖</span> Beautiful notebook writing experience</li>
+          <li><span class="bullet-icon">🎯</span> Track streaks &amp; build a journaling habit</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ═══ ROW 2: Rant — Text LEFT, Phone RIGHT ═══ -->
+    <div class="feature-row feature-row-reverse">
+      <div class="feature-text">
+        <span class="feature-badge badge-rant">RANT MODE</span>
+        <h3 class="feature-heading heading-rant">Rant</h3>
+        <p class="feature-tagline tagline-rant">UNFILTERED · IMMEDIATE · FREE</p>
+        <p class="feature-desc">
+          Sometimes you just need to let it out. Hit record and talk freely —
+          no prompts, no editing, no judgment. AI transcribes your words
+          and makes sense of the storm after.
+        </p>
+        <ul class="feature-bullets">
+          <li><span class="bullet-icon">🎙️</span> One-tap voice recording</li>
+          <li><span class="bullet-icon">📝</span> Auto-transcription to text</li>
+          <li><span class="bullet-icon">🧠</span> AI cleans up &amp; finds patterns</li>
+          <li><span class="bullet-icon">🔒</span> Fully private — your rants stay yours</li>
+        </ul>
+      </div>
+
+      <div class="phone-wrapper">
+        <div class="phone phone-rant">
+          <!-- Notch -->
+          <div class="phone-notch"></div>
+          <!-- Status bar -->
+          <div class="phone-status">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">
+              <span class="status-signal">●●●●○</span>
+              <span class="status-battery">🔋</span>
+            </span>
+          </div>
+          <!-- App header -->
+          <div class="app-header app-header-rant">
+            <span class="app-back">←</span>
+            <span class="app-title-bar">Rant</span>
+            <span class="app-date">Mar 3</span>
+          </div>
+          <!-- Screen content — mic + waveform -->
+          <div class="phone-screen">
+            <div class="rant-anim" id="rantAnim">
+              <div class="rant-page">
+                <!-- Transcribed text appearing -->
+                <div class="transcript-area">
+                  <p class="transcript-line t-line-1">I'm so frustrated with</p>
+                  <p class="transcript-line t-line-2">everything right now, I just</p>
+                  <p class="transcript-line t-line-3">need to get this off my chest</p>
+                  <p class="transcript-line t-line-4">and not care about grammar…</p>
+                </div>
+                <!-- Mic + waveform bar -->
+                <div class="mic-bar">
+                  <div class="mic-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" fill="var(--rant)" opacity="0.9"/>
+                      <path d="M19 10v2a7 7 0 01-14 0v-2" stroke="var(--rant)" stroke-width="1.5" stroke-linecap="round"/>
+                      <line x1="12" y1="19" x2="12" y2="23" stroke="var(--rant)" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span class="mic-pulse"></span>
+                  </div>
+                  <div class="waveform">
+                    <span class="wave-bar" style="--i:0"></span>
+                    <span class="wave-bar" style="--i:1"></span>
+                    <span class="wave-bar" style="--i:2"></span>
+                    <span class="wave-bar" style="--i:3"></span>
+                    <span class="wave-bar" style="--i:4"></span>
+                    <span class="wave-bar" style="--i:5"></span>
+                    <span class="wave-bar" style="--i:6"></span>
+                    <span class="wave-bar" style="--i:7"></span>
+                    <span class="wave-bar" style="--i:8"></span>
+                    <span class="wave-bar" style="--i:9"></span>
+                    <span class="wave-bar" style="--i:10"></span>
+                    <span class="wave-bar" style="--i:11"></span>
+                    <span class="wave-bar" style="--i:12"></span>
+                    <span class="wave-bar" style="--i:13"></span>
+                    <span class="wave-bar" style="--i:14"></span>
+                    <span class="wave-bar" style="--i:15"></span>
+                    <span class="wave-bar" style="--i:16"></span>
+                    <span class="wave-bar" style="--i:17"></span>
+                    <span class="wave-bar" style="--i:18"></span>
+                    <span class="wave-bar" style="--i:19"></span>
+                  </div>
+                  <span class="rec-dot"></span>
+                  <span class="rec-time">0:12</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Home indicator -->
+          <div class="phone-home-indicator"></div>
+          
+        </div>
+      </div>
+    </div>
+
+  <!-- ═══ ROW 3: AI Insights — Phone LEFT, Text RIGHT ═══ -->
+<div class="feature-row">
+  <div class="phone-wrapper">
+    <div class="phone phone-ai">
+
+      <div class="phone-notch"></div>
+
+      <div class="phone-status">
+        <span class="status-time">9:41</span>
+        <span class="status-icons">
+          <span class="status-signal">●●●●○</span>
+          <span class="status-battery">🔋</span>
+        </span>
+      </div>
+
+      <div class="app-header app-header-ai">
+        <span class="app-back">←</span>
+        <span class="app-title-bar">Insights</span>
+        <span class="app-date">Mar 3</span>
+      </div>
+
+      <!-- Screen content — animated insight -->
+      <div class="phone-screen" id="insightCard">
+        <!-- Phase 1: Journal entry being scanned -->
+        <div class="scan-phase">
+          <div class="scan-header">
+            <span class="scan-date">Today's Entry</span>
+            <span class="scan-badge scanning-badge">
+              <span class="scan-spinner"></span>
+              Analyzing…
+            </span>
+          </div>
+          
+          <div class="journal-lines">
+            <p class="j-line" data-line="0">Today was one of those heavy days.</p>
+            <p class="j-line" data-line="1">I kept thinking about the conversation</p>
+            <p class="j-line" data-line="2">with Mom. I feel stuck again, like I'm</p>
+            <p class="j-line" data-line="3">going in circles. But writing helps.</p>
+            <p class="j-line" data-line="4">Maybe I just need to breathe.</p>
+            <div class="scan-bar"></div>
+          </div>
+
+          <!-- Phase 2: Mood tags -->
+          <div class="mood-tags">
+            <span class="mood-tag tag-1" style="--tag-color: #D4654A;">😔 heavy</span>
+            <span class="mood-tag tag-2" style="--tag-color: #3D5A80;">💭 stuck</span>
+            <span class="mood-tag tag-3" style="--tag-color: #7D9B76;">🌱 hopeful</span>
+            <span class="mood-tag tag-4" style="--tag-color: #E8A838;">✍️ reflective</span>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="insight-divider"></div>
+
+        <!-- Phase 3: Margin note -->
+        <div class="margin-note">
+          <span class="margin-label">MARGIN NOTE</span>
+          <blockquote class="insight-quote">
+            <span class="q-word" style="--d:0">You</span>
+            <span class="q-word" style="--d:1">mentioned</span>
+            <span class="q-word" style="--d:2">feeling</span>
+            <span class="q-word" style="--d:3">stuck</span>
+            <span class="q-word" style="--d:4">three</span>
+            <span class="q-word" style="--d:5">times</span>
+            <span class="q-word" style="--d:6">this</span>
+            <span class="q-word" style="--d:7">week.</span>
+            <span class="q-word" style="--d:8">Each</span>
+            <span class="q-word" style="--d:9">time,</span>
+            <span class="q-word" style="--d:10">writing</span>
+            <span class="q-word" style="--d:11">about</span>
+            <span class="q-word" style="--d:12">it</span>
+            <span class="q-word" style="--d:13">shifted</span>
+            <span class="q-word" style="--d:14">something</span>
+            <span class="q-word" style="--d:15">—</span>
+            <span class="q-word" style="--d:16">maybe</span>
+            <span class="q-word" style="--d:17">naming</span>
+            <span class="q-word" style="--d:18">it</span>
+            <span class="q-word" style="--d:19">is</span>
+            <span class="q-word" style="--d:20">the</span>
+            <span class="q-word" style="--d:21">first</span>
+            <span class="q-word" style="--d:22">step</span>
+            <span class="q-word" style="--d:23">forward.</span>
+          </blockquote>
+          <p class="insight-meta">✨ AI Insight · based on 7 entries</p>
+        </div>
+      </div>
+
+      <div class="phone-home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- TEXT -->
+  <div class="feature-text">
+    <span class="feature-badge badge-ai">AI INSIGHTS</span>
+
+    <h3 class="feature-heading heading-ai">
+      AI Insights
+    </h3>
+
+    <p class="feature-tagline tagline-ai">
+      PATTERNS · CLARITY · SELF-AWARENESS
+    </p>
+
+    <p class="feature-desc">
+      Ravel quietly analyzes your entries to reveal patterns
+      you might not notice yourself. See emotional trends,
+      recurring thoughts, and personal growth over time.
+    </p>
+
+    <ul class="feature-bullets">
+      <li><span class="bullet-icon">🧠</span> AI detects emotional patterns</li>
+      <li><span class="bullet-icon">📊</span> Mood and theme trends</li>
+      <li><span class="bullet-icon">✨</span> Gentle reflections on your writing</li>
+      <li><span class="bullet-icon">🔒</span> Insights generated privately</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+  
+</section>
+
+<style>
+  .features {
+    background: var(--paper-cream);
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .features::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.35;
+    pointer-events: none;
+    background-image: 
+      /* Pencils - elongated yellow */
+      linear-gradient(45deg, #FFD700 0%, #FFD700 70%, #8B4513 70%, #8B4513 100%),
+      linear-gradient(135deg, #FFD700 0%, #FFD700 70%, #8B4513 70%, #8B4513 100%),
+      linear-gradient(45deg, #FF6B6B 0%, #FF6B6B 70%, #8B4513 70%, #8B4513 100%),
+      linear-gradient(-45deg, #FFD700 0%, #FFD700 70%, #8B4513 70%, #8B4513 100%),
+      
+      /* Pens - blue and black */
+      linear-gradient(90deg, #1E40AF 0%, #1E40AF 80%, #C0C0C0 80%, #C0C0C0 100%),
+      linear-gradient(45deg, #000000 0%, #000000 85%, #C0C0C0 85%, #C0C0C0 100%),
+      linear-gradient(135deg, #DC2626 0%, #DC2626 80%, #C0C0C0 80%, #C0C0C0 100%),
+      linear-gradient(0deg, #059669 0%, #059669 80%, #C0C0C0 80%, #C0C0C0 100%),
+      
+      /* Books - rectangular shapes */
+      linear-gradient(0deg, #7C2D12 0%, #8B4513 50%, #7C2D12 100%),
+      linear-gradient(0deg, #1E40AF 0%, #3B82F6 50%, #1E40AF 100%),
+      linear-gradient(0deg, #DC2626 0%, #EF4444 50%, #DC2626 100%),
+      linear-gradient(0deg, #059669 0%, #10B981 50%, #059669 100%),
+      linear-gradient(0deg, #7C2D12 0%, #A16207 50%, #7C2D12 100%),
+      
+      /* Erasers - pink rectangular */
+      radial-gradient(ellipse, #EC4899 0%, #F472B6 50%, #EC4899 100%),
+      radial-gradient(ellipse, #8B5CF6 0%, #A78BFA 50%, #8B5CF6 100%),
+      radial-gradient(ellipse, #F59E0B 0%, #FBBF24 50%, #F59E0B 100%),
+      
+      /* Sharpeners - small triangular/circular */
+      conic-gradient(from 0deg, #374151, #6B7280, #374151),
+      conic-gradient(from 90deg, #6B7280, #9CA3AF, #6B7280),
+      conic-gradient(from 180deg, #374151, #6B7280, #374151);
+    
+    background-size: 
+      30px 6px, 28px 6px, 32px 6px, 29px 6px,           /* pencils */
+      24px 5px, 22px 5px, 26px 5px, 23px 5px,           /* pens */
+      18px 12px, 16px 10px, 20px 14px, 17px 9px, 21px 12px, /* books */
+      12px 9px, 14px 8px, 11px 8px,                     /* erasers */
+      9px 9px, 11px 11px, 8px 8px;                      /* sharpeners */
+    
+    background-position:
+      15% 20%, 45% 10%, 75% 25%, 85% 45%,               /* pencils */
+      25% 60%, 65% 75%, 90% 70%, 5% 50%,                /* pens */
+      35% 85%, 70% 90%, 10% 75%, 50% 15%, 80% 80%,      /* books */
+      55% 35%, 20% 40%, 90% 30%,                        /* erasers */
+      80% 15%, 95% 55%, 30% 85%;                        /* sharpeners */
+    
+    background-repeat: no-repeat;
+    animation: float 80s infinite linear;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px) translateX(0px); }
+    25% { transform: translateY(-15px) translateX(8px); }
+    50% { transform: translateY(-8px) translateX(-4px); }
+    75% { transform: translateY(-20px) translateX(12px); }
+    100% { transform: translateY(0px) translateX(0px); }
+  }
+  .section-title {
+    font-family: var(--font-hand);
+    font-size: 40px;
+    text-align: center;
+    color: var(--ink);
+  }
+  .section-subtitle {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-align: center;
+    max-width: 480px;
+    margin: 8px auto 0;
+    line-height: 1.6;
+  }
+
+  /* ═══ Feature Row — DayOne zig-zag layout ═══ */
+  .feature-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    margin-top: 100px;
+    padding: 0 40px;
+  }
+  .feature-row-reverse {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ═══ Phone Mockup — DayOne style ═══ */
+  /*.phone-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }    
+
+  .phone {
+    position: relative;
+    width: 280px;
+    height: 570px;
+    border-radius: 40px;
+    padding: 3px;
+    background: linear-gradient(145deg, #1d1d1f 0%, #000000 100%);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      0 4px 20px rgba(0, 0, 0, 0.15),
+      0 15px 35px rgba(0, 0, 0, 0.1),
+      0 25px 50px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transform: perspective(800px) rotateY(0deg) rotateX(0deg);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  } */
+
+  /* ═══ Phone Mockup — DayOne Style Container ═══ */
+
+  .phone-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 20px;
+    perspective: 1400px;
+  }
+
+  .phone {
+    position: relative;
+    width: 280px;
+    height: 570px;
+    border-radius: 42px;
+    padding: 4px;
+
+    background: linear-gradient(
+      160deg,
+      #2c2c2e 0%,
+      #000000 40%,
+      #1c1c1e 100%
+    );
+
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.04),
+      0 6px 25px rgba(0,0,0,0.25),
+      0 25px 60px rgba(0,0,0,0.18),
+      0 40px 90px rgba(0,0,0,0.12);
+
+    overflow: hidden;
+
+    transform-style: preserve-3d;
+    transition: all 0.45s cubic-bezier(.2,.8,.2,1);
+  }
+
+ 
+/*.phone:hover {
+  transform: perspective(1200px) rotateY(0deg) rotateX(0deg) scale(1.05);
+
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 10px 35px rgba(0,0,0,0.28),
+    0 35px 80px rgba(0,0,0,0.2),
+    0 60px 120px rgba(0,0,0,0.15);
+} */
+
+  .phone:hover {
+    transform: perspective(800px) rotateY(-2deg) rotateX(1deg);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 8px 25px rgba(0, 0, 0, 0.18),
+      0 20px 40px rgba(0, 0, 0, 0.12),
+      0 30px 60px rgba(0, 0, 0, 0.1);
+  } 
+
+  /* Dynamic Island */
+  .phone-notch {
+    width: 40px;
+    height: 10px;
+    background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+    border-radius: 14px;
+    margin: 8px auto;
+    position: relative;
+    z-index: 10;
+    box-shadow: 
+      inset 0 1px 2px rgba(0, 0, 0, 0.8),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.02);
+  }
+
+  /* Status bar */
+  .phone-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px 12px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #ffffff;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .status-time { 
+    font-weight: 600; 
+    color: #ffffff;
+  }
+  .status-icons { 
+    display: flex; 
+    gap: 6px; 
+    align-items: center; 
+    font-size: 10px;
+  }
+  .status-signal { letter-spacing: -1px; }
+  .status-battery { font-size: 12px; }
+
+  /* App header bar */
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    border-radius: 20px 20px 0 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .app-header-reflect {
+    background: linear-gradient(135deg, var(--reflect-light) 0%, color-mix(in srgb, var(--reflect-light) 90%, white) 100%);
+    color: var(--reflect-dark);
+    border-bottom: 1px solid color-mix(in srgb, var(--reflect) 20%, transparent);
+  }
+  .app-header-rant {
+    background: linear-gradient(135deg, var(--rant-light) 0%, color-mix(in srgb, var(--rant-light) 90%, white) 100%);
+    color: var(--rant-dark);
+    border-bottom: 1px solid color-mix(in srgb, var(--rant) 20%, transparent);
+  }
+
+  .app-header-ai {
+  background: linear-gradient(
+    135deg,
+    var(--ai-light) 0%,
+    color-mix(in srgb, var(--ai-light) 90%, white) 100%
+  );
+  color: var(--ai-dark);
+  border-bottom: 1px solid color-mix(in srgb, var(--ai) 20%, transparent);
+}
+
+  .app-back { font-size: 16px; opacity: 0.8; }
+  .app-title-bar { font-weight: 700; letter-spacing: 0.5px; }
+  .app-date { font-size: 11px; opacity: 0.7; }
+
+  /* Phone screen area */
+  /* .phone-screen {
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  } */
+
+ .phone-screen {
+  background: #ffffff;
+  border-radius: 0 0 32px 32px;
+  overflow: hidden;
+
+  height: calc(100% - 110px); /* header + status adjust */
+
+  display: flex;
+  flex-direction: column;
+
+  box-shadow:
+    inset 0 1px 3px rgba(0,0,0,0.1),
+    inset 0 -2px 6px rgba(0,0,0,0.05);
+}
+
+.ai-page {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  border-radius: 0 0 32px 32px;
+}
+
+  /* Home indicator */
+  .phone-home-indicator {
+    width: 134px;
+    height: 5px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+    margin: 12px auto 6px;
+  }
+
+  /* ═══ Feature Text ═══ */
+  .feature-text {
+    max-width: 440px;
+  }
+
+  .feature-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+  }
+  .badge-reflect {
+    color: var(--reflect-dark);
+    background: var(--reflect-light);
+    border: 1px solid var(--reflect-border);
+  }
+  .badge-rant {
+    color: var(--rant-dark);
+    background: var(--rant-light);
+    border: 1px solid var(--rant-border);
+  }
+
+  .badge-ai {
+  color: var(--ai-dark);
+  background: var(--ai-light);
+  border: 1px solid var(--ai-border);
+}
+
+.heading-ai {
+  color: var(--ai-dark);
+}
+
+.tagline-ai {
+  color: var(--ai);
+}
+
+.app-header-ai {
+  background: linear-gradient(
+    135deg,
+    var(--ai-light) 0%,
+    color-mix(in srgb, var(--ai-light) 90%, white) 100%
+  );
+  color: var(--ai-dark);
+  border-bottom: 1px solid color-mix(in srgb, var(--ai) 20%, transparent);
+}
+
+  .feature-heading {
+    font-family: var(--font-hand);
+    font-size: 48px;
+    margin-top: 16px;
+    line-height: 1.1;
+  }
+  .heading-reflect { color: var(--reflect-dark); }
+  .heading-rant { color: var(--rant-dark); }
+
+  .feature-tagline {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+  .tagline-reflect { color: var(--reflect); }
+  .tagline-rant { color: var(--rant); }
+
+  .feature-desc {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin-top: 18px;
+  }
+
+  .feature-bullets {
+    list-style: none;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .feature-bullets li {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-mid);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .bullet-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: rgba(232, 168, 56, 0.08);
+    border-radius: 6px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .feature-row-reverse .bullet-icon {
+    background: rgba(61, 90, 128, 0.08);
+  }
+
+  /* ═══════════════════════════════════════
+     REFLECT — Pencil Writing Animation
+     ═══════════════════════════════════════ */
+ .reflect-anim{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+  .notebook-page {
+    position: relative;
+    background: #FFFDF7;
+    padding: 14px 14px 12px 18px;
+    min-height: 280px;
+  }
+
+  .ruled-lines {
+    position: absolute;
+    inset: 0;
+    padding-top: 50px;
+    pointer-events: none;
+  }
+  .ruled-line {
+    height: 32px;
+    border-bottom: 1px dashed rgba(213, 206, 197, 0.5);
+  }
+
+  /* Margin line */
+  .notebook-page::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 0; bottom: 0;
+    width: 1.5px;
+    background: rgba(200, 80, 80, 0.15);
+  }
+
+  /* Prompt question */
+  .reflect-prompt {
+    font-family: var(--font-hand);
+    font-size: 14px;
+    color: var(--reflect-dark);
+    font-style: italic;
+    padding: 6px 8px 10px;
+    border-bottom: 1px solid var(--reflect-border);
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeIn 0.4s ease 0.2s forwards;
+  }
+
+  .writing-area {
+    position: relative;
+    z-index: 1;
+    padding-left: 8px;
+  }
+
+  .write-line {
+    font-family: var(--font-hand);
+    font-size: 14px;
+    line-height: 32px;
+    height: 32px;
+    color: var(--ink);
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+  }
+
+  .line-1 { animation: typeLine 1.8s steps(30) 1s forwards; }
+  .line-2 { animation: typeLine 1.6s steps(28) 3s forwards; }
+  .line-3 { animation: typeLine 1.6s steps(26) 5s forwards; }
+  .line-4 { animation: typeLine 1.4s steps(24) 7s forwards; }
+
+  @keyframes typeLine {
+    0%   { opacity: 1; width: 0; }
+    100% { opacity: 1; width: 100%; }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  .cursor {
+    font-weight: 300;
+    color: var(--reflect);
+    animation: blink 0.8s step-end infinite;
+    animation-delay: 8.5s;
+    opacity: 0;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
+  }
+
+  .pencil {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    opacity: 0;
+    animation: pencilAppear 0.3s ease 0.8s forwards, pencilWrite 7s ease-in-out 1s forwards;
+  }
+  @keyframes pencilAppear { to { opacity: 0.7; } }
+  @keyframes pencilWrite {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    15%  { transform: translate(-6px, -3px) rotate(-3deg); }
+    30%  { transform: translate(2px, -2px) rotate(1deg); }
+    50%  { transform: translate(-4px, -5px) rotate(-2deg); }
+    70%  { transform: translate(0px, -2px) rotate(2deg); }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.4; }
+  }
+
+  /* Go Deeper button */
+  .go-deeper-btn {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+    opacity: 0;
+    animation: fadeIn 0.4s ease 8.8s forwards;
+  }
+  .go-deeper-btn span {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  .deeper-reflect span {
+    background: var(--reflect);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(232, 168, 56, 0.3);
+  }
+
+  /* ═══════════════════════════════════════
+     RANT — Mic + Waveform + Transcript
+     ═══════════════════════════════════════ */
+  .rant-anim {
+    overflow: hidden;
+  }
+
+  .rant-page {
+    position: relative;
+    background: #F5F7FA;
+    padding: 14px 14px 0 14px;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .transcript-area {
+    flex: 1;
+    padding-bottom: 8px;
+  }
+
+  .transcript-line {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 26px;
+    height: 26px;
+    color: var(--ink-mid);
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+  }
+
+  .t-line-1 { animation: typeTranscript 1.4s steps(24) 1s forwards; }
+  .t-line-2 { animation: typeTranscript 1.4s steps(26) 2.8s forwards; }
+  .t-line-3 { animation: typeTranscript 1.6s steps(30) 4.6s forwards; }
+  .t-line-4 { animation: typeTranscript 1.4s steps(28) 6.4s forwards; }
+
+  @keyframes typeTranscript {
+    0%   { opacity: 1; width: 0; }
+    100% { opacity: 1; width: 100%; }
+  }
+
+  /* Mic bar */
+  .mic-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--rant-light);
+    border-top: 1px solid var(--rant-border);
+    margin: 0 -14px;
+    padding: 10px 12px;
+  }
+
+  .mic-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: rgba(61, 90, 128, 0.12);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .mic-pulse {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid var(--rant);
+    opacity: 0;
+    animation: pulse 1.5s ease-out infinite;
+  }
+  @keyframes pulse {
+    0%   { transform: scale(0.8); opacity: 0.6; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  .waveform {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    height: 22px;
+  }
+
+  .wave-bar {
+    display: block;
+    width: 2.5px;
+    border-radius: 2px;
+    background: var(--rant);
+    animation: waveAnim 0.8s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i) * 0.07s);
+    height: 4px;
+  }
+
+  @keyframes waveAnim {
+    0%   { height: 4px; opacity: 0.4; }
+    50%  { height: calc(5px + var(--i) * 0.8px); opacity: 0.7; }
+    100% { height: calc(4px + (20 - var(--i)) * 0.6px); opacity: 0.9; }
+  }
+
+  .rec-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #D4654A;
+    animation: recBlink 1s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes recBlink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  .rec-time {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--rant-dark);
+    min-width: 26px;
+    flex-shrink: 0;
+  }
+
+  /* ═══ AI Insights Animation Styles ═══ */
+  .scan-phase {
+    padding: 14px 14px 10px;
+  }
+
+  .scan-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .scan-date {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.5px;
+  }
+
+  .scanning-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--insight);
+    background: var(--insight-light);
+    padding: 2px 8px;
+    border-radius: 10px;
+    opacity: 0;
+    animation: fadeIn 0.3s ease 0.3s forwards;
+  }
+
+  .scan-spinner {
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid rgba(125, 155, 118, 0.3);
+    border-top-color: var(--insight);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .journal-lines {
+    position: relative;
+    padding: 2px 0;
+  }
+
+  .j-line {
+    font-family: var(--font-hand);
+    font-size: 12px;
+    line-height: 22px;
+    height: 22px;
+    color: var(--ink);
+    position: relative;
+    transition: color 0.3s ease;
+  }
+
+  .scan-bar {
+    position: absolute;
+    left: -4px;
+    right: -4px;
+    height: 22px;
+    top: 0;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(125, 155, 118, 0.12) 15%, 
+      rgba(125, 155, 118, 0.25) 50%, 
+      rgba(125, 155, 118, 0.12) 85%, 
+      transparent 100%);
+    border-radius: 3px;
+    opacity: 0;
+    animation: scanDown 4s ease-in-out 0.8s forwards;
+  }
+
+  @keyframes scanDown {
+    0%   { top: 0; opacity: 0; }
+    5%   { opacity: 1; }
+    20%  { top: 0; }
+    35%  { top: 22px; }
+    50%  { top: 44px; }
+    65%  { top: 66px; }
+    80%  { top: 88px; }
+    90%  { top: 88px; opacity: 1; }
+    100% { top: 88px; opacity: 0; }
+  }
+
+  .j-line[data-scanned="true"] {
+    color: var(--ink-soft);
+  }
+
+  .j-line[data-scanned="true"]:after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--insight);
+    opacity: 0;
+    animation: dotPop 0.3s ease forwards;
+  }
+
+  @keyframes dotPop {
+    0%   { transform: translateY(-50%) scale(0); opacity: 0; }
+    60%  { transform: translateY(-50%) scale(1.3); opacity: 1; }
+    100% { transform: translateY(-50%) scale(1); opacity: 0.6; }
+  }
+
+  .mood-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    min-height: 24px;
+  }
+
+  .mood-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--tag-color) 12%, white);
+    color: var(--tag-color);
+    border: 1px solid color-mix(in srgb, var(--tag-color) 25%, transparent);
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+
+  .tag-1 { animation: tagPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 5.2s forwards; }
+  .tag-2 { animation: tagPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 5.5s forwards; }
+  .tag-3 { animation: tagPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 5.8s forwards; }
+  .tag-4 { animation: tagPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 6.1s forwards; }
+
+  @keyframes tagPop {
+    0%   { opacity: 0; transform: translateY(6px) scale(0.9); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .insight-divider {
+    height: 1px;
+    background: var(--reflect-border);
+    margin: 0;
+    opacity: 0;
+    animation: fadeIn 0.3s ease 6.5s forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  .margin-note {
+    padding: 12px 14px 16px;
+    opacity: 0;
+    animation: noteSlideUp 0.5s ease 6.8s forwards;
+  }
+
+  @keyframes noteSlideUp {
+    0%   { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  .margin-label {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--insight);
+    background: var(--insight-light);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  .insight-quote {
+    font-family: var(--font-serif);
+    font-size: 12px;
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.7;
+    color: var(--ink);
+    margin-top: 8px;
+    padding-left: 10px;
+    border-left: 2px solid var(--insight);
+  }
+
+  .q-word {
+    opacity: 0;
+    animation: wordFade 0.15s ease forwards;
+    animation-delay: calc(7.2s + var(--d) * 0.09s);
+  }
+
+  @keyframes wordFade {
+    to { opacity: 1; }
+  }
+
+  .insight-meta {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--ink-faint);
+    margin-top: 10px;
+    opacity: 0;
+    animation: fadeIn 0.4s ease 9.5s forwards;
+  }
+
+  .scanning-badge.done {
+    color: var(--insight);
+    background: var(--insight-light);
+  }
+
+  .scanning-badge.done .scan-spinner {
+    display: none;
+  }
+
+  /* ═══ Mobile responsive ═══ */
+  @media (max-width: 768px) {
+    .features { padding: 56px 0; }
+    .section-title { font-size: 32px; }
+    .feature-row,
+    .feature-row-reverse {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    /* On mobile, phone always comes first */
+    .feature-row-reverse .phone-wrapper { order: -1; }
+    .phone { width: 200px; height: 460px}
+    .feature-heading { font-size: 36px; }
+    .feature-text { max-width: 100%; text-align: center; }
+    .feature-bullets { align-items: center; }
+  }
+</style>
+
+<script>
+  // Animate the REC timer counting up
+  const timeEl = document.querySelector('.rec-time');
+  if (timeEl) {
+    let sec = 12;
+    setInterval(() => {
+      sec = (sec + 1) % 60;
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      timeEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    }, 1000);
+  }
+
+  // Restart writing + transcript animations when scrolled into view
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const els = entry.target.querySelectorAll(
+          '.write-line, .transcript-line, .pencil, .cursor, .reflect-prompt, .go-deeper-btn'
+        );
+        els.forEach(el => {
+          el.style.animation = 'none';
+          el.offsetHeight;
+          el.style.animation = '';
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.feature-row').forEach(row => observer.observe(row));
+
+  // AI Insights Animation
+  const insightCard = document.getElementById('insightCard');
+  if (insightCard) {
+    const insightObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          restartAiAnimation(insightCard);
+        }
+      });
+    }, { threshold: 0.35 });
+    
+    insightObserver.observe(insightCard);
+  }
+
+  function restartAiAnimation(card) {
+    // Reset all animations
+    const animatedElements = card.querySelectorAll('.scanning-badge, .scan-bar, .mood-tag, .insight-divider, .margin-note, .q-word, .insight-meta');
+    animatedElements.forEach(el => {
+      el.style.animation = 'none';
+      el.offsetHeight; // trigger reflow
+      el.style.animation = '';
+    });
+
+    // Reset scanned state
+    const jLines = card.querySelectorAll('.j-line');
+    jLines.forEach(line => line.removeAttribute('data-scanned'));
+
+    // Reset scanning badge
+    const badge = card.querySelector('.scanning-badge');
+    if (badge) {
+      badge.classList.remove('done');
+      badge.innerHTML = '<span class="scan-spinner"></span> Analyzing…';
+    }
+
+    // Animate scanning each line
+    const scanDelay = 800;
+    const lineDelay = 800;
+    jLines.forEach((line, i) => {
+      setTimeout(() => {
+        line.setAttribute('data-scanned', 'true');
+      }, scanDelay + (i + 1) * lineDelay);
+    });
+
+    // Complete scanning
+    setTimeout(() => {
+      if (badge) {
+        badge.classList.add('done');
+        badge.innerHTML = '✓ Complete';
+      }
+    }, scanDelay + jLines.length * lineDelay + 300);
+  }
+</script>
