@@ -1,5 +1,5 @@
 ---
-/* NavBar — sticky, paper bg, 📓 Ravel logo, amber CTA */
+/* NavBar — sticky, paper bg, 📓 Ravel logo, navigation links */
 ---
 
 <nav class="navbar">
@@ -8,7 +8,12 @@
       <span class="logo-icon">📓</span>
       <span class="logo-text">Ravel</span>
     </a>
-    <a href="#download" class="nav-cta">Coming Soon</a>
+    
+    <div class="nav-links">
+      <a href="#home" class="nav-link">Home</a>
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#contact" class="nav-link">Contact</a>
+    </div>
   </div>
 </nav>
 
@@ -39,27 +44,74 @@
     font-size: 24px;
     color: var(--ink);
   }
-  .nav-cta {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 22px;
-    background: var(--reflect);
-    color: #fff;
-    border: 1.5px solid var(--reflect-dark);
-    border-radius: 6px;
-    box-shadow: 3px 3px 0 var(--reflect-shadow);
-    cursor: pointer;
-    transition: all 0.18s ease;
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    align-items: center;
   }
-  .nav-cta:hover {
-    background: var(--reflect-dark);
-    box-shadow: none;
-    transform: translate(2px, 2px);
+  
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    transition: all 0.2s ease;
+    position: relative;
+    padding: 8px 4px;
+    border-radius: 0;
+    background: transparent;
+  }
+  
+  .nav-link:hover {
+    color: var(--reflect-dark);
+  }
+  
+  .nav-link.active {
+    color: var(--reflect-dark);
+    background: transparent;
+    font-weight: 700;
   }
 
   @media (max-width: 600px) {
     .logo-text { font-size: 20px; }
     .nav-cta { padding: 8px 16px; font-size: 12px; }
+    .nav-link { font-size: 13px; padding: 6px 12px; }
   }
 </style>
+
+<script>
+// Add active navigation highlighting
+document.addEventListener('DOMContentLoaded', function() {
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('section[id], main[id]');
+  
+  function updateActiveNav() {
+    let current = '';
+    
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 100;
+      const sectionHeight = section.offsetHeight;
+      
+      if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+        current = section.getAttribute('id');
+      }
+    });
+    
+    // Default to home if at top
+    if (window.scrollY < 300) {
+      current = 'home';
+    }
+    
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      const href = link.getAttribute('href').substring(1); // Remove #
+      if (href === current) {
+        link.classList.add('active');
+      }
+    });
+  }
+  
+  window.addEventListener('scroll', updateActiveNav);
+  updateActiveNav(); // Initial call
+});
+</script>

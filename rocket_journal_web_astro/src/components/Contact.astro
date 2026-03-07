@@ -1,0 +1,93 @@
+---
+/* Contact — Simple contact section */
+---
+
+<section class="contact" id="contact">
+  <div class="container">
+    <h2 class="contact-title">Get in Touch</h2>
+    <p class="contact-desc">Have questions about Ravel? We'd love to hear from you.</p>
+    
+    <div class="contact-info">
+      <div class="contact-column">
+        <div class="contact-item">
+          <span class="contact-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </span>
+          <span class="contact-text">hi@navgurukul.org</span>
+        </div>
+        <div class="contact-item">
+          <span class="contact-icon">🏢</span>
+          <span class="contact-text">NavGurukul Foundation for Social Welfare</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact {
+    padding: 60px 0;
+    background: var(--paper-light);
+    text-align: center;
+  }
+
+  .contact-title {
+    font-family: var(--font-hand);
+    font-size: 32px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  .contact-desc {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink-soft);
+    max-width: 400px;
+    margin: 0 auto 32px;
+  }
+
+  .contact-info {
+    display: flex;
+    justify-content: center;
+  }
+
+  .contact-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-mid);
+  }
+
+  .contact-icon {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-mid);
+  }
+
+  .contact-icon svg {
+    stroke: var(--ink-mid);
+  }
+
+  @media (max-width: 600px) {
+    .contact {
+      padding: 48px 0;
+    }
+    .contact-info {
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+</style>
