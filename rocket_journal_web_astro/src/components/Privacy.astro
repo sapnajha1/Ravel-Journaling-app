@@ -10,7 +10,51 @@
     <div class="pillars">
       <div class="pillar">
         <div class="pillar-illustration">
-          <img src="/icons/secret-private.svg" alt="Secret and private diary illustration" width="180" height="160" />
+          <svg width="180" height="160" viewBox="0 0 180 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background padding (similar to other icons) -->
+            <rect x="0" y="0" width="180" height="160" fill="transparent"/>
+
+            <!-- Document/Notebook (smaller size) -->
+            <rect x="45" y="30" width="90" height="100" rx="6" fill="#F8FAFC" stroke="#000000" stroke-width="2"/>
+
+            <!-- Document binding on right (smaller) -->
+            <rect x="135" y="35" width="8" height="90" rx="2" fill="#CBD5E1"/>
+
+            <!-- Document lines (text content - smaller and fewer) -->
+            <rect x="52" y="45" width="25" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="82" y="45" width="45" height="3" rx="1.5" fill="#64748B"/>
+
+            <rect x="52" y="55" width="18" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="75" y="55" width="30" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="110" y="55" width="22" height="3" rx="1.5" fill="#64748B"/>
+
+            <rect x="52" y="65" width="40" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="97" y="65" width="30" height="3" rx="1.5" fill="#64748B"/>
+
+            <rect x="52" y="75" width="15" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="72" y="75" width="25" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="102" y="75" width="25" height="3" rx="1.5" fill="#64748B"/>
+
+            <rect x="52" y="85" width="35" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="92" y="85" width="35" height="3" rx="1.5" fill="#64748B"/>
+
+            <rect x="52" y="95" width="28" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="85" y="95" width="25" height="3" rx="1.5" fill="#64748B"/>
+
+            <rect x="52" y="105" width="22" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="79" y="105" width="25" height="3" rx="1.5" fill="#64748B"/>
+            <rect x="109" y="105" width="18" height="3" rx="1.5" fill="#64748B"/>
+
+            <!-- Privacy indicator icon (eyes in center of notebook) -->
+            <g transform="translate(90, 80)">
+              <!-- Eye outline (made even larger) -->
+              <ellipse cx="0" cy="0" rx="16" ry="8" fill="none" stroke="#64748B" stroke-width="2"/>
+              <!-- Eye pupil (made even larger) -->
+              <circle cx="0" cy="0" r="4" fill="#64748B"/>
+              <!-- Privacy line (crossing out) -->
+              <line x1="-18" y1="-10" x2="18" y2="10" stroke="#EF4444" stroke-width="3" stroke-linecap="round"/>
+            </g>
+          </svg>
         </div>
         <h3>Secret &amp; Private</h3>
         <p>Ravel is private-only. There's no social feed, no followers, no way to make entries public. Your journal stays between you and you — just like a paper diary with a lock.</p>
@@ -85,11 +129,13 @@
   .pillar:hover .pillar-illustration {
     transform: translateY(-6px);
   }
-  .pillar-illustration img {
+  .pillar-illustration img,
+  .pillar-illustration svg {
     width: 100%;
     height: 100%;
     object-fit: contain;
   }
+
 
   .pillar h3 {
     font-family: var(--font-hand);

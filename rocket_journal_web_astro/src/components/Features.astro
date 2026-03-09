@@ -66,7 +66,6 @@
       </div>
 
       <div class="feature-text">
-        <span class="feature-badge badge-reflect">REFLECT MODE</span>
         <h3 class="feature-heading heading-reflect">Reflect</h3>
         <p class="feature-tagline tagline-reflect">GUIDED · THOUGHTFUL · DEEP</p>
         <p class="feature-desc">
@@ -86,7 +85,6 @@
     <!-- ═══ ROW 2: Rant — Text LEFT, Phone RIGHT ═══ -->
     <div class="feature-row feature-row-reverse">
       <div class="feature-text">
-        <span class="feature-badge badge-rant">RANT MODE</span>
         <h3 class="feature-heading heading-rant">Rant</h3>
         <p class="feature-tagline tagline-rant">UNFILTERED · IMMEDIATE · FREE</p>
         <p class="feature-desc">
@@ -171,7 +169,7 @@
           </div>
           <!-- Home indicator -->
           <div class="phone-home-indicator"></div>
-          
+
         </div>
       </div>
     </div>
@@ -179,7 +177,7 @@
   <!-- ═══ ROW 3: AI Insights — Phone LEFT, Text RIGHT ═══ -->
 <div class="feature-row">
   <div class="phone-wrapper">
-    <div class="phone phone-ai">
+    <div class="phone phone-rant">
 
       <div class="phone-notch"></div>
 
@@ -191,7 +189,7 @@
         </span>
       </div>
 
-      <div class="app-header app-header-ai">
+      <div class="app-header app-header-rant">
         <span class="app-back">←</span>
         <span class="app-title-bar">Insights</span>
         <span class="app-date">Mar 3</span>
@@ -208,7 +206,7 @@
               Analyzing…
             </span>
           </div>
-          
+
           <div class="journal-lines">
             <p class="j-line" data-line="0">Today was one of those heavy days.</p>
             <p class="j-line" data-line="1">I kept thinking about the conversation</p>
@@ -269,7 +267,6 @@
 
   <!-- TEXT -->
   <div class="feature-text">
-    <span class="feature-badge badge-ai">AI ANALYSIS</span>
 
     <h3 class="feature-heading heading-ai">
       AI Insights
@@ -295,7 +292,7 @@
 </div>
 </div>
 
-  
+
 </section>
 
 <style>
@@ -305,7 +302,7 @@
     position: relative;
     overflow: hidden;
   }
-  
+
   .features::before {
     content: '';
     position: absolute;
@@ -358,7 +355,7 @@
     display: flex;
     justify-content: center;
     padding: 40px 20px;
-  }    
+  }
 
   .phone {
     position: relative;
@@ -413,7 +410,7 @@
     transition: all 0.45s cubic-bezier(.2,.8,.2,1);
   }
 
- 
+
 /*.phone:hover {
   transform: perspective(1200px) rotateY(0deg) rotateX(0deg) scale(1.05);
 
@@ -431,7 +428,7 @@
       0 8px 25px rgba(0, 0, 0, 0.18),
       0 20px 40px rgba(0, 0, 0, 0.12),
       0 30px 60px rgba(0, 0, 0, 0.1);
-  } 
+  }
 
   /* Dynamic Island */
   .phone-notch {
@@ -442,7 +439,7 @@
     margin: 8px auto;
     position: relative;
     z-index: 10;
-    box-shadow: 
+    box-shadow:
       inset 0 1px 2px rgba(0, 0, 0, 0.8),
       inset 0 -1px 1px rgba(255, 255, 255, 0.02);
   }
@@ -459,14 +456,14 @@
     font-weight: 500;
     letter-spacing: 0.3px;
   }
-  .status-time { 
-    font-weight: 600; 
+  .status-time {
+    font-weight: 600;
     color: #ffffff;
   }
-  .status-icons { 
-    display: flex; 
-    gap: 6px; 
-    align-items: center; 
+  .status-icons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
     font-size: 10px;
   }
   .status-signal { letter-spacing: -1px; }
@@ -986,11 +983,11 @@
     right: -4px;
     height: 22px;
     top: 0;
-    background: linear-gradient(90deg, 
-      transparent 0%, 
-      rgba(125, 155, 118, 0.12) 15%, 
-      rgba(125, 155, 118, 0.25) 50%, 
-      rgba(125, 155, 118, 0.12) 85%, 
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(125, 155, 118, 0.12) 15%,
+      rgba(125, 155, 118, 0.25) 50%,
+      rgba(125, 155, 118, 0.12) 85%,
       transparent 100%);
     border-radius: 3px;
     opacity: 0;
@@ -1198,7 +1195,7 @@
         }
       });
     }, { threshold: 0.35 });
-    
+
     insightObserver.observe(insightCard);
   }
 

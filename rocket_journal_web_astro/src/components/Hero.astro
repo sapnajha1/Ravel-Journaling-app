@@ -8,12 +8,13 @@
     <span class="hero-badge">
       <span class="star-icon">✦</span>
       <div class="typewriter-container">
-        <span id="typewriterText"></span><span class="pencil-cursor" id="pencilCursor">🖊️</span>
+        <span id="typewriterText"></span>
+        <span class="pencil-cursor" id="pencilCursor">🖊️</span>
       </div>
     </span>
 
     <!-- Headline -->
-    <h1 class="hero-headline">Your mind deserves a page of its own. 🌿</h1>
+    <h1 class="hero-headline">Your mind deserves a page of its own.</h1>
     <p class="hero-tagline">unfold your mind</p>
 
     <!-- Subtitle -->
@@ -58,13 +59,13 @@
     align-items: center;
     gap: 6px;
     font-family: var(--font-mono);
-    font-size: 15px;
+    font-size: 11px;
     letter-spacing: 1px;
     color: var(--reflect-dark);
     background: var(--reflect-light);
     border: 1px solid var(--reflect-border);
-    border-radius: 28px;
-    padding: 10px 28px;
+    border-radius: 20px;
+    padding: 6px 16px;
     position: relative;
   }
 
@@ -76,7 +77,7 @@
     display: inline-flex;
     align-items: center;
     min-height: 14px;
-    width: 380px;  /* Fixed width - container size doesn't change */
+    width: 280px;  /* Fixed width - notebook size doesn't change */
     overflow: hidden;
     white-space: nowrap;
   }
@@ -88,12 +89,12 @@
   }
 
   .pencil-cursor {
-    font-size: 15px;
+    font-size: 10px;
     animation: pencilBob 2s ease-in-out infinite;
-    margin-left: 4px;
+    margin-left: 2px;
     opacity: 0;
     transition: opacity 0.3s ease;
-    display: inline-block;
+    flex-shrink: 0;
   }
 
   .pencil-cursor.show {
@@ -126,7 +127,7 @@
 
   .hero-subtitle {
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1.6;
     color: #333333;
     max-width: 560px;
@@ -168,25 +169,25 @@
   }
 
   .android-btn {
-    background: #34A853;
+    background: var(--reflect);
     color: #fff;
-    border-color: #2e8b47;
-    box-shadow: 3px 3px 0 #1e5f31;
+    border-color: var(--reflect-dark);
+    box-shadow: 3px 3px 0 var(--reflect-shadow);
   }
   .android-btn:hover {
-    background: #2e8b47;
+    background: var(--reflect-dark);
     box-shadow: none;
     transform: translate(2px, 2px);
   }
 
   .ios-btn {
-    background: #007AFF;
+    background: var(--rant);
     color: #fff;
-    border-color: #0051CC;
-    box-shadow: 3px 3px 0 #003399;
+    border-color: var(--rant-dark);
+    box-shadow: 3px 3px 0 var(--rant-shadow);
   }
   .ios-btn:hover {
-    background: #0051CC;
+    background: var(--rant-dark);
     box-shadow: none;
     transform: translate(2px, 2px);
   }
@@ -222,7 +223,7 @@
   }
   .trust-badge {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 14px;
     color: #2f2f2f;
   }
 
@@ -235,7 +236,7 @@
 </style>
 
 <script>
-// Enhanced typewriter effect for hero badge - Fixed container size
+// Typewriter effect — pencil stays beside last letter (inline flow)
 document.addEventListener('DOMContentLoaded', function() {
   const typewriterText = document.getElementById('typewriterText');
   const pencilCursor = document.getElementById('pencilCursor');
@@ -243,14 +244,13 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentText = '';
   let charIndex = 0;
   
-  // Step 1: Start with empty container (fixed size)
+  // Start with empty container
   typewriterText.textContent = '';
   
-  // Step 2: Show pencil at starting position
+  // Show pencil first, then start typing
   setTimeout(function() {
     pencilCursor.classList.add('show');
     
-    // Step 3: Start typing after pencil appears
     setTimeout(function() {
       typeWriter();
     }, 300);
@@ -260,11 +260,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (charIndex < fullText.length) {
       currentText += fullText.charAt(charIndex);
       typewriterText.textContent = currentText;
-      
       charIndex++;
-      setTimeout(typeWriter, 80); // Speed of typing (80ms per character)
+      setTimeout(typeWriter, 80);
     }
-    // Step 4: Pencil remains visible at the end (inline, naturally positioned after text)
+    // Pencil stays at the end — no hiding
   }
 });
 </script>

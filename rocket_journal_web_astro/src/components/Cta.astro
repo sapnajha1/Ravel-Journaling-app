@@ -27,7 +27,7 @@
 
 <style>
   .cta-section {
-    background: linear-gradient(135deg, var(--reflect-dark), var(--reflect), var(--reflect-mid));
+    background: linear-gradient(135deg, var(--cover-dark), var(--cover), #A8854D);
     padding: 80px 0;
     text-align: center;
   }
@@ -61,20 +61,17 @@
     font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 700;
-    color: var(--reflect-dark);
-    background: #fff;
+    color: #fff;
     padding: 16px 28px;
     border-radius: 8px;
-    box-shadow: 3px 4px 0 rgba(196, 138, 40, 0.35);
     transition: all 0.18s ease;
     cursor: pointer;
     min-width: 140px;
   }
   
   .download-btn:hover {
-    background: var(--paper-warm);
-    box-shadow: 3px 2px 0 rgba(196, 138, 40, 0.35);
-    transform: translate(1px, 1px);
+    box-shadow: none;
+    transform: translate(2px, 2px);
   }
 
   .download-btn svg {
@@ -83,11 +80,21 @@
   }
 
   .android-btn {
-    border: 2px solid #34a853;
+    background: var(--reflect);
+    border: 2px solid var(--reflect-dark);
+    box-shadow: 3px 4px 0 var(--reflect-shadow);
+  }
+  .android-btn:hover {
+    background: var(--reflect-dark);
   }
   
   .ios-btn {
-    border: 2px solid #000;
+    background: var(--rant);
+    border: 2px solid var(--rant-dark);
+    box-shadow: 3px 4px 0 var(--rant-shadow);
+  }
+  .ios-btn:hover {
+    background: var(--rant-dark);
   }
 
   .cta-fine {
