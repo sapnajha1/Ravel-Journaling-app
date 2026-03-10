@@ -217,87 +217,75 @@
         </span>
       </div>
 
-      <!-- Screen content — Full screen AI Insight video -->
-      <div class="phone-screen phone-screen-full" id="insightCard">
-        <div class="ai-insight-video-container ai-insight-video-fullscreen">
-          <!-- Primary video element -->
-          <video 
-            class="ai-insight-video" 
-            autoplay 
-            muted 
-            loop 
-            playsinline
-            preload="auto"
-            id="aiInsightVideo"
-          >
-            <source src="/assets/AI_Insight.mp4" type="video/mp4">
-          </video>
-          
-          <!-- Fallback demo content (hidden by default, only shows if video fails) -->
-          <div class="ai-insight-demo-content" id="aiInsightDemoFallback" style="display: none;">
-            <!-- Phase 1: Journal entry being scanned -->
-            <div class="scan-phase">
-              <div class="scan-header">
-                <span class="scan-date">Today's Entry</span>
-                <span class="scan-badge scanning-badge">
-                  <span class="scan-spinner"></span>
-                  Analyzing…
-                </span>
-              </div>
+      <div class="app-header app-header-rant">
+        <span class="app-back">←</span>
+        <span class="app-title-bar">Insights</span>
+        <span class="app-date">Mar 3</span>
+      </div>
 
-              <div class="journal-lines">
-                <p class="j-line" data-line="0">Today was one of those heavy days.</p>
-                <p class="j-line" data-line="1">I kept thinking about the conversation</p>
-                <p class="j-line" data-line="2">with Mom. I feel stuck again, like I'm</p>
-                <p class="j-line" data-line="3">going in circles. But writing helps.</p>
-                <p class="j-line" data-line="4">Maybe I just need to breathe.</p>
-                <div class="scan-bar"></div>
-              </div>
-
-              <!-- Phase 2: Mood tags -->
-              <div class="mood-tags">
-                <span class="mood-tag tag-1" style="--tag-color: #D4654A;">😔 heavy</span>
-                <span class="mood-tag tag-2" style="--tag-color: #3D5A80;">💭 stuck</span>
-                <span class="mood-tag tag-3" style="--tag-color: #7D9B76;">🌱 hopeful</span>
-                <span class="mood-tag tag-4" style="--tag-color: #E8A838;">✍️ reflective</span>
-              </div>
-            </div>
-
-            <!-- Divider -->
-            <div class="insight-divider"></div>
-
-            <!-- Phase 3: Margin note -->
-            <div class="margin-note">
-              <span class="margin-label">MARGIN NOTE</span>
-              <blockquote class="insight-quote">
-                <span class="q-word" style="--d:0">You</span>
-                <span class="q-word" style="--d:1">mentioned</span>
-                <span class="q-word" style="--d:2">feeling</span>
-                <span class="q-word" style="--d:3">stuck</span>
-                <span class="q-word" style="--d:4">three</span>
-                <span class="q-word" style="--d:5">times</span>
-                <span class="q-word" style="--d:6">this</span>
-                <span class="q-word" style="--d:7">week.</span>
-                <span class="q-word" style="--d:8">Each</span>
-                <span class="q-word" style="--d:9">time,</span>
-                <span class="q-word" style="--d:10">writing</span>
-                <span class="q-word" style="--d:11">about</span>
-                <span class="q-word" style="--d:12">it</span>
-                <span class="q-word" style="--d:13">shifted</span>
-                <span class="q-word" style="--d:14">something</span>
-                <span class="q-word" style="--d:15">—</span>
-                <span class="q-word" style="--d:16">maybe</span>
-                <span class="q-word" style="--d:17">naming</span>
-                <span class="q-word" style="--d:18">it</span>
-                <span class="q-word" style="--d:19">is</span>
-                <span class="q-word" style="--d:20">the</span>
-                <span class="q-word" style="--d:21">first</span>
-                <span class="q-word" style="--d:22">step</span>
-                <span class="q-word" style="--d:23">forward.</span>
-              </blockquote>
-              <p class="insight-meta">✨ AI Insight · based on 7 entries</p>
-            </div>
+      <!-- Screen content — animated insight -->
+      <div class="phone-screen" id="insightCard">
+        <!-- Phase 1: Journal entry being scanned -->
+        <div class="scan-phase">
+          <div class="scan-header">
+            <span class="scan-date">Today's Entry</span>
+            <span class="scan-badge scanning-badge">
+              <span class="scan-spinner"></span>
+              Analyzing…
+            </span>
           </div>
+
+          <div class="journal-lines">
+            <p class="j-line" data-line="0">Today was one of those heavy days.</p>
+            <p class="j-line" data-line="1">I kept thinking about the conversation</p>
+            <p class="j-line" data-line="2">with Mom. I feel stuck again, like I'm</p>
+            <p class="j-line" data-line="3">going in circles. But writing helps.</p>
+            <p class="j-line" data-line="4">Maybe I just need to breathe.</p>
+            <div class="scan-bar"></div>
+          </div>
+
+          <!-- Phase 2: Mood tags -->
+          <div class="mood-tags">
+            <span class="mood-tag tag-1" style="--tag-color: #D4654A;">😔 heavy</span>
+            <span class="mood-tag tag-2" style="--tag-color: #3D5A80;">💭 stuck</span>
+            <span class="mood-tag tag-3" style="--tag-color: #7D9B76;">🌱 hopeful</span>
+            <span class="mood-tag tag-4" style="--tag-color: #E8A838;">✍️ reflective</span>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="insight-divider"></div>
+
+        <!-- Phase 3: Margin note -->
+        <div class="margin-note">
+          <span class="margin-label">MARGIN NOTE</span>
+          <blockquote class="insight-quote">
+            <span class="q-word" style="--d:0">You</span>
+            <span class="q-word" style="--d:1">mentioned</span>
+            <span class="q-word" style="--d:2">feeling</span>
+            <span class="q-word" style="--d:3">stuck</span>
+            <span class="q-word" style="--d:4">three</span>
+            <span class="q-word" style="--d:5">times</span>
+            <span class="q-word" style="--d:6">this</span>
+            <span class="q-word" style="--d:7">week.</span>
+            <span class="q-word" style="--d:8">Each</span>
+            <span class="q-word" style="--d:9">time,</span>
+            <span class="q-word" style="--d:10">writing</span>
+            <span class="q-word" style="--d:11">about</span>
+            <span class="q-word" style="--d:12">it</span>
+            <span class="q-word" style="--d:13">shifted</span>
+            <span class="q-word" style="--d:14">something</span>
+            <span class="q-word" style="--d:15">—</span>
+            <span class="q-word" style="--d:16">maybe</span>
+            <span class="q-word" style="--d:17">naming</span>
+            <span class="q-word" style="--d:18">it</span>
+            <span class="q-word" style="--d:19">is</span>
+            <span class="q-word" style="--d:20">the</span>
+            <span class="q-word" style="--d:21">first</span>
+            <span class="q-word" style="--d:22">step</span>
+            <span class="q-word" style="--d:23">forward.</span>
+          </blockquote>
+          <p class="insight-meta">✨ AI Insight · based on 7 entries</p>
         </div>
       </div>
 
@@ -446,9 +434,9 @@
 
   .phone {
     position: relative;
-    width: 260px; /* Reduced from 280px */
-    height: 520px; /* Reduced from 570px */
-    border-radius: 38px; /* Slightly smaller border-radius */
+    width: 280px;
+    height: 570px;
+    border-radius: 42px;
     padding: 4px;
 
     background: linear-gradient(
@@ -589,7 +577,7 @@
 
 /* Full screen phone (no app header) */
 .phone-screen-full {
-  height: calc(100% - 56px); /* Precise calculation: phone padding (8px) + status bar (25px) + home indicator area (23px) */
+  height: calc(100% - 60px); /* Only status bar, no app header */
 }
 
 .ai-page {
@@ -733,7 +721,9 @@
     width: 100%;
     height: 100%;
     position: relative;
-    display: block; /* Change from flex to block for better control */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: #000000; /* Black background for video */
     overflow: hidden;
   }
@@ -746,12 +736,9 @@
   .reflect-video {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Back to 'cover' to fill left-right completely */
+    object-fit: cover; /* Cover full area, crop if needed */
     display: block;
-    border-radius: 0; /* Remove border-radius to show full video content */
-    position: absolute; /* Position absolutely to fill container completely */
-    top: -10px; /* Shift up slightly to show more bottom content */
-    left: 0;
+    border-radius: 0 0 32px 32px; /* Match phone container */
   }
 
   /* Demo content (shows until real video is added) */
@@ -873,7 +860,9 @@
     width: 100%;
     height: 100%;
     position: relative;
-    display: block; /* Change from flex to block for better control */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: #000000; /* Black background for video */
     overflow: hidden;
   }
@@ -886,12 +875,9 @@
   .rant-video {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Back to 'cover' to fill left-right completely */
+    object-fit: cover; /* Cover full area, crop if needed */
     display: block;
-    border-radius: 0; /* Remove border-radius to show full video content */
-    position: absolute; /* Position absolutely to fill container completely */
-    top: -10px; /* Shift up slightly to show more bottom content */
-    left: 0;
+    border-radius: 0 0 32px 32px; /* Match phone container */
   }
 
   /* Rant demo content (fallback) */
@@ -1146,43 +1132,6 @@
     flex-shrink: 0;
   }
 
-  /* ═══════════════════════════════════════
-     AI INSIGHTS — Video Animation & Demo
-     ═══════════════════════════════════════ */
-  .ai-insight-video-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    display: block; /* Change from flex to block for better control */
-    background: #000000; /* Black background for video */
-    overflow: hidden;
-  }
-
-  /* Fullscreen AI insight video container */
-  .ai-insight-video-fullscreen {
-    border-radius: 0 0 32px 32px; /* Match phone bottom corners */
-  }
-
-  .ai-insight-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Back to 'cover' to fill left-right completely */
-    display: block;
-    border-radius: 0; /* Remove border-radius to show full video content */
-    position: absolute; /* Position absolutely to fill container completely */
-    top: -10px; /* Shift up slightly to show more bottom content */
-    left: 0;
-  }
-
-  /* AI Insight demo content (fallback) */
-  .ai-insight-demo-content {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: #1a1a1a; /* Dark background for AI Insights */
-  }
-
   /* ═══ AI Insights Animation Styles ═══ */
   .scan-phase {
     padding: 14px 14px 10px;
@@ -1425,7 +1374,7 @@
 </style>
 
 <script>
-  // Handle Reflect, Rant, and AI Insight videos
+  // Handle both Reflect and Rant videos
   document.addEventListener('DOMContentLoaded', function() {
     // Reflect Video Setup
     const reflectVideo = document.getElementById('reflectVideo');
@@ -1449,9 +1398,17 @@
         console.log('❌ Reflect video failed to load, showing demo fallback');
         reflectVideo.style.display = 'none';
         if (demoFallback) {
-          demoFallback.style.display = 'block';
+          demoFallback.style.display = 'flex';
         }
       });
+      
+      setTimeout(() => {
+        if (reflectVideo.readyState >= 2) {
+          reflectVideo.play().catch(e => {
+            console.log('Reflect autoplay prevented, will play on scroll');
+          });
+        }
+      }, 1000);
     }
 
     // Rant Video Setup
@@ -1473,64 +1430,115 @@
       });
       
       rantVideo.addEventListener('error', function(e) {
-        console.log('❌ Rant video failed to load, showing rant demo fallback');
+        console.log('❌ Rant video failed to load, showing demo fallback');
         rantVideo.style.display = 'none';
         if (rantDemoFallback) {
-          rantDemoFallback.style.display = 'block';
-        }
-      });
-    }
-
-    // AI Insight Video Setup
-    const aiInsightVideo = document.getElementById('aiInsightVideo');
-    const aiInsightDemoFallback = document.getElementById('aiInsightDemoFallback');
-    
-    if (aiInsightVideo) {
-      aiInsightVideo.style.display = 'block';
-      if (aiInsightDemoFallback) {
-        aiInsightDemoFallback.style.display = 'none';
-      }
-      
-      aiInsightVideo.addEventListener('loadeddata', function() {
-        console.log('✅ AI Insight video loaded and ready to play');
-        aiInsightVideo.style.display = 'block';
-        if (aiInsightDemoFallback) {
-          aiInsightDemoFallback.style.display = 'none';
+          rantDemoFallback.style.display = 'flex';
         }
       });
       
-      aiInsightVideo.addEventListener('error', function(e) {
-        console.log('❌ AI Insight video failed to load, showing ai insight demo fallback');
-        aiInsightVideo.style.display = 'none';
-        if (aiInsightDemoFallback) {
-          aiInsightDemoFallback.style.display = 'block';
+      setTimeout(() => {
+        if (rantVideo.readyState >= 2) {
+          rantVideo.play().catch(e => {
+            console.log('Rant autoplay prevented, will play on scroll');
+          });
         }
-      });
+      }, 1000);
     }
   });
 
-  // Intersection Observer for video playback control
+  // Animate the REC timer counting up
+  const timeEl = document.querySelector('.rec-time');
+  if (timeEl) {
+    let sec = 12;
+    setInterval(() => {
+      sec = (sec + 1) % 60;
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      timeEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    }, 1000);
+  }
+
+  // Handle video playback and animations when scrolled into view
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        // Start videos when in view
+        // Handle Reflect video playback
         const reflectVideo = entry.target.querySelector('.reflect-video');
-        if (reflectVideo && reflectVideo.paused) {
-          reflectVideo.play();
-          console.log('▶️ Reflect video started (in view)');
+        if (reflectVideo && reflectVideo.style.display !== 'none') {
+          console.log('📹 Starting Reflect video playback');
+          reflectVideo.currentTime = 0;
+          const playPromise = reflectVideo.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              console.log('✅ Reflect video playing successfully');
+            }).catch(e => {
+              console.log('⚠️ Reflect video autoplay prevented:', e.message);
+            });
+          }
         }
-        
+
+        // Handle Rant video playback  
         const rantVideo = entry.target.querySelector('.rant-video');
-        if (rantVideo && rantVideo.paused) {
-          rantVideo.play();
-          console.log('▶️ Rant video started (in view)');
+        if (rantVideo && rantVideo.style.display !== 'none') {
+          console.log('📹 Starting Rant video playback');
+          rantVideo.currentTime = 0;
+          const playPromise = rantVideo.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              console.log('✅ Rant video playing successfully');
+            }).catch(e => {
+              console.log('⚠️ Rant video autoplay prevented:', e.message);
+            });
+          }
         }
         
-        const aiInsightVideo = entry.target.querySelector('.ai-insight-video');
-        if (aiInsightVideo && aiInsightVideo.paused) {
-          aiInsightVideo.play();
-          console.log('▶️ AI Insight video started (in view)');
+        // Fallback: Handle demo content animations (only if videos fail)
+        const demoFallback = entry.target.querySelector('#demoFallback');
+        if (demoFallback && demoFallback.style.display === 'flex') {
+          const typingLine = demoFallback.querySelector('.typing-line');
+          const demoPencil = demoFallback.querySelector('.demo-pencil');
+          
+          if (typingLine) {
+            typingLine.style.animation = 'none';
+            typingLine.offsetHeight;
+            typingLine.style.animation = 'typeText 3s ease-in-out infinite';
+          }
+          
+          if (demoPencil) {
+            demoPencil.style.animation = 'none';
+            demoPencil.offsetHeight;
+            demoPencil.style.animation = 'pencilFloat 2s ease-in-out infinite';
+          }
         }
+
+        const rantDemoFallback = entry.target.querySelector('#rantDemoFallback');
+        if (rantDemoFallback && rantDemoFallback.style.display === 'flex') {
+          const transcriptLines = rantDemoFallback.querySelectorAll('.transcript-line');
+          const waveBars = rantDemoFallback.querySelectorAll('.wave-bar');
+          
+          transcriptLines.forEach(line => {
+            line.style.animation = 'none';
+            line.offsetHeight;
+            line.style.animation = '';
+          });
+          
+          waveBars.forEach(bar => {
+            bar.style.animation = 'none';
+            bar.offsetHeight; 
+            bar.style.animation = '';
+          });
+        }
+        
+        // Handle other section animations
+        const els = entry.target.querySelectorAll(
+          '.write-line, .transcript-line, .pencil, .cursor, .reflect-prompt, .go-deeper-btn'
+        );
+        els.forEach(el => {
+          el.style.animation = 'none';
+          el.offsetHeight;
+          el.style.animation = '';
+        });
         
       } else {
         // Pause videos when out of view (performance)
@@ -1545,12 +1553,6 @@
           rantVideo.pause();
           console.log('⏸️ Rant video paused (out of view)');
         }
-        
-        const aiInsightVideo = entry.target.querySelector('.ai-insight-video');
-        if (aiInsightVideo && !aiInsightVideo.paused) {
-          aiInsightVideo.pause();
-          console.log('⏸️ AI Insight video paused (out of view)');
-        }
       }
     });
   }, { 
@@ -1559,4 +1561,56 @@
   });
 
   document.querySelectorAll('.feature-row').forEach(row => observer.observe(row));
+
+  // AI Insights Animation
+  const insightCard = document.getElementById('insightCard');
+  if (insightCard) {
+    const insightObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          restartAiAnimation(insightCard);
+        }
+      });
+    }, { threshold: 0.35 });
+
+    insightObserver.observe(insightCard);
+  }
+
+  function restartAiAnimation(card) {
+    // Reset all animations
+    const animatedElements = card.querySelectorAll('.scanning-badge, .scan-bar, .mood-tag, .insight-divider, .margin-note, .q-word, .insight-meta');
+    animatedElements.forEach(el => {
+      el.style.animation = 'none';
+      el.offsetHeight; // trigger reflow
+      el.style.animation = '';
+    });
+
+    // Reset scanned state
+    const jLines = card.querySelectorAll('.j-line');
+    jLines.forEach(line => line.removeAttribute('data-scanned'));
+
+    // Reset scanning badge
+    const badge = card.querySelector('.scanning-badge');
+    if (badge) {
+      badge.classList.remove('done');
+      badge.innerHTML = '<span class="scan-spinner"></span> Analyzing…';
+    }
+
+    // Animate scanning each line
+    const scanDelay = 800;
+    const lineDelay = 800;
+    jLines.forEach((line, i) => {
+      setTimeout(() => {
+        line.setAttribute('data-scanned', 'true');
+      }, scanDelay + (i + 1) * lineDelay);
+    });
+
+    // Complete scanning
+    setTimeout(() => {
+      if (badge) {
+        badge.classList.add('done');
+        badge.innerHTML = '✓ Complete';
+      }
+    }, scanDelay + jLines.length * lineDelay + 300);
+  }
 </script>
